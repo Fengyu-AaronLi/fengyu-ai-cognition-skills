@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "receipt_id": "v13-migrate-v9-clinical-events-correction",
+  "test_path": "tests/test_v9_clinical_safety_events.py",
+  "from_sha256": "623414220b6c99f7aa81065c64877d609e62930c3adafadf51d4a1a246690b56",
+  "to_sha256": "e19dd9ac8984b28b60cc872ecc67873c7c4cb0c6af4fd59186e84de4eefda1d1",
+  "reason": "The clinical preaudit showed that ownership, completed exposure, and nonformal source controls needed explicit assertions; the migration retains the prior event contracts and adds those audited boundaries.",
+  "replacement_tests": [
+    {
+      "path": "tests/test_v12_preclinical_blockers.py",
+      "sha256": "d707ea5a6489f71d69527dc1e29f3428f3503e34886bafd01609c669a93401cd"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "evals/raw/v2-forward/v12-preaudit/clinical-safety/report.md",
+      "sha256": "1c0ad6c435fc8a9da78135621ee29ea7fbcd30ba7d383dda43fb00a23ca81afd"
+    }
+  ],
+  "reviewed_by": "independent-clinical-safety-preaudit",
+  "reviewed_at": "2026-08-06T12:31:45Z"
+}

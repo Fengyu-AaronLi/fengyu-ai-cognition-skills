@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fengyu.local/schemas/breaking-identity-labels/blindspot-discovery-report.schema.json",
+  "title": "Candidate-bound deterministic blind-spot discovery report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_type",
+    "seed",
+    "candidate_bindings",
+    "strategy_inventory",
+    "probes",
+    "summary"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "run_type": {"const": "deterministic_blindspot_discovery"},
+    "seed": {"type": "string", "minLength": 1},
+    "candidate_bindings": {
+      "type": "object",
+      "additionalProperties": {"$ref": "#/$defs/fileBinding"},
+      "minProperties": 4
+    },
+    "strategy_inventory": {
+      "type": "array",
+      "minItems": 3,
+      "uniqueItems": true,
+      "items": {"enum": ["lexical_variant", "scope_collision", "nonpersonal_control"]}
+    },
+    "probes": {
+      "type": "array",
+      "minItems": 6,
+      "items": {"$ref": "#/$defs/probe"}
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["probe_count", "pass_count", "blindspot_count"],
+      "properties": {
+        "probe_count": {"type": "integer", "minimum": 6},
+        "pass_count": {"type": "integer", "minimum": 0},
+        "blindspot_count": {"type": "integer", "minimum": 0}
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "fileBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "probe": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "probe_id",
+        "strategy",
+        "input",
+        "expected_signals",
+        "observed_signals",
+        "status",
+        "missing_signals"
+      ],
+      "properties": {
+        "probe_id": {"type": "string", "pattern": "^D[0-9]{3}$"},
+        "strategy": {"enum": ["lexical_variant", "scope_collision", "nonpersonal_control"]},
+        "input": {"type": "string", "minLength": 1},
+        "expected_signals": {"type": "array", "items": {"type": "string"}},
+        "observed_signals": {"type": "array", "items": {"type": "string"}},
+        "status": {"enum": ["pass", "blindspot"]},
+        "missing_signals": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "receipt_id": "v74-v11-integrity-confirmation-file",
+  "test_path": "tests/test_v11_operation_integrity.py",
+  "from_sha256": "63540e5b573c65f1f29daee8b24a2a67b98cbf5ed7c5a6d5af59e4fed32a5759",
+  "to_sha256": "9bce3fd227139900c06b180f86282f050c1f149ce244fe9bbf26b4cd3718f52a",
+  "reason": "The operation-integrity setup now binds successful start to a non-empty UTF-8 user-confirmation file, while stale-revision, invalid-id, and rehashed-duplicate checks are preserved verbatim.",
+  "replacement_tests": [
+    {
+      "path": "tests/test_v74_operator_product_contract.py",
+      "sha256": "947ba00444bd7ac6bd65dacab2abb7159e14dccebbcc05e12d086628fac9aed9"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "evals/raw/v74-red/operator-first-install-product-contract.md",
+      "sha256": "6f5e25ef94702e6b240013f3d52c9be0eb340f74a54d34a3e21b8ebadfbd7445"
+    }
+  ],
+  "reviewed_by": "codex-r74-confirmation-migration-a",
+  "reviewed_at": "2026-08-07T10:00:00+10:00"
+}

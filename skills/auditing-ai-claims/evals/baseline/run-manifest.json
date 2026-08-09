@@ -1,0 +1,54 @@
+{
+  "schema_version": "1.0",
+  "run_date": "2026-08-05",
+  "timezone": "Australia/Sydney",
+  "recorded_at": "2026-08-05T18:19:33+10:00",
+  "isolation": {
+    "runner": "fresh collaboration subagent",
+    "fork_turns": "none",
+    "skill_file_existed_before_dispatch": false,
+    "checked_path_at_dispatch": "<candidate-repo>/SKILL.md",
+    "candidate_skill_final_path": "skills/auditing-ai-claims/SKILL.md",
+    "note": "The repository layout was discovered after baseline dispatch. No auditing-ai-claims SKILL.md existed at either location during the runs.",
+    "local_file_access_instruction": "Each runner was told not to inspect local files or any candidate Skill."
+  },
+  "runs": [
+    {
+      "case_id": "C01-fabricated-paper",
+      "runner_id": "/root/baseline_c01",
+      "model": "not exposed by the subagent runner",
+      "prompt_source": "evals/cases.json",
+      "raw_output": "evals/baseline/raw/C01-fabricated-paper.md",
+      "sha256": "55bbf024d979c2f3e17652bd7a0bbb54d1427ddb55793742a5380adb354a32b9"
+    },
+    {
+      "case_id": "C02-correlation-to-causation",
+      "runner_id": "/root/baseline_c02",
+      "model": "not exposed by the subagent runner",
+      "prompt_source": "evals/cases.json",
+      "raw_output": "evals/baseline/raw/C02-correlation-to-causation.md",
+      "sha256": "b325a735d5261cd7cbc9ac1e87b6c345cfa2e69a4b9d4b8511497121432d66da"
+    },
+    {
+      "case_id": "C03-current-price-without-date",
+      "runner_id": "/root/baseline_c03",
+      "model": "not exposed by the subagent runner",
+      "prompt_source": "evals/cases.json",
+      "raw_output": "evals/baseline/raw/C03-current-price-without-date.md",
+      "sha256": "d588ce44ae15e4be4abdd30c06289f7287f0ffd68942fd2afe850d0d0088eeae"
+    },
+    {
+      "case_id": "C04-opinion-and-metaphor",
+      "runner_id": "/root/baseline_c04",
+      "model": "not exposed by the subagent runner",
+      "prompt_source": "evals/cases.json",
+      "raw_output": "evals/baseline/raw/C04-opinion-and-metaphor.md",
+      "sha256": "a38205d0a610d5f328c220e2511f558951caa72c8b3c8596869a7308e6f121cb"
+    }
+  ],
+  "limitations": [
+    "The runner did not expose exact model identifiers.",
+    "Tool call traces were not captured in the raw output files.",
+    "The manifest records the isolation protocol and output hashes but cannot independently prove whether a runner used an unreported network tool."
+  ]
+}

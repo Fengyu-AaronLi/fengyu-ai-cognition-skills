@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fengyu.local/schemas/breaking-identity-labels/red-evidence-manifest.schema.json",
+  "title": "Add-only red-stage evidence ledger",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "append_only", "records", "sealed_prefix"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "append_only": {"const": true},
+    "records": {
+      "type": "array",
+      "minItems": 7,
+      "items": {"$ref": "#/$defs/record"}
+    },
+    "sealed_prefix": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["record_count", "sha256"],
+      "properties": {
+        "record_count": {"type": "integer", "minimum": 7},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "capture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "markers"],
+      "properties": {
+        "status": {"enum": ["recorded", "partial"]},
+        "markers": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidence_id", "round_id", "evidence", "tests", "pre_fix_capture"],
+      "properties": {
+        "evidence_id": {"type": "string", "minLength": 1},
+        "round_id": {"type": "string", "pattern": "^R[1-9][0-9]*$"},
+        "evidence": {"$ref": "#/$defs/binding"},
+        "tests": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/binding"}
+        },
+        "pre_fix_capture": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["environment", "output"],
+          "properties": {
+            "environment": {"$ref": "#/$defs/capture"},
+            "output": {"$ref": "#/$defs/capture"}
+          }
+        }
+      }
+    }
+  }
+}

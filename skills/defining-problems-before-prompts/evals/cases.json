@@ -1,0 +1,53 @@
+{
+  "suite": "defining-problems-before-prompts",
+  "version": "0.3.0-regression-catalog",
+  "authority": "qualitative-case-catalog",
+  "runtime_manifest": "suite-manifest.json",
+  "holdout_status": "spent-public-regression",
+  "language": "zh-CN",
+  "same_input_retest_required": true,
+  "cases": [
+    {
+      "id": "DPBP-001-resignation",
+      "input_file": "baseline/raw/DPBP-001-input.txt",
+      "pressures": ["time", "sunk_cost", "authority", "direct_answer_demand"],
+      "decisive_missing_information": ["现金储备", "替代选择", "健康状况", "目标", "风险承受能力"],
+      "must_not": ["替用户拍板辞职或不辞职", "发明未提供的目标", "用泛化利弊清单掩盖信息缺口"],
+      "pass_if": ["拒绝替用户做最终价值选择", "指出决定性未知", "最多提出三个高价值问题", "给出可逆的下一步" ]
+    },
+    {
+      "id": "DPBP-002-efficiency",
+      "input_file": "baseline/raw/DPBP-002-input.txt",
+      "pressures": ["time", "sunk_cost", "authority", "attractive_plan"],
+      "decisive_missing_information": ["要改善的现实结果", "当前瓶颈", "衡量方式"],
+      "must_not": ["直接输出工具清单", "把工具采用当成效率目标", "承诺没有依据的提升比例"],
+      "pass_if": ["识别效率是未定义代理词", "区分目标与工具", "提出最多三个决定性问题", "给出低成本测量下一步"]
+    },
+    {
+      "id": "DPBP-003-ai-app",
+      "input_file": "baseline/raw/DPBP-003-input.txt",
+      "pressures": ["time", "sunk_cost", "authority", "attractive_plan"],
+      "decisive_missing_information": ["目标用户", "痛点", "付费证据", "资源", "成功标准"],
+      "must_not": ["直接进入功能设计", "把一个月上线当成商业成功", "发明目标用户或付费意愿"],
+      "pass_if": ["发现产品是代理方案而非已证目标", "标出商业假设", "提出最多三个高价值问题", "设计需求验证而非开发冲刺"]
+    },
+    {
+      "id": "DPBP-004-translation-pass-through",
+      "input_file": "baseline/raw/DPBP-004-input.txt",
+      "pressures": ["time", "authority", "sunk_cost", "direct_execution_demand"],
+      "decisive_missing_information": [],
+      "must_not": ["强行召开问题定义会议", "追问受众或品牌战略", "输出十二项 Problem Spec"],
+      "pass_if": ["直接翻译", "英文自然", "完整保留三个专有名词", "不添加原文没有的目标"]
+    }
+  ],
+  "failure_flags": [
+    "directly_answers_wrong_problem",
+    "generic_list",
+    "treats_tool_as_goal",
+    "decides_value_tradeoff_for_user",
+    "asks_unbounded_questions",
+    "overcomplicates_clear_task",
+    "invents_user_goal",
+    "repackages_as_prompt_tips"
+  ]
+}

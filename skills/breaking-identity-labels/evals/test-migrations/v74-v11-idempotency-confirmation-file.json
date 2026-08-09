@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "receipt_id": "v74-v11-idempotency-confirmation-file",
+  "test_path": "tests/test_v11_operation_idempotency.py",
+  "from_sha256": "77f230a4b14d7c30a4c1bfa72fe7104a89affcb44a908f3fa3a5bfcae4f7ec14",
+  "to_sha256": "e2c15e4b85cc8fcf176cdeb7aea23a5d1ac63c5c47c6864b38ed7ec5856f6d34",
+  "reason": "The exactly-once fixture now binds its successful start to a non-empty UTF-8 file containing explicit user confirmation, leaving operation-id retry and conflict semantics unchanged.",
+  "replacement_tests": [
+    {
+      "path": "tests/test_v74_operator_product_contract.py",
+      "sha256": "947ba00444bd7ac6bd65dacab2abb7159e14dccebbcc05e12d086628fac9aed9"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "evals/raw/v74-red/operator-first-install-product-contract.md",
+      "sha256": "6f5e25ef94702e6b240013f3d52c9be0eb340f74a54d34a3e21b8ebadfbd7445"
+    }
+  ],
+  "reviewed_by": "codex-r74-confirmation-migration-a",
+  "reviewed_at": "2026-08-07T10:00:00+10:00"
+}

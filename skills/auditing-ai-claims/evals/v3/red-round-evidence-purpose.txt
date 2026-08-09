@@ -1,0 +1,23 @@
+Command:
+python3 -m unittest discover -s tests -p 'test_evidence_purpose_v3.py' -v
+
+Observed before implementation:
+
+test_declared_factual_candidate_cannot_be_reclassified_as_nonfactual ... FAIL
+test_report_discloses_every_excluded_input_unit ... FAIL
+test_high_temporal_confirmation_requires_currentness_excerpt ... FAIL
+test_identity_gate_pass_requires_identity_purpose_excerpt ... FAIL
+test_source_identity_excerpt_cannot_substitute_for_substantive_support ... FAIL
+test_study_design_excerpt_alone_cannot_confirm_causal_effect ... FAIL
+
+Failure summary:
+
+1. `exclude-candidate` returned 0 for a candidate explicitly declared factual at `start`.
+2. The rendered report omitted the excluded input unit, its classification and its reason.
+3. A high-temporal confirmed claim passed without any exact evidence marked `currentness`.
+4. `source_identity_gate=pass` passed without an exact source-identity excerpt.
+5. An excerpt marked only `source_identity` could satisfy the substantive content gate.
+6. An excerpt marked only `study_design` could confirm the claimed causal effect.
+
+Ran 6 tests in 0.175s
+FAILED (failures=6)

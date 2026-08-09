@@ -1,0 +1,7 @@
+interface:
+  display_name: "AI 主张审计"
+  short_description: "把 AI 回答拆成可回放、可核验并保留未知的主张账本"
+  default_prompt: "使用 $auditing-ai-claims 审计我粘贴的 AI 回答，并生成简明主张账本。"
+
+policy:
+  allow_implicit_invocation: true

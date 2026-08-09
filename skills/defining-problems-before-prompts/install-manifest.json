@@ -1,0 +1,24 @@
+{
+  "files": [
+    "LICENSE",
+    "PROVENANCE.md",
+    "SKILL.md",
+    "VERSION",
+    "agents/openai.yaml",
+    "install-manifest.json",
+    "references/core.md",
+    "references/field-semantics.md",
+    "references/high-risk.md",
+    "references/playbooks/ai-efficiency.md",
+    "references/playbooks/ai-product.md",
+    "references/playbooks/career-exit.md",
+    "references/runtime-loop.md",
+    "runtime/routes.json",
+    "schemas/problem-spec.schema.json",
+    "schemas/problem-state.schema.json",
+    "schemas/request-envelope.schema.json",
+    "scripts/dpbp"
+  ],
+  "schema_version": "1.0",
+  "skill": "defining-problems-before-prompts"
+}

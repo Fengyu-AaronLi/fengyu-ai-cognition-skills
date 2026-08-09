@@ -1,0 +1,34 @@
+Command:
+python3 -m unittest discover -s tests -p 'test_redteam_semantic_v3.py' -v
+
+Observed before implementation on 2026-08-06:
+
+test_currentness_cannot_be_borrowed_from_another_source ... FAIL
+test_identity_and_substance_from_different_sources_do_not_combine ... FAIL
+test_narrow_claim_does_not_silently_close_compound_candidate ... FAIL
+test_pdf_magic_overrides_mislabeled_text_plain_and_fails_closed ... FAIL
+test_study_design_cannot_be_borrowed_from_another_source ... FAIL
+test_validate_bundle_rejects_duplicate_claim_ids ... FAIL
+
+Raw failure summary:
+
+1. Expected SOURCE_PURPOSE_BINDING_MISMATCH for currentness on S2 and substantive evidence on S1, but validate_bundle returned no errors.
+2. Expected SOURCE_PURPOSE_BINDING_MISMATCH for source identity on S1 and substantive evidence on S2, but validate_bundle returned no errors.
+3. Expected CANDIDATE_ATOMIC_COVERAGE_INCOMPLETE when one narrow claim covered only the first part of a compound candidate, but validate_bundle returned no errors.
+4. Expected parse_pdf_text to be called once for a payload beginning with `%PDF-` and mislabeled `text/plain`; it was called zero times.
+5. Expected SOURCE_PURPOSE_BINDING_MISMATCH for study-design evidence on S2 and substantive evidence on S1, but validate_bundle returned no errors.
+6. Expected DUPLICATE_CLAIM_ID for two ledger claims named C1, but validate_bundle returned no errors.
+
+Representative assertions:
+
+AssertionError: 'SOURCE_PURPOSE_BINDING_MISMATCH' not found in set()
+AssertionError: 'CANDIDATE_ATOMIC_COVERAGE_INCOMPLETE' not found in set()
+AssertionError: Expected 'parse_pdf_text' to be called once. Called 0 times.
+AssertionError: 'DUPLICATE_CLAIM_ID' not found in set()
+
+Ran 6 tests in 0.012s
+FAILED (failures=6)
+
+Interpretation:
+
+The V3 gate checked whether each evidence purpose existed somewhere in the claim, but did not bind identity, currentness or study design to the same source record that supplied the substantive conclusion. It also treated any claim subspan as complete coverage of a compound candidate, accepted duplicate claim identifiers after direct ledger mutation, and trusted the HTTP media type over PDF magic bytes.

@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0",
+  "receipt_id": "v74-workflow-user-confirmation",
+  "test_path": "tests/test_workflow_loop.py",
+  "from_sha256": "c35a0b02af11acce6582e18443f04ab6ec84585490c0632ed9c7f2491ebe36e9",
+  "to_sha256": "1897d9ad41995f541c936332e4c9ea8cd7505e897cfe78d2e40a8ff5ca3d470b",
+  "reason": "The lifecycle convergence test now turns next's explicit confirmation requirement into a file-backed start input before asserting the observing and review states.",
+  "replacement_tests": [
+    {"path": "tests/test_v74_operator_product_contract.py", "sha256": "947ba00444bd7ac6bd65dacab2abb7159e14dccebbcc05e12d086628fac9aed9"}
+  ],
+  "evidence": [
+    {"path": "evals/raw/v74-red/operator-first-install-product-contract.md", "sha256": "6f5e25ef94702e6b240013f3d52c9be0eb340f74a54d34a3e21b8ebadfbd7445"}
+  ],
+  "reviewed_by": "codex-r74-confirmation-migration-b",
+  "reviewed_at": "2026-08-07T10:00:00+10:00"
+}

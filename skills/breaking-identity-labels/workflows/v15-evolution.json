@@ -1,0 +1,135 @@
+{
+  "schema_version": "1.0",
+  "workflow_id": "breaking-identity-labels-v15-evolution",
+  "description": "A resumable red, refinement, green, regression, evaluation, demo and package loop for one exact candidate.",
+  "steps": [
+    {
+      "id": "failed_receipt_red",
+      "kind": "command",
+      "depends_on": [],
+      "description": "Prove that failed command receipts and failed state projections are not yet protected.",
+      "argv": [
+        "{python}",
+        "{root}/tests/test_v15_evolution_failed_receipt_integrity.py",
+        "-v"
+      ],
+      "expected": "red"
+    },
+    {
+      "id": "refinement",
+      "kind": "external",
+      "depends_on": [
+        "failed_receipt_red"
+      ],
+      "description": "Require an explicit, hash-bound implementation receipt before the same test can be rerun as green."
+    },
+    {
+      "id": "failed_receipt_green",
+      "kind": "command",
+      "depends_on": [
+        "refinement"
+      ],
+      "description": "Rerun the exact registered V15 test and require success.",
+      "argv": [
+        "{python}",
+        "{root}/tests/test_v15_evolution_failed_receipt_integrity.py",
+        "-v"
+      ],
+      "expected": "exit_zero"
+    },
+    {
+      "id": "architecture_regression",
+      "kind": "command",
+      "depends_on": [
+        "failed_receipt_green"
+      ],
+      "description": "Exercise the controller, provenance, lifecycle and governance contracts.",
+      "argv": [
+        "{python}",
+        "{root}/scripts/run_regressions.py",
+        "--suite",
+        "architecture"
+      ],
+      "expected": "exit_zero"
+    },
+    {
+      "id": "full_regression",
+      "kind": "command",
+      "depends_on": [
+        "architecture_regression"
+      ],
+      "description": "Run every checked-in unittest module from a fixed shell-free runner.",
+      "argv": [
+        "{python}",
+        "{root}/scripts/run_regressions.py",
+        "--suite",
+        "full"
+      ],
+      "expected": "exit_zero"
+    },
+    {
+      "id": "offline_eval",
+      "kind": "command",
+      "depends_on": [
+        "full_regression"
+      ],
+      "description": "Run deterministic held-out, boundary, regression and policy evaluations.",
+      "argv": [
+        "{python}",
+        "{root}/evals/run_v2_evals.py",
+        "--output",
+        "{run_dir}/offline-eval.json"
+      ],
+      "expected": "exit_zero"
+    },
+    {
+      "id": "demo_build",
+      "kind": "command",
+      "depends_on": [
+        "offline_eval"
+      ],
+      "description": "Build a fresh executable demo into this run without overwriting the checked-in demo.",
+      "argv": [
+        "{python}",
+        "{root}/scripts/build_demo.py",
+        "--output-dir",
+        "{run_dir}/generated-demo",
+        "--clock",
+        "2026-08-06T10:00:00Z"
+      ],
+      "expected": "exit_zero"
+    },
+    {
+      "id": "package_build",
+      "kind": "command",
+      "depends_on": [
+        "demo_build"
+      ],
+      "description": "Build the allowlisted local package into this run.",
+      "argv": [
+        "{python}",
+        "{root}/scripts/build_package.py",
+        "build",
+        "--out",
+        "{run_dir}/package"
+      ],
+      "expected": "exit_zero"
+    },
+    {
+      "id": "package_verify",
+      "kind": "command",
+      "depends_on": [
+        "package_build"
+      ],
+      "description": "Verify package hashes, privacy boundary and runtime smoke from the built directory.",
+      "argv": [
+        "{python}",
+        "{root}/scripts/build_package.py",
+        "verify",
+        "--package",
+        "{run_dir}/package"
+      ],
+      "expected": "exit_zero"
+    }
+  ]
+}

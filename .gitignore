@@ -1,0 +1,24 @@
+# 本地运行产物：Skill 在用户项目里跑出来的工作目录，不属于源码。
+.claim-audits/
+.install-auditing-ai-claims*/
+.ao-output/
+
+# 本机安装副本：由 skills/<name>/scripts/install.py 生成，内容是 skills/ 的拷贝。
+# 它只服务本地 Skill 发现，不是源码，不进版本控制。
+.agents/
+
+# 常见本地缓存。
+__pycache__/
+*.pyc
+.pytest_cache/
+.DS_Store
+
+# 评测原始跑批产物：体积 200MB 量级，含本机绝对路径与 host session ID。
+# 结论性报告（evals/*.md、baseline/、results.json）保留在仓库内作为证据，
+# 这里排除的只是可以按报告重跑的中间字节。
+skills/*/evals/raw/
+skills/*/evals/runs/
+skills/*/evals/receipts/
+skills/*/evals/v2/
+skills/*/evals/retest/*/workspace*/
+skills/*/evals/retest/*/receipts/

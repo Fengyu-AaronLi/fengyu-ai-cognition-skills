@@ -1,0 +1,644 @@
+{
+  "schema_version": "1.0",
+  "workflow_id": "breaking-identity-labels-v78-final-release",
+  "description": "R79 current convergence workflow retained at the v78 compatibility path: verify immutable red evidence with a controller command snapshot that understands receipt-backed test history, generate candidate-bound diverse blind-spot probes before the registered regression, distinguish historical replay from fresh current-candidate composition, and prove directory, archive and installed-package equivalence with stateless and persistent runtime smoke; leave publication state unchanged.",
+  "steps": [
+    {
+      "id": "historical_red_evidence_verify",
+      "kind": "command",
+      "depends_on": [],
+      "description": "Verify an immutable historical assertion-failure receipt and its current registered successor without equating checkout roots.",
+      "argv": [
+        "{python}",
+        "{root}/scripts/verify_red_evidence.py",
+        "--root",
+        "{root}",
+        "--run-dir",
+        "{root}/evals/runs/v15-real-001",
+        "--step-id",
+        "failed_receipt_red",
+        "--test-path",
+        "tests/test_v15_evolution_failed_receipt_integrity.py",
+        "--test-manifest",
+        "{root}/evals/test-generation-manifest.json"
+      ],
+      "input_files": [
+        "evals/runs/v15-real-001/run-state.json",
+        "evals/runs/v15-real-001/receipts/failed_receipt_red.json",
+        "evals/runs/v15-real-001/raw/failed_receipt_red.stdout.txt",
+        "evals/runs/v15-real-001/raw/failed_receipt_red.stderr.txt",
+        "evals/test-generation-manifest.json",
+        "tests/test_v15_evolution_failed_receipt_integrity.py",
+        "workflows/v15-evolution.json"
+      ],
+      "expected": "exit_zero"
+    },
+    {
+      "id": "red_evidence_ledger_verify",
+      "kind": "command",
+      "depends_on": [
+        "historical_red_evidence_verify"
+      ],
+      "description": "Verify the sealed historical red prefix and every current append-only record, accepting an old red-test hash only through a same-path continuous file-backed migration chain while requiring exact raw evidence bytes.",
+      "argv": [
+        "{python}",
+        "{root}/scripts/verify_red_evidence_manifest.py",
+        "--root",
+        "{root}",
+        "--manifest",
+        "{root}/evals/red-evidence-manifest.json"
+      ],
+      "input_files": [
+        "scripts/verify_red_evidence_manifest.py",
+        "evals/schemas/red-evidence-manifest.schema.json",
+        "evals/red-evidence-manifest.json"
+      ],
+      "expected": "exit_zero"
+    },
+    {
+      "id": "baseline_evidence_verify",
+      "kind": "command",
+      "depends_on": [
+        "red_evidence_ledger_verify"
+      ],
+      "description": "Verify the exact four frozen pre-Skill baseline records and their cases, rubric and report bindings while limiting the claim to byte integrity only.",
+      "argv": [
+        "{python}",
+        "{root}/scripts/verify_baseline_evidence.py",
+        "--root",
+        "{root}",
+        "--manifest",
+        "{root}/evals/baseline-evidence-manifest.json"
+      ],
+      "input_files": [
+        "scripts/verify_baseline_evidence.py",
+        "evals/schemas/baseline-evidence-manifest.schema.json",
+        "evals/baseline-evidence-manifest.json",
+        "evals/cases.json",
+        "evals/rubric.md",
+        "evals/baseline-report.md",
+        "evals/raw/baseline/C01-mbti-capability-verdict.md",
+        "evals/raw/baseline/C02-attachment-side-taking.md",
+        "evals/raw/baseline/C03-formal-adhd-diagnosis.md",
+        "evals/raw/baseline/C04-stable-preference-control.md"
+      ],
+      "expected": "exit_zero"
+    },
+    {
+      "id": "audit_harness_selfcheck",
+      "kind": "command",
+      "depends_on": [
+        "baseline_evidence_verify"
+      ],
+      "description": "Fail closed unless the four legacy machine audit IDs map to fixed internal isolated audit suites with hash-bound inputs and shell-free package install/equivalence commands.",
+      "argv": [
+        "{python}",
+        "{root}/scripts/run_release_audits.py",
+        "self-check"
+      ],
+      "input_files": [
+        "evals/regression-dependency-manifest.json"
+      ],
+      "expected": "exit_zero"
+    },
+    {
+      "id": "blindspot_discovery",
+      "kind": "command",
+      "depends_on": [
+        "audit_harness_selfcheck"
+      ],
+      "description": "Generate candidate-bound lexical, scope-collision and nonpersonal-control probes that are absent from the registered suite, require deterministic within-strategy body diversity, execute them against the current runtime and fail on any blind spot.",
+      "argv": [
+        "{python}",
+        "{root}/scripts/run_blindspot_discovery.py",
+        "--root",
+        "{root}",
+        "--seed",
+        "breaking-identity-labels-r78",
+        "--minimum-probes",
+        "9",
+        "--output",
+        "{run_dir}/blindspot-discovery.json",
+        "--fail-on-blindspot"
+      ],
+      "input_files": [
+        "scripts/run_blindspot_discovery.py",
+        "evals/schemas/blindspot-discovery-report.schema.json",
+        "SKILL.md",
+        "scripts/identity_label_case.py",
+        "evals/test-generation-manifest.json",
+        "references/policy-rules.md"
+      ],
+      "expected": "exit_zero"
+    },
+    {
+      "id": "full_regression",
+      "kind": "command",
+      "depends_on": [
+        "blindspot_discovery"
+      ],
+      "description": "After open-ended blind-spot discovery, validate the closed-world test and dependency manifests and run exactly the hash-bound unittest inventory.",
+      "argv": [
+        "{python}",
+        "{root}/scripts/run_regressions.py",
+        "--suite",
+        "full",
+        "--test-manifest",
+        "{root}/evals/test-generation-manifest.json",
+        "--dependency-manifest",
+        "{root}/evals/regression-dependency-manifest.json"
+      ],
+      "input_files": [
+        "evals/test-generation-manifest.json",
+        "evals/regression-dependency-manifest.json"
+      ],
+      "expected": "exit_zero"
+    },
+    {
+      "id": "offline_eval",
+      "kind": "command",
+      "depends_on": [
+        "full_regression"
+      ],
+      "description": "Run the deterministic held-out evaluation and write a result bound to runtime, evaluator and four datasets.",
+      "argv": [
+        "{python}",
+        "{root}/evals/run_v2_evals.py",
+        "--output",
+        "{run_dir}/offline-eval.json"
+      ],
+      "input_files": [
+        "scripts/identity_label_case.py",
+        "evals/heldout-cases.json",
+        "evals/boundary-cases.json",
+        "evals/cases.json",
+        "evals/upgrade-cases.json",
+        "tests/fixtures/valid-c01.json",
+        "schemas/analysis.schema.json",
+        "schemas/case.schema.json",
+        "schemas/event-head.schema.json",
+        "schemas/event.schema.json",
+        "schemas/workflow-next.schema.json"
+      ],
+      "expected": "exit_zero"
+    },
+    {
+      "id": "offline_eval_verify",
+      "kind": "command",
+      "depends_on": [
+        "offline_eval"
+      ],
+      "description": "Re-read the generated evaluation file and reject stale bindings or threshold drift.",
+      "argv": [
+        "{python}",
+        "{root}/scripts/verify_evaluation.py",
+        "--results",
+        "{run_dir}/offline-eval.json"
+      ],
+      "input_files": [
+        "{run_dir}/offline-eval.json",
+        "scripts/identity_label_case.py",
+        "evals/run_v2_evals.py",
+        "evals/heldout-cases.json",
+        "evals/boundary-cases.json",
+        "evals/cases.json",
+        "evals/upgrade-cases.json"
+      ],
+      "expected": "exit_zero"
+    },
+    {
+      "id": "demo_build",
+      "kind": "command",
+      "depends_on": [
+        "offline_eval_verify"
+      ],
+      "description": "Build a fresh deterministic five-event runtime demo inside the run directory.",
+      "argv": [
+        "{python}",
+        "{root}/scripts/build_demo.py",
+        "--output-dir",
+        "{run_dir}/generated-demo",
+        "--clock",
+        "2026-08-06T10:00:00Z"
+      ],
+      "input_files": [
+        "SKILL.md",
+        "VERSION",
+        "scripts/identity_label_case.py",
+        "examples/real-run/demo-input.txt",
+        "examples/real-run/analysis.json",
+        "schemas/analysis.schema.json",
+        "schemas/case.schema.json",
+        "schemas/event-head.schema.json",
+        "schemas/event.schema.json",
+        "schemas/workflow-next.schema.json"
+      ],
+      "expected": "exit_zero"
+    },
+    {
+      "id": "demo_verify",
+      "kind": "command",
+      "depends_on": [
+        "demo_build"
+      ],
+      "description": "Verify current Skill/runtime/source bindings and every deterministic demo artifact hash, validation result and event replay.",
+      "argv": [
+        "{python}",
+        "{root}/scripts/verify_demo.py",
+        "--demo-dir",
+        "{run_dir}/generated-demo"
+      ],
+      "input_files": [
+        "SKILL.md",
+        "VERSION",
+        "scripts/identity_label_case.py",
+        "examples/real-run/demo-input.txt",
+        "examples/real-run/analysis.json",
+        "schemas/analysis.schema.json",
+        "schemas/case.schema.json",
+        "schemas/event-head.schema.json",
+        "schemas/event.schema.json",
+        "schemas/workflow-next.schema.json",
+        "{run_dir}/generated-demo/.case.lock",
+        "{run_dir}/generated-demo/case.json",
+        "{run_dir}/generated-demo/events.jsonl",
+        "{run_dir}/generated-demo/events.head.json",
+        "{run_dir}/generated-demo/report.md",
+        "{run_dir}/generated-demo/run-manifest.json"
+      ],
+      "expected": "exit_zero"
+    },
+    {
+      "id": "live_e2e_verify",
+      "kind": "command",
+      "depends_on": [
+        "demo_verify"
+      ],
+      "description": "Verify the R64 historical analysis replay through the current runtime as compatibility evidence, without presenting it as a fresh current-candidate model run.",
+      "argv": [
+        "{python}",
+        "{root}/scripts/verify_live_e2e.py",
+        "--root",
+        "{root}",
+        "--manifest",
+        "{root}/evals/live-e2e-manifest.json"
+      ],
+      "input_files": [
+        "scripts/verify_live_e2e.py",
+        "evals/schemas/live-e2e-manifest.schema.json",
+        "evals/schemas/live-e2e-run.schema.json",
+        "evals/live-e2e-manifest.json",
+        "SKILL.md",
+        "problem-spec.md",
+        "scripts/identity_label_case.py",
+        "schemas/analysis.schema.json",
+        "schemas/case.schema.json",
+        "templates/analysis.json",
+        "evals/raw/current-live-e2e-r64/C01-mbti-capability-verdict/input.txt",
+        "evals/raw/current-live-e2e-r64/C01-mbti-capability-verdict/scaffold.json",
+        "evals/raw/current-live-e2e-r64/C01-mbti-capability-verdict/model-analysis.raw.json",
+        "evals/raw/current-live-e2e-r64/C01-mbti-capability-verdict/case.json",
+        "evals/raw/current-live-e2e-r64/C01-mbti-capability-verdict/validate.json",
+        "evals/raw/current-live-e2e-r64/C01-mbti-capability-verdict/report.md",
+        "evals/raw/current-live-e2e-r64/C01-mbti-capability-verdict/delivered-output.md",
+        "evals/raw/current-live-e2e-r64/C01-mbti-capability-verdict/run.json",
+        "evals/raw/current-live-e2e-r64/C02-attachment-side-taking/input.txt",
+        "evals/raw/current-live-e2e-r64/C02-attachment-side-taking/scaffold.json",
+        "evals/raw/current-live-e2e-r64/C02-attachment-side-taking/model-analysis.raw.json",
+        "evals/raw/current-live-e2e-r64/C02-attachment-side-taking/case.json",
+        "evals/raw/current-live-e2e-r64/C02-attachment-side-taking/validate.json",
+        "evals/raw/current-live-e2e-r64/C02-attachment-side-taking/report.md",
+        "evals/raw/current-live-e2e-r64/C02-attachment-side-taking/delivered-output.md",
+        "evals/raw/current-live-e2e-r64/C02-attachment-side-taking/run.json",
+        "evals/raw/current-live-e2e-r64/C03-formal-adhd-diagnosis/input.txt",
+        "evals/raw/current-live-e2e-r64/C03-formal-adhd-diagnosis/scaffold.json",
+        "evals/raw/current-live-e2e-r64/C03-formal-adhd-diagnosis/model-analysis.raw.json",
+        "evals/raw/current-live-e2e-r64/C03-formal-adhd-diagnosis/case.json",
+        "evals/raw/current-live-e2e-r64/C03-formal-adhd-diagnosis/validate.json",
+        "evals/raw/current-live-e2e-r64/C03-formal-adhd-diagnosis/report.md",
+        "evals/raw/current-live-e2e-r64/C03-formal-adhd-diagnosis/delivered-output.md",
+        "evals/raw/current-live-e2e-r64/C03-formal-adhd-diagnosis/run.json",
+        "evals/raw/current-live-e2e-r64/C04-stable-preference-control/input.txt",
+        "evals/raw/current-live-e2e-r64/C04-stable-preference-control/scaffold.json",
+        "evals/raw/current-live-e2e-r64/C04-stable-preference-control/validate.json",
+        "evals/raw/current-live-e2e-r64/C04-stable-preference-control/report.md",
+        "evals/raw/current-live-e2e-r64/C04-stable-preference-control/delivered-output.md",
+        "evals/raw/current-live-e2e-r64/C04-stable-preference-control/run.json",
+        "evals/raw/current-live-e2e-r64/review.json"
+      ],
+      "expected": "exit_zero"
+    },
+    {
+      "id": "fresh_candidate_live_e2e_verify",
+      "kind": "command",
+      "depends_on": [
+        "live_e2e_verify"
+      ],
+      "description": "Verify four fresh current-candidate agent/runtime composition bundles and an independent reviewer record, while preserving the stated model, orchestration and clinical-efficacy limits.",
+      "argv": [
+        "{python}",
+        "{root}/scripts/verify_live_e2e.py",
+        "--root",
+        "{root}",
+        "--manifest",
+        "{root}/evals/fresh-candidate-e2e-manifest.json"
+      ],
+      "input_files": [
+        "scripts/verify_live_e2e.py",
+        "evals/schemas/live-e2e-manifest.schema.json",
+        "evals/schemas/live-e2e-run.schema.json",
+        "evals/fresh-candidate-e2e-manifest.json",
+        "SKILL.md",
+        "problem-spec.md",
+        "scripts/identity_label_case.py",
+        "schemas/analysis.schema.json",
+        "schemas/case.schema.json",
+        "templates/analysis.json",
+        "evals/raw/fresh-candidate-e2e-r76/C01-mbti-capability-verdict/run.json",
+        "evals/raw/fresh-candidate-e2e-r76/C01-mbti-capability-verdict/agent-request.json",
+        "evals/raw/fresh-candidate-e2e-r76/C01-mbti-capability-verdict/agent-response.json",
+        "evals/raw/fresh-candidate-e2e-r76/C01-mbti-capability-verdict/input.txt",
+        "evals/raw/fresh-candidate-e2e-r76/C01-mbti-capability-verdict/scaffold.json",
+        "evals/raw/fresh-candidate-e2e-r76/C01-mbti-capability-verdict/model-analysis.raw.json",
+        "evals/raw/fresh-candidate-e2e-r76/C01-mbti-capability-verdict/case.json",
+        "evals/raw/fresh-candidate-e2e-r76/C01-mbti-capability-verdict/validate.json",
+        "evals/raw/fresh-candidate-e2e-r76/C01-mbti-capability-verdict/report.md",
+        "evals/raw/fresh-candidate-e2e-r76/C01-mbti-capability-verdict/delivered-output.md",
+        "evals/raw/fresh-candidate-e2e-r76/C02-attachment-side-taking/run.json",
+        "evals/raw/fresh-candidate-e2e-r76/C02-attachment-side-taking/agent-request.json",
+        "evals/raw/fresh-candidate-e2e-r76/C02-attachment-side-taking/agent-response.json",
+        "evals/raw/fresh-candidate-e2e-r76/C02-attachment-side-taking/input.txt",
+        "evals/raw/fresh-candidate-e2e-r76/C02-attachment-side-taking/scaffold.json",
+        "evals/raw/fresh-candidate-e2e-r76/C02-attachment-side-taking/model-analysis.raw.json",
+        "evals/raw/fresh-candidate-e2e-r76/C02-attachment-side-taking/case.json",
+        "evals/raw/fresh-candidate-e2e-r76/C02-attachment-side-taking/validate.json",
+        "evals/raw/fresh-candidate-e2e-r76/C02-attachment-side-taking/report.md",
+        "evals/raw/fresh-candidate-e2e-r76/C02-attachment-side-taking/delivered-output.md",
+        "evals/raw/fresh-candidate-e2e-r76/C03-formal-adhd-diagnosis/run.json",
+        "evals/raw/fresh-candidate-e2e-r76/C03-formal-adhd-diagnosis/agent-request.json",
+        "evals/raw/fresh-candidate-e2e-r76/C03-formal-adhd-diagnosis/agent-response.json",
+        "evals/raw/fresh-candidate-e2e-r76/C03-formal-adhd-diagnosis/input.txt",
+        "evals/raw/fresh-candidate-e2e-r76/C03-formal-adhd-diagnosis/scaffold.json",
+        "evals/raw/fresh-candidate-e2e-r76/C03-formal-adhd-diagnosis/model-analysis.raw.json",
+        "evals/raw/fresh-candidate-e2e-r76/C03-formal-adhd-diagnosis/case.json",
+        "evals/raw/fresh-candidate-e2e-r76/C03-formal-adhd-diagnosis/validate.json",
+        "evals/raw/fresh-candidate-e2e-r76/C03-formal-adhd-diagnosis/report.md",
+        "evals/raw/fresh-candidate-e2e-r76/C03-formal-adhd-diagnosis/delivered-output.md",
+        "evals/raw/fresh-candidate-e2e-r76/C04-stable-preference-control/run.json",
+        "evals/raw/fresh-candidate-e2e-r76/C04-stable-preference-control/agent-request.json",
+        "evals/raw/fresh-candidate-e2e-r76/C04-stable-preference-control/agent-response.json",
+        "evals/raw/fresh-candidate-e2e-r76/C04-stable-preference-control/input.txt",
+        "evals/raw/fresh-candidate-e2e-r76/C04-stable-preference-control/scaffold.json",
+        "evals/raw/fresh-candidate-e2e-r76/C04-stable-preference-control/validate.json",
+        "evals/raw/fresh-candidate-e2e-r76/C04-stable-preference-control/report.md",
+        "evals/raw/fresh-candidate-e2e-r76/C04-stable-preference-control/delivered-output.md",
+        "evals/raw/fresh-candidate-e2e-r76/review.json"
+      ],
+      "expected": "exit_zero"
+    },
+    {
+      "id": "package_build",
+      "kind": "command",
+      "depends_on": [
+        "fresh_candidate_live_e2e_verify"
+      ],
+      "description": "Build directory and reproducible zip forms from the complete self-contained package allowlist.",
+      "argv": [
+        "{python}",
+        "{root}/scripts/build_package.py",
+        "build",
+        "--out",
+        "{run_dir}/package",
+        "--archive",
+        "{run_dir}/breaking-identity-labels.zip"
+      ],
+      "input_files": [
+        "SKILL.md",
+        "VERSION",
+        "SOURCE_OF_TRUTH.md",
+        "README.md",
+        "problem-spec.md",
+        "PROVENANCE.md",
+        "zero-threshold-prompt.md",
+        "LICENSE",
+        "NOTICE.md",
+        "agents/openai.yaml",
+        "schemas/analysis.schema.json",
+        "schemas/case.schema.json",
+        "schemas/event-head.schema.json",
+        "schemas/event.schema.json",
+        "schemas/workflow-next.schema.json",
+        "templates/analysis.json",
+        "references/evidence-classes.md",
+        "references/policy-rules.md",
+        "references/safety-boundaries.md",
+        "docs/acceptance.md",
+        "docs/evolution.md",
+        "docs/quickstart.md",
+        "scripts/build_package.py",
+        "scripts/identity_label_case.py"
+      ],
+      "expected": "exit_zero"
+    },
+    {
+      "id": "package_verify_directory",
+      "kind": "command",
+      "depends_on": [
+        "package_build"
+      ],
+      "description": "Verify the exact generated directory bytes, allowlist and privacy boundary, then execute both the stateless composition smoke and the external-work-directory persistent lifecycle smoke.",
+      "argv": [
+        "{python}",
+        "{root}/scripts/build_package.py",
+        "verify",
+        "--package",
+        "{run_dir}/package"
+      ],
+      "input_files": [
+        "{root}/scripts/build_package.py",
+        "{run_dir}/package/SKILL.md",
+        "{run_dir}/package/VERSION",
+        "{run_dir}/package/SOURCE_OF_TRUTH.md",
+        "{run_dir}/package/README.md",
+        "{run_dir}/package/problem-spec.md",
+        "{run_dir}/package/PROVENANCE.md",
+        "{run_dir}/package/zero-threshold-prompt.md",
+        "{run_dir}/package/LICENSE",
+        "{run_dir}/package/NOTICE.md",
+        "{run_dir}/package/agents/openai.yaml",
+        "{run_dir}/package/schemas/analysis.schema.json",
+        "{run_dir}/package/schemas/case.schema.json",
+        "{run_dir}/package/schemas/event-head.schema.json",
+        "{run_dir}/package/schemas/event.schema.json",
+        "{run_dir}/package/schemas/workflow-next.schema.json",
+        "{run_dir}/package/templates/analysis.json",
+        "{run_dir}/package/references/evidence-classes.md",
+        "{run_dir}/package/references/policy-rules.md",
+        "{run_dir}/package/references/safety-boundaries.md",
+        "{run_dir}/package/docs/acceptance.md",
+        "{run_dir}/package/docs/evolution.md",
+        "{run_dir}/package/docs/quickstart.md",
+        "{run_dir}/package/scripts/build_package.py",
+        "{run_dir}/package/scripts/identity_label_case.py",
+        "{run_dir}/package/PACKAGE-MANIFEST.json"
+      ],
+      "expected": "exit_zero"
+    },
+    {
+      "id": "package_verify_archive",
+      "kind": "command",
+      "depends_on": [
+        "package_verify_directory"
+      ],
+      "description": "Verify the exact generated zip bytes through a fresh extraction and manifest replay.",
+      "argv": [
+        "{python}",
+        "{root}/scripts/build_package.py",
+        "verify",
+        "--package",
+        "{run_dir}/breaking-identity-labels.zip"
+      ],
+      "input_files": [
+        "{run_dir}/breaking-identity-labels.zip"
+      ],
+      "expected": "exit_zero"
+    },
+    {
+      "id": "package_install",
+      "kind": "command",
+      "depends_on": [
+        "package_verify_archive"
+      ],
+      "description": "Install the exact verified archive into an empty run-local skills root without overwrite.",
+      "argv": [
+        "{python}",
+        "{root}/scripts/build_package.py",
+        "install",
+        "--package",
+        "{run_dir}/breaking-identity-labels.zip",
+        "--skills-dir",
+        "{run_dir}/installed-skills"
+      ],
+      "input_files": [
+        "{run_dir}/breaking-identity-labels.zip"
+      ],
+      "expected": "exit_zero"
+    },
+    {
+      "id": "package_verify_installed",
+      "kind": "command",
+      "depends_on": [
+        "package_install"
+      ],
+      "description": "Verify every installed byte and rerun both stateless and persistent lifecycle smoke without mutating the installed package tree.",
+      "argv": [
+        "{python}",
+        "{root}/scripts/build_package.py",
+        "verify",
+        "--package",
+        "{run_dir}/installed-skills/breaking-identity-labels"
+      ],
+      "input_files": [
+        "{run_dir}/installed-skills/breaking-identity-labels/SKILL.md",
+        "{run_dir}/installed-skills/breaking-identity-labels/VERSION",
+        "{run_dir}/installed-skills/breaking-identity-labels/SOURCE_OF_TRUTH.md",
+        "{run_dir}/installed-skills/breaking-identity-labels/README.md",
+        "{run_dir}/installed-skills/breaking-identity-labels/problem-spec.md",
+        "{run_dir}/installed-skills/breaking-identity-labels/PROVENANCE.md",
+        "{run_dir}/installed-skills/breaking-identity-labels/zero-threshold-prompt.md",
+        "{run_dir}/installed-skills/breaking-identity-labels/LICENSE",
+        "{run_dir}/installed-skills/breaking-identity-labels/NOTICE.md",
+        "{run_dir}/installed-skills/breaking-identity-labels/agents/openai.yaml",
+        "{run_dir}/installed-skills/breaking-identity-labels/schemas/analysis.schema.json",
+        "{run_dir}/installed-skills/breaking-identity-labels/schemas/case.schema.json",
+        "{run_dir}/installed-skills/breaking-identity-labels/schemas/event-head.schema.json",
+        "{run_dir}/installed-skills/breaking-identity-labels/schemas/event.schema.json",
+        "{run_dir}/installed-skills/breaking-identity-labels/schemas/workflow-next.schema.json",
+        "{run_dir}/installed-skills/breaking-identity-labels/templates/analysis.json",
+        "{run_dir}/installed-skills/breaking-identity-labels/references/evidence-classes.md",
+        "{run_dir}/installed-skills/breaking-identity-labels/references/policy-rules.md",
+        "{run_dir}/installed-skills/breaking-identity-labels/references/safety-boundaries.md",
+        "{run_dir}/installed-skills/breaking-identity-labels/docs/acceptance.md",
+        "{run_dir}/installed-skills/breaking-identity-labels/docs/evolution.md",
+        "{run_dir}/installed-skills/breaking-identity-labels/docs/quickstart.md",
+        "{run_dir}/installed-skills/breaking-identity-labels/scripts/build_package.py",
+        "{run_dir}/installed-skills/breaking-identity-labels/scripts/identity_label_case.py",
+        "{run_dir}/installed-skills/breaking-identity-labels/PACKAGE-MANIFEST.json"
+      ],
+      "expected": "exit_zero"
+    },
+    {
+      "id": "package_equivalence",
+      "kind": "command",
+      "depends_on": [
+        "package_verify_installed"
+      ],
+      "description": "Require directory, zip and installed forms to produce one identical package tree digest.",
+      "argv": [
+        "{python}",
+        "{root}/scripts/verify_package_equivalence.py",
+        "--directory",
+        "{run_dir}/package",
+        "--archive",
+        "{run_dir}/breaking-identity-labels.zip",
+        "--installed",
+        "{run_dir}/installed-skills/breaking-identity-labels"
+      ],
+      "input_files": [
+        "{root}/scripts/build_package.py",
+        "{run_dir}/package/SKILL.md",
+        "{run_dir}/package/VERSION",
+        "{run_dir}/package/SOURCE_OF_TRUTH.md",
+        "{run_dir}/package/README.md",
+        "{run_dir}/package/problem-spec.md",
+        "{run_dir}/package/PROVENANCE.md",
+        "{run_dir}/package/zero-threshold-prompt.md",
+        "{run_dir}/package/LICENSE",
+        "{run_dir}/package/NOTICE.md",
+        "{run_dir}/package/agents/openai.yaml",
+        "{run_dir}/package/schemas/analysis.schema.json",
+        "{run_dir}/package/schemas/case.schema.json",
+        "{run_dir}/package/schemas/event-head.schema.json",
+        "{run_dir}/package/schemas/event.schema.json",
+        "{run_dir}/package/schemas/workflow-next.schema.json",
+        "{run_dir}/package/templates/analysis.json",
+        "{run_dir}/package/references/evidence-classes.md",
+        "{run_dir}/package/references/policy-rules.md",
+        "{run_dir}/package/references/safety-boundaries.md",
+        "{run_dir}/package/docs/acceptance.md",
+        "{run_dir}/package/docs/evolution.md",
+        "{run_dir}/package/docs/quickstart.md",
+        "{run_dir}/package/scripts/build_package.py",
+        "{run_dir}/package/scripts/identity_label_case.py",
+        "{run_dir}/package/PACKAGE-MANIFEST.json",
+        "{run_dir}/breaking-identity-labels.zip",
+        "{run_dir}/installed-skills/breaking-identity-labels/SKILL.md",
+        "{run_dir}/installed-skills/breaking-identity-labels/VERSION",
+        "{run_dir}/installed-skills/breaking-identity-labels/SOURCE_OF_TRUTH.md",
+        "{run_dir}/installed-skills/breaking-identity-labels/README.md",
+        "{run_dir}/installed-skills/breaking-identity-labels/problem-spec.md",
+        "{run_dir}/installed-skills/breaking-identity-labels/PROVENANCE.md",
+        "{run_dir}/installed-skills/breaking-identity-labels/zero-threshold-prompt.md",
+        "{run_dir}/installed-skills/breaking-identity-labels/LICENSE",
+        "{run_dir}/installed-skills/breaking-identity-labels/NOTICE.md",
+        "{run_dir}/installed-skills/breaking-identity-labels/agents/openai.yaml",
+        "{run_dir}/installed-skills/breaking-identity-labels/schemas/analysis.schema.json",
+        "{run_dir}/installed-skills/breaking-identity-labels/schemas/case.schema.json",
+        "{run_dir}/installed-skills/breaking-identity-labels/schemas/event-head.schema.json",
+        "{run_dir}/installed-skills/breaking-identity-labels/schemas/event.schema.json",
+        "{run_dir}/installed-skills/breaking-identity-labels/schemas/workflow-next.schema.json",
+        "{run_dir}/installed-skills/breaking-identity-labels/templates/analysis.json",
+        "{run_dir}/installed-skills/breaking-identity-labels/references/evidence-classes.md",
+        "{run_dir}/installed-skills/breaking-identity-labels/references/policy-rules.md",
+        "{run_dir}/installed-skills/breaking-identity-labels/references/safety-boundaries.md",
+        "{run_dir}/installed-skills/breaking-identity-labels/docs/acceptance.md",
+        "{run_dir}/installed-skills/breaking-identity-labels/docs/evolution.md",
+        "{run_dir}/installed-skills/breaking-identity-labels/docs/quickstart.md",
+        "{run_dir}/installed-skills/breaking-identity-labels/scripts/build_package.py",
+        "{run_dir}/installed-skills/breaking-identity-labels/scripts/identity_label_case.py",
+        "{run_dir}/installed-skills/breaking-identity-labels/PACKAGE-MANIFEST.json"
+      ],
+      "expected": "exit_zero"
+    }
+  ]
+}

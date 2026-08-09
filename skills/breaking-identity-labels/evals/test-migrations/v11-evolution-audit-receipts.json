@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "receipt_id": "v13-migrate-v11-evolution-audit-receipts",
+  "test_path": "tests/test_v11_evolution_controller.py",
+  "from_sha256": "b705a9dc22971fb5dbdd1c3618fbec4d0ffa8c353610c23928e70810f096494b",
+  "to_sha256": "d8924197e45e2ffc43691bfd44b66aa1ab4c27dd6810d4967193e2843aebff8c",
+  "reason": "The independent architecture audit proved that ordinary files could self-attest four audits; the legacy positive fixture now uses four distinct candidate-bound structured receipts.",
+  "replacement_tests": [
+    {
+      "path": "tests/test_v13_architecture_integrity_regressions.py",
+      "sha256": "8a4b1845e936c9a3024afbe001820a2337f43c669ab8381cf22f10a9378ff19d"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "evals/raw/v2-forward/v12-preaudit/architecture/report.md",
+      "sha256": "19225b2970583e84c3da0d12cd30c5219b99d02fd8ee745148dc7ba0b99c7dce"
+    }
+  ],
+  "reviewed_by": "independent-architecture-preaudit",
+  "reviewed_at": "2026-08-06T12:31:45Z"
+}

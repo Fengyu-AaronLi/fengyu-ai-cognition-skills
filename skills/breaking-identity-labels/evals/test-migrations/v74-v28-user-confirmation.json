@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0",
+  "receipt_id": "v74-v28-user-confirmation",
+  "test_path": "tests/test_v28_record_event_binding.py",
+  "from_sha256": "381f4b38b186fe28c4ae68cd5d9b01bc5ed4afc79cd23632215f8d53d23c8fdc",
+  "to_sha256": "3c2a25fa640aa43061ba99ee0baa3730e18ff2f16ad25f222290e73ebef200ed",
+  "reason": "The record-event fixture now supplies a nonempty file-backed user confirmation before entering the observing state, preserving the original record-binding assertion under the stricter start gate.",
+  "replacement_tests": [
+    {"path": "tests/test_v74_operator_product_contract.py", "sha256": "947ba00444bd7ac6bd65dacab2abb7159e14dccebbcc05e12d086628fac9aed9"}
+  ],
+  "evidence": [
+    {"path": "evals/raw/v74-red/operator-first-install-product-contract.md", "sha256": "6f5e25ef94702e6b240013f3d52c9be0eb340f74a54d34a3e21b8ebadfbd7445"}
+  ],
+  "reviewed_by": "codex-r74-confirmation-migration-b",
+  "reviewed_at": "2026-08-07T10:00:00+10:00"
+}

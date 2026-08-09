@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0",
+  "receipt_id": "v74-v7-release-user-confirmation",
+  "test_path": "tests/test_v7_release_matrix.py",
+  "from_sha256": "a967118cf21dd983d4e98c971d8a00bea48b8dd63f45281c37b1b73e9436e26e",
+  "to_sha256": "fe8dee8dbcc9a46824aed16aac3fcd741d5e3ece4597ab1b91b827496a895237",
+  "reason": "Release-matrix fixtures now cross the experiment start boundary with a real confirmation artifact so early-review and task-count contracts remain independently testable.",
+  "replacement_tests": [
+    {"path": "tests/test_v74_operator_product_contract.py", "sha256": "947ba00444bd7ac6bd65dacab2abb7159e14dccebbcc05e12d086628fac9aed9"}
+  ],
+  "evidence": [
+    {"path": "evals/raw/v74-red/operator-first-install-product-contract.md", "sha256": "6f5e25ef94702e6b240013f3d52c9be0eb340f74a54d34a3e21b8ebadfbd7445"}
+  ],
+  "reviewed_by": "codex-r74-confirmation-migration-b",
+  "reviewed_at": "2026-08-07T10:00:00+10:00"
+}

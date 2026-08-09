@@ -1,0 +1,22 @@
+{
+  "evidence": [
+    {
+      "path": "evals/raw/v80-red/red-dependency-ledger-separation.md",
+      "sha256": "f94addae31fe6addb92ceeef2419885e9344b44c6c1be40ec9a35184aabd7edd"
+    }
+  ],
+  "from_sha256": "978105721f1ac674ccf2478acde6fb455e5b20ef2567706e2b908cecd9ee87d3",
+  "reason": "The independent non-test inventory must include raw red evidence while keeping red test modules exclusively in the test-generation manifest.",
+  "receipt_id": "v80-v68-red-dependency-ledger-separation",
+  "replacement_tests": [
+    {
+      "path": "tests/test_v80_red_dependency_ledger_separation.py",
+      "sha256": "2638b47dcc03af91e4040ea020da9961553eefe6a647b1ddbdd5bcdfc2625ac5"
+    }
+  ],
+  "reviewed_at": "2026-08-07T08:08:08+10:00",
+  "reviewed_by": "codex-r80-ledger-separation-loop",
+  "schema_version": "1.0",
+  "test_path": "tests/test_v68_dependency_inventory.py",
+  "to_sha256": "4aef3fa4de936b8fb97fe67adc9783b7c0f4ddf9b2aa90ada82239ad1e8c696c"
+}

@@ -1,0 +1,684 @@
+{
+  "append_only": true,
+  "records": [
+    {
+      "evidence": {
+        "path": "evals/raw/v66-red/post-freeze-runtime-and-state.md",
+        "sha256": "53ba737881b01e4447fd94f4fba090c791159a2ae21acd97a298b8306a1efc15"
+      },
+      "evidence_id": "r66-post-freeze-runtime-and-state",
+      "pre_fix_capture": {
+        "environment": {
+          "markers": [
+            "Captured: 2026-08-06 Australia/Sydney",
+            "Environment: macOS Darwin 25.5.0 arm64; Python 3.14.4"
+          ],
+          "status": "recorded"
+        },
+        "output": {
+          "markers": [
+            "Ran 8 tests in 0.097s",
+            "FAILED (failures=20)",
+            "Ran 3 tests in 1.962s",
+            "FAILED (failures=6)"
+          ],
+          "status": "recorded"
+        }
+      },
+      "round_id": "R66",
+      "tests": [
+        {
+          "path": "tests/test_v66_runtime_safety.py",
+          "sha256": "4c13187b7b8b11a0a1acb6a85c940338e18f6a5ae32827644decc29910ab17e4"
+        },
+        {
+          "path": "tests/test_v66_state_preference.py",
+          "sha256": "a4123a14f8557e6976f2bfb1431576055a7b1af1ff580a927b18f4b94a77bd4e"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "path": "evals/raw/v67-red/runtime-adversarial-second-pass.md",
+        "sha256": "3df1a8fdc9a33e994c0d26543d2d99363c89c563a59227a3e258cdd92d287ab4"
+      },
+      "evidence_id": "r67-runtime-adversarial-second-pass",
+      "pre_fix_capture": {
+        "environment": {
+          "markers": [
+            "Python: `3.14.4`",
+            "Platform: `Darwin 25.5.0 arm64`",
+            "Runtime SHA-256 before repair: `fe48ca0f912f7be4efe3c2d3c4543160e2a95e4bd2193a9a7999e1c348eaffe0`"
+          ],
+          "status": "recorded"
+        },
+        "output": {
+          "markers": [
+            "Ran 13 tests in 3.319s",
+            "FAILED (failures=18)"
+          ],
+          "status": "recorded"
+        }
+      },
+      "round_id": "R67",
+      "tests": [
+        {
+          "path": "tests/test_v67_runtime_adversarial.py",
+          "sha256": "d2e752cc16954618822fa257c537d040ceae349ca114ceb00493b268113ac8a2"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "path": "evals/raw/v68-red/regression-dependency-closure.md",
+        "sha256": "d4b14d2cb251dc60956c958c6c462a8d6fd9aa9c199fbd9daecf661f3f08b936"
+      },
+      "evidence_id": "r68-regression-dependency-closure",
+      "pre_fix_capture": {
+        "environment": {
+          "markers": [
+            "Python: `3.14.4`",
+            "Platform: `Darwin 25.5.0 arm64`"
+          ],
+          "status": "recorded"
+        },
+        "output": {
+          "markers": [
+            "Ran 10 tests in 0.207s",
+            "FAILED (failures=11)"
+          ],
+          "status": "recorded"
+        }
+      },
+      "round_id": "R68",
+      "tests": [
+        {
+          "path": "tests/test_v68_dependency_inventory.py",
+          "sha256": "978105721f1ac674ccf2478acde6fb455e5b20ef2567706e2b908cecd9ee87d3"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "path": "evals/raw/v69-red/scope-and-language-matrix.md",
+        "sha256": "5ac326d7b8381ac50f834e0cd7aa95272208ba175490dbbdf1be7ac7a3638b69"
+      },
+      "evidence_id": "r69-scope-and-language-matrix",
+      "pre_fix_capture": {
+        "environment": {
+          "markers": [
+            "Python: `3.14.4`",
+            "Platform: `Darwin 25.5.0 arm64`"
+          ],
+          "status": "recorded"
+        },
+        "output": {
+          "markers": [
+            "Ran 11 tests in 1.187s",
+            "FAILED (failures=12)"
+          ],
+          "status": "recorded"
+        }
+      },
+      "round_id": "R69",
+      "tests": [
+        {
+          "path": "tests/test_v69_scope_language_matrix.py",
+          "sha256": "d97bd19bfe32c37b1575e754804fb2c83fc0d13d1019399a1cea6d9aa82955df"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "path": "evals/raw/v70-red/runtime-semantic-fuzz.md",
+        "sha256": "37a1dffb03309cce60758f8ca2153360959b26a0c887b0fbef389e758e9553e8"
+      },
+      "evidence_id": "r70-runtime-semantic-fuzz",
+      "pre_fix_capture": {
+        "environment": {
+          "markers": [
+            "against the post-R69 runtime"
+          ],
+          "status": "partial"
+        },
+        "output": {
+          "markers": [
+            "Ran 7 tests in 0.334s",
+            "FAILED (failures=16)"
+          ],
+          "status": "recorded"
+        }
+      },
+      "round_id": "R70",
+      "tests": [
+        {
+          "path": "tests/test_v70_runtime_semantic_fuzz.py",
+          "sha256": "438674d1aa1812c648adb7bd48fd24be76c777f0def1cfcf3a4f8cc390445fd3"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "path": "evals/raw/v70-red/source-validation-mutable-state.md",
+        "sha256": "c08063c4daec9b8bd8f170b208c4811871b1fa1ec6f056a818c43ea338f41463"
+      },
+      "evidence_id": "r70-source-validation-mutable-state",
+      "pre_fix_capture": {
+        "environment": {
+          "markers": [
+            "Date: 2026-08-06 Australia/Sydney",
+            "Runtime: local `python3`"
+          ],
+          "status": "partial"
+        },
+        "output": {
+          "markers": [
+            "Ran 2 tests in 0.074s",
+            "FAILED (failures=2)"
+          ],
+          "status": "recorded"
+        }
+      },
+      "round_id": "R70",
+      "tests": [
+        {
+          "path": "tests/test_v70_source_validation_dependency.py",
+          "sha256": "d3efc7f1de2f5aca572efcf7a3d50bca474c36eff6d0b7ef70694cf1b4cb82e5"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "path": "evals/raw/v71-red/regression-dependency-closed-world.md",
+        "sha256": "8eb54f9df2ff0a7092c49bf943a25b242cee3d1498d0efb8e87a0670b3a86216"
+      },
+      "evidence_id": "r71-regression-dependency-closed-world",
+      "pre_fix_capture": {
+        "environment": {
+          "markers": [
+            "This is local red-stage evidence."
+          ],
+          "status": "partial"
+        },
+        "output": {
+          "markers": [
+            "Ran 1 test in 0.020s",
+            "FAILED (failures=1)"
+          ],
+          "status": "recorded"
+        }
+      },
+      "round_id": "R71",
+      "tests": [
+        {
+          "path": "tests/test_v71_regression_dependency_closed_world.py",
+          "sha256": "aeea94f7d4e1e428d83879b28cf93a7f7dca529896691ce53e8e289a1d4f80da"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "path": "evals/raw/v72-red/evolution-loop-terminal-contracts.md",
+        "sha256": "003515ae17e73aacb74ab8d714234f4645c293f73d746e9567240ddcb14860e6"
+      },
+      "evidence_id": "r72-evolution-loop-terminal-contracts",
+      "pre_fix_capture": {
+        "environment": {
+          "markers": [
+            "Python: `Python 3.14.4`",
+            "Platform: `Darwin AarondeMacBook-Pro.local 25.5.0"
+          ],
+          "status": "recorded"
+        },
+        "output": {
+          "markers": [
+            "Ran 3 tests in 0.633s",
+            "FAILED (failures=3)"
+          ],
+          "status": "recorded"
+        }
+      },
+      "round_id": "R72",
+      "tests": [
+        {
+          "path": "tests/test_v72_evolution_loop_terminal_contracts.py",
+          "sha256": "30e4573d7b47e5234e9ba6435b66fad6b4efbde3b2a2086ca0ea316e765cbca1"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "path": "evals/raw/v72-red/demo-live-evidence-red.md",
+        "sha256": "96e9df0c0ee2ddef690c656e4670e904b2947220549f86a19e7275ee9e41a1dc"
+      },
+      "evidence_id": "r72-demo-live-evidence",
+      "pre_fix_capture": {
+        "environment": {
+          "markers": [
+            "Python: `3.14.4`",
+            "Platform: `Darwin 25.5.0 arm64`"
+          ],
+          "status": "recorded"
+        },
+        "output": {
+          "markers": [
+            "Ran 9 tests in 3.031s",
+            "FAILED (failures=9)"
+          ],
+          "status": "recorded"
+        }
+      },
+      "round_id": "R72",
+      "tests": [
+        {
+          "path": "tests/test_v72_demo_live_evidence.py",
+          "sha256": "b5562d7c066c47fd9465fa079804eb6da7adcd80701f677be3f968333b30225c"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "path": "evals/raw/v72-red/red-evidence-and-regression-postflight.md",
+        "sha256": "a0d3777a47c44501e7bceb8905cd43a9547b4fd33e5cd35531e3670a1245c3b9"
+      },
+      "evidence_id": "r72-red-ledger-and-regression-postflight",
+      "pre_fix_capture": {
+        "environment": {
+          "markers": [
+            "Environment: macOS 26.5.2; Darwin 25.5.0 arm64; Python 3.14.4",
+            "Candidate status: local unpublished working tree"
+          ],
+          "status": "recorded"
+        },
+        "output": {
+          "markers": [
+            "FAILED (failures=4)",
+            "FAILED (failures=3)"
+          ],
+          "status": "recorded"
+        }
+      },
+      "round_id": "R72",
+      "tests": [
+        {
+          "path": "tests/test_v72_red_evidence_closure.py",
+          "sha256": "338a678778772fba034616f975cd90df56c5491bd9a3d2c1b6b95bddbcae88ee"
+        },
+        {
+          "path": "tests/test_v72_regression_postflight.py",
+          "sha256": "b38d6536824d2c4375b877162b440e1c6584ea544a2bd677dfbb8980db02432a"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "path": "evals/raw/v73-red/release-state-memory-and-concurrency.md",
+        "sha256": "14f5326a0beefec6da1d1134194f5c331ec8fd76def2b6630b77970c3971dc4f"
+      },
+      "evidence_id": "r73-release-state-memory-and-concurrency",
+      "pre_fix_capture": {
+        "environment": {
+          "markers": [
+            "执行时间 Australia/Sydney：`2026-08-07T06:20:51+1000`",
+            "Python：`3.14.4 (main, Apr 7 2026, 13:13:20) [Clang 21.0.0 (clang-2100.0.123.102)]`"
+          ],
+          "status": "recorded"
+        },
+        "output": {
+          "markers": [
+            "Ran 4 tests in 1.913s",
+            "FAILED (failures=4)"
+          ],
+          "status": "recorded"
+        }
+      },
+      "round_id": "R73",
+      "tests": [
+        {
+          "path": "tests/test_v73_release_state_memory_and_concurrency.py",
+          "sha256": "1b1fe7598a9a8475b71f6287fe47e0281ce60a8ed7114e0c951d88bf79fa7273"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "path": "evals/raw/v73-red/frozen-package-export-toctou.md",
+        "sha256": "434f28d59df3d1229945572f3b66dedd92a5f5bfdf740f5758104bf981ab4b7a"
+      },
+      "evidence_id": "r73-frozen-package-export-toctou",
+      "pre_fix_capture": {
+        "environment": {
+          "markers": [
+            "Captured at: 2026-08-07, Australia/Sydney",
+            "Python: `Python 3.14.4`"
+          ],
+          "status": "recorded"
+        },
+        "output": {
+          "markers": [
+            "Ran 3 tests in 0.004s",
+            "FAILED (failures=2)"
+          ],
+          "status": "recorded"
+        }
+      },
+      "round_id": "R73",
+      "tests": [
+        {
+          "path": "tests/test_v73_frozen_package_export.py",
+          "sha256": "5de50de79caa37fa7e2c79a2813ef720446c560476e7ebb11a245f0ae450c37e"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "path": "evals/raw/v73-red/discovery-and-fresh-candidate-evidence.md",
+        "sha256": "dc4b42cf00b46875f82ad7578263a9711652e3f2e5ff93a0f84f76fc3f619976"
+      },
+      "evidence_id": "r73-discovery-and-fresh-candidate-evidence",
+      "pre_fix_capture": {
+        "environment": {
+          "markers": [
+            "Captured: 2026-08-07, Australia/Sydney",
+            "Candidate status: local unpublished working tree"
+          ],
+          "status": "recorded"
+        },
+        "output": {
+          "markers": [
+            "Ran 2 tests in 0.000s",
+            "FAILED (failures=3)"
+          ],
+          "status": "recorded"
+        }
+      },
+      "round_id": "R73",
+      "tests": [
+        {
+          "path": "tests/test_v73_discovery_loop_contract.py",
+          "sha256": "6c8462e7a20829b03d190a5494fc647d96cbc36d4e5099651e1238b630e4cad3"
+        },
+        {
+          "path": "tests/test_v73_fresh_candidate_evidence.py",
+          "sha256": "39d6a53114311cce9724a54ada8c0696ad16c8db7d920dff70e510daac3eace0"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "path": "evals/raw/v74-red/semantic-blindspots.md",
+        "sha256": "222555cc52e7793c5a9a56de0612ad6ca3263c068ffe0e3de654780f0f2ea78c"
+      },
+      "evidence_id": "r74-semantic-blindspots",
+      "pre_fix_capture": {
+        "environment": {
+          "markers": [
+            "Python 3.14.4",
+            "ProductVersion: 26.5.2"
+          ],
+          "status": "recorded"
+        },
+        "output": {
+          "markers": [
+            "Ran 11 tests in 0.058s",
+            "FAILED (failures=13)"
+          ],
+          "status": "recorded"
+        }
+      },
+      "round_id": "R74",
+      "tests": [
+        {
+          "path": "tests/test_v74_semantic_blindspots.py",
+          "sha256": "2ba2f97c433784aa7af2904d3d07f69d983ca3315de3997ed1e985b5e25ec030"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "path": "evals/raw/v74-red/operator-first-install-product-contract.md",
+        "sha256": "6f5e25ef94702e6b240013f3d52c9be0eb340f74a54d34a3e21b8ebadfbd7445"
+      },
+      "evidence_id": "r74-operator-first-install-product-contract",
+      "pre_fix_capture": {
+        "environment": {
+          "markers": [
+            "Australia/Sydney：`2026-08-07T06:27:13+1000 AEST`",
+            "平台：`Darwin 25.5.0 arm64`"
+          ],
+          "status": "recorded"
+        },
+        "output": {
+          "markers": [
+            "Ran 6 tests in 2.993s",
+            "FAILED (failures=6)"
+          ],
+          "status": "recorded"
+        }
+      },
+      "round_id": "R74",
+      "tests": [
+        {
+          "path": "tests/test_v74_operator_product_contract.py",
+          "sha256": "947ba00444bd7ac6bd65dacab2abb7159e14dccebbcc05e12d086628fac9aed9"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "path": "evals/raw/v75-red/workorder-and-confirmation-binding.md",
+        "sha256": "bd4fa7b486c8bcd95144ded2d1cbf19ca31f38d2d4f80e564074a4fdfb93c6cf"
+      },
+      "evidence_id": "r75-workorder-and-confirmation-binding",
+      "pre_fix_capture": {
+        "environment": {
+          "markers": [
+            "Australia/Sydney：`2026-08-07T06:50:31+1000 AEST`",
+            "VERSION` 原始内容：`2.0.0-alpha.6\\n`"
+          ],
+          "status": "recorded"
+        },
+        "output": {
+          "markers": [
+            "Ran 6 tests in 2.190s",
+            "FAILED (failures=6)"
+          ],
+          "status": "recorded"
+        }
+      },
+      "round_id": "R75",
+      "tests": [
+        {
+          "path": "tests/test_v75_workorder_and_confirmation_binding.py",
+          "sha256": "a38bc18535d9873cdb3df50a658ed16b7a159932e59e72e691dda6fd5a50f026"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "path": "evals/raw/v75-red/installed-persistent-lifecycle.md",
+        "sha256": "7fefef35842b4bcdf07fba84cd91f050a6924a68af9f1bc795778216f4a48973"
+      },
+      "evidence_id": "r75-installed-persistent-lifecycle",
+      "pre_fix_capture": {
+        "environment": {
+          "markers": [
+            "日期：2026-08-07",
+            "Darwin 25.5.0 arm64"
+          ],
+          "status": "recorded"
+        },
+        "output": {
+          "markers": [
+            "Ran 5 tests in 8.398s",
+            "FAILED (failures=4)"
+          ],
+          "status": "recorded"
+        }
+      },
+      "round_id": "R75",
+      "tests": [
+        {
+          "path": "tests/test_v75_installed_persistent_lifecycle.py",
+          "sha256": "d439883145b648af637b165cb8edd3fff5af84253a4c293611f3da1c0ba2bf26"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "path": "evals/raw/v76-red/red-ledger-migration-history.md",
+        "sha256": "8135d05b4d6062177765e89810ff4e1a123665f67bbe7722db774d4df4335115"
+      },
+      "evidence_id": "r76-red-ledger-migration-history",
+      "pre_fix_capture": {
+        "environment": {
+          "markers": [
+            "2026-08-07T06:58:37+1000 AEST",
+            "Python 3.14.4"
+          ],
+          "status": "recorded"
+        },
+        "output": {
+          "markers": [
+            "Ran 5 tests in 0.083s",
+            "FAILED (failures=1, errors=1)"
+          ],
+          "status": "recorded"
+        }
+      },
+      "round_id": "R76",
+      "tests": [
+        {
+          "path": "tests/test_v76_red_ledger_migration_history.py",
+          "sha256": "472ce73a5415717f435838dc14db978991ffbf0e413d384419d36303dae17eae"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "path": "evals/raw/v77-red/discovery-scope-and-nonpersonal.md",
+        "sha256": "e18dc9d5d5cda5054b18f00d77a7d38c45f34da4e8b87efacbe24f37c1e205a7"
+      },
+      "evidence_id": "r77-discovery-scope-and-nonpersonal",
+      "pre_fix_capture": {
+        "environment": {
+          "markers": [
+            "local_time: 2026-08-07T07:07:11+1000 AEST",
+            "python: 3.14.4"
+          ],
+          "status": "recorded"
+        },
+        "output": {
+          "markers": [
+            "Ran 3 tests in 0.032s",
+            "FAILED (failures=3)"
+          ],
+          "status": "recorded"
+        }
+      },
+      "round_id": "R77",
+      "tests": [
+        {
+          "path": "tests/test_v77_discovery_scope_and_nonpersonal.py",
+          "sha256": "8805e2ea170eec8d5337b3d86c3aaa0cf6a590e4f4d71ba960f29e64ba09ccfd"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "path": "evals/raw/v78-red/discovery-strategy-diversity.md",
+        "sha256": "19cb231f7e68ed523652ec4fdd31f2c7e5090af54833cb8ad7441bebef0092fa"
+      },
+      "evidence_id": "r78-discovery-strategy-diversity",
+      "pre_fix_capture": {
+        "environment": {
+          "markers": [
+            "local_time: 2026-08-07T07:12:03+1000 AEST",
+            "python: 3.14.4"
+          ],
+          "status": "recorded"
+        },
+        "output": {
+          "markers": [
+            "Ran 2 tests in 1.356s",
+            "FAILED (failures=1)"
+          ],
+          "status": "recorded"
+        }
+      },
+      "round_id": "R78",
+      "tests": [
+        {
+          "path": "tests/test_v78_discovery_strategy_diversity.py",
+          "sha256": "e3af88263ea212a046c416b7c3ccfd9b262c80a2e4f9d16d452bc26e859411b8"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "path": "evals/raw/v79-red/red-ledger-command-snapshot.md",
+        "sha256": "27e793164a5391af743f18c2f7837c979a74751bbf1cb5bf183190a52f265528"
+      },
+      "evidence_id": "r79-red-ledger-command-snapshot",
+      "pre_fix_capture": {
+        "environment": {
+          "markers": [
+            "Python 3.14.4",
+            "macOS 26.5.2"
+          ],
+          "status": "recorded"
+        },
+        "output": {
+          "markers": [
+            "GateError: evolution_red_evidence_artifact_hash_mismatch",
+            "FAILED (errors=1)"
+          ],
+          "status": "recorded"
+        }
+      },
+      "round_id": "R79",
+      "tests": [
+        {
+          "path": "tests/test_v79_red_ledger_command_snapshot.py",
+          "sha256": "bf63964d305b94dcd562b4c8bc15a806afd72d45d61eb14166f8308d946ea35b"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "path": "evals/raw/v80-red/red-dependency-ledger-separation.md",
+        "sha256": "f94addae31fe6addb92ceeef2419885e9344b44c6c1be40ec9a35184aabd7edd"
+      },
+      "evidence_id": "r80-red-dependency-ledger-separation",
+      "pre_fix_capture": {
+        "environment": {
+          "markers": [
+            "Python: `3.14.4`",
+            "macOS: `26.5.2`"
+          ],
+          "status": "recorded"
+        },
+        "output": {
+          "markers": [
+            "Ran 646 tests in 422.219s",
+            "FAILED (failures=1)",
+            "Second list contains 24 additional elements."
+          ],
+          "status": "recorded"
+        }
+      },
+      "round_id": "R80",
+      "tests": [
+        {
+          "path": "tests/test_v80_red_dependency_ledger_separation.py",
+          "sha256": "2638b47dcc03af91e4040ea020da9961553eefe6a647b1ddbdd5bcdfc2625ac5"
+        }
+      ]
+    }
+  ],
+  "schema_version": "1.0",
+  "sealed_prefix": {
+    "record_count": 7,
+    "sha256": "4abae9cd677f062c58b946c98714dcc5e2d0ca6cddd90ee2aa11edad75952660"
+  }
+}

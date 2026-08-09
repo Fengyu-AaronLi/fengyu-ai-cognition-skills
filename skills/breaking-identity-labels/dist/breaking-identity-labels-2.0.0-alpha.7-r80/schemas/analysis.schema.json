@@ -1,0 +1,329 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fengyu.local/schemas/breaking-identity-labels/analysis.schema.json",
+  "title": "Identity label analysis",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "labels",
+    "context_claims",
+    "judgments",
+    "observations",
+    "counterexamples",
+    "candidate_variables",
+    "unknowns",
+    "minimal_question",
+    "experiment",
+    "reserved_judgments"
+  ],
+  "properties": {
+    "context_claims": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["subject", "source", "evidence_status", "polarity", "claim", "evidence"],
+        "properties": {
+          "subject": {
+            "type": "string",
+            "enum": ["current_user", "third_party", "unresolved"]
+          },
+          "source": {
+            "type": "string",
+            "enum": ["reported_clinical_diagnosis", "formal_scale_result", "user_self_description", "ai_inference", "social_media_label", "other_person_attribution", "unknown_source", "quoted_material"]
+          },
+          "evidence_status": {
+            "type": "string",
+            "enum": ["user_reported_formal_diagnosis", "reported_scale_result", "reported_unverified", "unverified_inference", "unverified_label", "reported_third_party_attribution", "unknown"]
+          },
+          "polarity": {
+            "type": "string",
+            "enum": ["affirmed", "negated", "uncertain"]
+          },
+          "claim": {"type": "string", "minLength": 1},
+          "evidence": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["evidence_id", "quote", "start", "end"],
+            "properties": {
+              "evidence_id": {"type": "string"},
+              "quote": {"type": "string", "minLength": 1},
+              "start": {"type": "integer", "minimum": 0},
+              "end": {"type": "integer", "minimum": 1}
+            }
+          }
+        }
+      }
+    },
+    "labels": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["text", "source_type", "evidence_status", "source", "attribution"],
+        "properties": {
+          "text": {"type": "string", "minLength": 1},
+          "source_type": {
+            "type": "string",
+            "enum": ["reported_clinical_diagnosis", "formal_scale_result", "user_self_description", "ai_inference", "social_media_label", "other_person_attribution", "unknown_source"]
+          },
+          "evidence_status": {
+            "type": "string",
+            "enum": ["user_reported_formal_diagnosis", "reported_scale_result", "reported_unverified", "unverified_inference", "unverified_label", "reported_third_party_attribution", "unknown"]
+          },
+          "source": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["evidence_id", "quote", "start", "end"],
+            "properties": {
+              "evidence_id": {"type": "string"},
+              "quote": {"type": "string", "minLength": 1},
+              "start": {"type": "integer", "minimum": 0},
+              "end": {"type": "integer", "minimum": 1}
+            }
+          },
+          "attribution": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["speaker", "source", "predicate", "target", "label", "discourse_context"],
+            "properties": {
+              "speaker": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["role", "text", "span"],
+                "properties": {
+                  "role": {"type": "string", "enum": ["self", "other_person", "clinician", "ai", "social_actor", "instrument", "unknown"]},
+                  "text": {"type": "string"},
+                  "span": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["start", "end"],
+                    "properties": {
+                      "start": {"type": "integer", "minimum": 0},
+                      "end": {"type": "integer", "minimum": 0}
+                    }
+                  }
+                }
+              },
+              "source": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["type", "evidence_status"],
+                "properties": {
+                  "type": {"type": "string", "enum": ["reported_clinical_diagnosis", "formal_scale_result", "user_self_description", "ai_inference", "social_media_label", "other_person_attribution", "unknown_source"]},
+                  "evidence_status": {"type": "string", "enum": ["user_reported_formal_diagnosis", "reported_scale_result", "reported_unverified", "unverified_inference", "unverified_label", "reported_third_party_attribution", "unknown"]}
+                }
+              },
+              "predicate": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["kind", "polarity", "text", "span"],
+                "properties": {
+                  "kind": {"type": "string", "enum": ["self_identifies", "labels", "diagnoses", "reports_scale", "explains_prior_label", "unknown"]},
+                  "polarity": {"type": "string", "enum": ["affirmed", "negated", "uncertain"]},
+                  "text": {"type": "string"},
+                  "span": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["start", "end"],
+                    "properties": {
+                      "start": {"type": "integer", "minimum": 0},
+                      "end": {"type": "integer", "minimum": 0}
+                    }
+                  }
+                }
+              },
+              "target": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["role", "text", "resolution", "span"],
+                "properties": {
+                  "role": {"type": "string", "enum": ["current_user", "third_party", "unresolved"]},
+                  "text": {"type": "string"},
+                  "resolution": {"type": "string", "enum": ["explicit", "resolved_reference", "unresolved"]},
+                  "span": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["start", "end"],
+                    "properties": {
+                      "start": {"type": "integer", "minimum": 0},
+                      "end": {"type": "integer", "minimum": 0}
+                    }
+                  }
+                }
+              },
+              "label": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["start", "end"],
+                "properties": {
+                  "start": {"type": "integer", "minimum": 0},
+                  "end": {"type": "integer", "minimum": 1}
+                }
+              },
+              "discourse_context": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["kind", "span"],
+                "properties": {
+                  "kind": {"type": "string", "enum": ["personal", "quoted_material", "fiction", "news", "document", "education", "translation", "test_fixture", "dataset", "unknown"]},
+                  "span": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["start", "end"],
+                    "properties": {
+                      "start": {"type": "integer", "minimum": 0},
+                      "end": {"type": "integer", "minimum": 0}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "judgments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["text", "kind", "source"],
+        "properties": {
+          "target_id": {"type": "string", "pattern": "^J-E[0-9]{3}-[0-9]+-[0-9]+$"},
+          "text": {"type": "string", "minLength": 1},
+          "kind": {
+            "type": "string",
+            "enum": ["capability_verdict", "future_verdict", "responsibility_transfer", "personality_generalization", "high_cost_decision_request"]
+          },
+          "source": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["evidence_id", "quote", "start", "end"],
+            "properties": {
+              "evidence_id": {"type": "string"},
+              "quote": {"type": "string", "minLength": 1},
+              "start": {"type": "integer", "minimum": 0},
+              "end": {"type": "integer", "minimum": 1}
+            }
+          }
+        }
+      }
+    },
+    "observations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["text", "context", "frequency", "timeframe", "source"],
+        "properties": {
+          "text": {"type": "string", "minLength": 1},
+          "context": {"type": "string", "minLength": 1},
+          "frequency": {"type": "string", "minLength": 1},
+          "timeframe": {"type": "string", "minLength": 1},
+          "source": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["evidence_id", "quote", "start", "end"],
+            "properties": {
+              "evidence_id": {"type": "string"},
+              "quote": {"type": "string", "minLength": 1},
+              "start": {"type": "integer", "minimum": 0},
+              "end": {"type": "integer", "minimum": 1}
+            }
+          }
+        }
+      }
+    },
+    "counterexamples": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["text", "source"],
+        "properties": {
+          "text": {"type": "string", "minLength": 1},
+          "source": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["evidence_id", "quote", "start", "end"],
+            "properties": {
+              "evidence_id": {"type": "string"},
+              "quote": {"type": "string", "minLength": 1},
+              "start": {"type": "integer", "minimum": 0},
+              "end": {"type": "integer", "minimum": 1}
+            }
+          }
+        }
+      }
+    },
+    "candidate_variables": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "status", "reason"],
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "status": {"type": "string", "enum": ["hypothesis"]},
+          "reason": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "unknowns": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "minimal_question": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["text", "status"],
+      "properties": {
+        "text": {"type": "string"},
+        "status": {"type": "string", "enum": ["proposed", "confirmed", "not_needed"]}
+      }
+    },
+    "experiment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "target_claim", "target_judgment_ids", "primary_variable", "duration", "action", "kept_constant", "measures", "support_if", "weaken_if", "reversible", "reversibility_note"],
+      "properties": {
+        "status": {"type": "string", "enum": ["not_planned", "not_needed", "planned", "active", "reviewed"]},
+        "started_at": {"type": ["string", "null"]},
+        "target_claim": {"type": "string"},
+        "target_judgment_ids": {
+          "type": "array",
+          "items": {"type": "string", "pattern": "^J-E[0-9]{3}-[0-9]+-[0-9]+$"},
+          "uniqueItems": true
+        },
+        "primary_variable": {"type": "string"},
+        "duration": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["value", "unit"],
+          "properties": {
+            "value": {"type": "integer", "minimum": 0},
+            "unit": {"type": "string", "enum": ["days", "hours", "tasks"]}
+          }
+        },
+        "action": {"type": "string"},
+        "kept_constant": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "measures": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "support_if": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "weaken_if": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "reversible": {"type": "boolean"},
+        "reversibility_note": {"type": "string"}
+      }
+    },
+    "reserved_judgments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["topic", "owner", "reason"],
+        "properties": {
+          "topic": {"type": "string", "minLength": 1},
+          "owner": {"type": "string", "enum": ["user", "qualified_professional"]},
+          "reason": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}

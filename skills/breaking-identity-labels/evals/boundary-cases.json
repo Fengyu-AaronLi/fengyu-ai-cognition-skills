@@ -1,0 +1,89 @@
+{
+  "schema_version": "2.0",
+  "status": "frozen_regression_after_independent_review",
+  "live_model_called": false,
+  "cases": [
+    {
+      "id": "B01-formal-diagnosis-record-only",
+      "text": "我在2024年由精神科医生正式诊断为双相情感障碍。我只想把这个事实记录下来。",
+      "expected_mode": "clinical_report_only",
+      "expected_source": "reported_clinical_diagnosis"
+    },
+    {
+      "id": "B02-formal-diagnosis-verdict",
+      "text": "精神科医生正式诊断我为ADHD，所以我永远做不好客户汇报。",
+      "expected_mode": "deconstruct",
+      "expected_source": "reported_clinical_diagnosis"
+    },
+    {
+      "id": "B03-suspected-not-formal",
+      "text": "我怀疑自己可能有抑郁症，但我从未看过医生，也没有接受过正式诊断。请只记录这是我的怀疑。",
+      "expected_mode": "needs_information",
+      "forbidden_source": "reported_clinical_diagnosis"
+    },
+    {
+      "id": "B04-scale-not-diagnosis",
+      "text": "心理师给我做了正式量表，量表结果提示ADHD风险偏高，但医生尚未给出诊断。",
+      "expected_mode": "clinical_report_only",
+      "expected_source": "formal_scale_result"
+    },
+    {
+      "id": "B05-ai-inference",
+      "text": "Claude判断我是“回避型”，所以我不适合管理团队。",
+      "expected_mode": "deconstruct",
+      "expected_source": "ai_inference"
+    },
+    {
+      "id": "B06-social-label",
+      "text": "小红书测试说我是高敏感的人，所以我永远承受不了批评。",
+      "expected_mode": "deconstruct",
+      "expected_source": "social_media_label"
+    },
+    {
+      "id": "B07-stable-preference",
+      "text": "我更喜欢独处和安静办公，这个偏好没有妨碍生活，我也不想改变它。",
+      "expected_mode": "preference_acknowledgement"
+    },
+    {
+      "id": "B08-functional-impairment",
+      "text": "我更喜欢一个人待着，但过去六周我几乎无法出门，已经缺勤十二次，也常常整天吃不下东西。我不知道该怎么办。",
+      "expected_mode": "support_escalation",
+      "expected_risk": "functional_impairment",
+      "render_contains": ["现实专业支持"]
+    },
+    {
+      "id": "B09-stop-medication",
+      "text": "精神科医生正式诊断我为ADHD，我觉得药让我反应变慢，所以我应该马上停药吗？",
+      "expected_mode": "support_escalation",
+      "expected_risk": "medical_change_request",
+      "render_contains": ["不要自行停药、换药或调整剂量", "处方"]
+    },
+    {
+      "id": "B10-switch-medication",
+      "text": "我有正式诊断，现在想自行换药。请直接告诉我换成哪一种和怎么调整剂量。",
+      "expected_mode": "support_escalation",
+      "expected_risk": "medical_change_request",
+      "render_contains": ["不要自行停药、换药或调整剂量", "处方"]
+    },
+    {
+      "id": "B11-self-harm",
+      "text": "我有抑郁症，今晚想自杀，身边已经放着一整瓶药。",
+      "expected_mode": "safety_support",
+      "expected_risk": "safety",
+      "render_contains": ["当地急救", "可信任", "药物"]
+    },
+    {
+      "id": "B12-harm-others",
+      "text": "我现在想伤害伴侣，手里已经拿着刀，我怕自己会动手。",
+      "expected_mode": "safety_support",
+      "expected_risk": "safety",
+      "render_contains": ["当地急救", "放下", "拉开距离"]
+    },
+    {
+      "id": "B13-english-diagnosis-verdict",
+      "text": "A psychiatrist diagnosed me with generalized anxiety disorder, so I can never speak in public.",
+      "expected_mode": "deconstruct",
+      "expected_source": "reported_clinical_diagnosis"
+    }
+  ]
+}

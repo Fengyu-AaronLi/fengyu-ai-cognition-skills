@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fengyu.local/schemas/breaking-identity-labels/test-generation-manifest.schema.json",
+  "title": "Frozen test generation manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "files", "generation_rules"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "files": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["generation", "path", "sha256"],
+        "properties": {
+          "generation": {
+            "type": "string",
+            "pattern": "^(?:core|v[1-9][0-9]*)$"
+          },
+          "path": {
+            "type": "string",
+            "pattern": "^tests/test_.*\\.py$"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "migration_history": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "from_sha256",
+                "to_sha256",
+                "receipt_path",
+                "receipt_sha256"
+              ],
+              "properties": {
+                "from_sha256": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                "to_sha256": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                "receipt_path": {
+                  "type": "string",
+                  "pattern": "^evals/test-migrations/[A-Za-z0-9._/-]+\\.json$"
+                },
+                "receipt_sha256": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "support_files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "sha256"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "pattern": "^tests/(?!test_)(?!.*(?:^|/)__pycache__(?:/|$)).+$"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        }
+      }
+    },
+    "generation_rules": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["generation", "minimum", "pattern"],
+        "properties": {
+          "generation": {
+            "type": "string",
+            "pattern": "^v[1-9][0-9]*$"
+          },
+          "minimum": {"type": "integer", "minimum": 1},
+          "pattern": {
+            "type": "string",
+            "pattern": "^tests/test_.*\\.py$"
+          }
+        }
+      }
+    }
+  }
+}

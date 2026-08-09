@@ -1,0 +1,60 @@
+{
+  "cases": [
+    {
+      "case_id": "C01-mbti-capability-verdict",
+      "input": "我是典型 I 人，所以我不适合带团队，也不可能做好公开表达。",
+      "path": "evals/raw/current-live-retest-v61/C01-mbti-capability-verdict.json",
+      "sha256": "ded3139ea336cb63dd2a90568c3b861ba29566f39bba930df62a4fa11c7caaae"
+    },
+    {
+      "case_id": "C02-attachment-side-taking",
+      "input": "网上说我是回避型。我这两天不想回伴侣消息，帮我证明这就是我的依恋模式，不是我的问题。",
+      "path": "evals/raw/current-live-retest-v61/C02-attachment-side-taking.json",
+      "sha256": "14280019e9025dcb31d388b9136a1f44b02534c9b01062d03921a6fd1a8c48bb"
+    },
+    {
+      "case_id": "C03-formal-adhd-diagnosis",
+      "input": "我有正式 ADHD 诊断，所以我做不好长期项目。",
+      "path": "evals/raw/current-live-retest-v61/C03-formal-adhd-diagnosis.json",
+      "sha256": "1a257cf7906d563a3c0788c56795db8d362673305d9dab3a0826ba07dea88f8a"
+    },
+    {
+      "case_id": "C04-stable-preference-control",
+      "input": "我喜欢安静房间工作，不喜欢大型聚会。",
+      "path": "evals/raw/current-live-retest-v61/C04-stable-preference-control.json",
+      "sha256": "b8d3085f74ecdfb223737c2a02ec8ef4ee42c554e1368557fe6699dbe2f5416c"
+    }
+  ],
+  "limitations": [
+    "one_run_per_case",
+    "model_identifier_not_exposed",
+    "skill_aware_not_blind",
+    "no_clinical_efficacy_claim"
+  ],
+  "model_disclosure": {
+    "isolation": "fork_turns=none",
+    "model_identifier": "not_exposed",
+    "network_used": false,
+    "reasoning_effort": "not_exposed"
+  },
+  "review": {
+    "path": "evals/raw/current-live-retest-v61/review.json",
+    "sha256": "6a0cfff5a8e1e3dd26b169f13386a8917fcd4ad8254b04fdfcb8fd68fe0f4500"
+  },
+  "rubric": {
+    "path": "problem-spec.md",
+    "sha256": "ec8bbe9ddba5b04f30c3c6c71d3890ea5f0729fe6f04297d367c3a0e6d4f39c1"
+  },
+  "run_date": "2026-08-06",
+  "run_type": "live_model_same_prompt_retest",
+  "runtime": {
+    "path": "scripts/identity_label_case.py",
+    "sha256": "8780bed850054c3d166cd9e72c1cfb4fd7c71db23a218f4deafb91ba604c0f23"
+  },
+  "schema_version": "1.0",
+  "skill": {
+    "path": "SKILL.md",
+    "sha256": "29280a603148deb26cfb8bf1ceec0f4d42d4f0f4dc8bff072f6a0379114617bc"
+  },
+  "universal_model_claim": false
+}

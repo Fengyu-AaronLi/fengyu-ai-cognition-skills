@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/auditing-ai-claims/source-transaction.schema.json",
+  "title": "Runtime-owned source registration transaction",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "transaction_version",
+    "source_id",
+    "status",
+    "source_record",
+    "receipt_sha256",
+    "receipt_snapshot",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "transaction_version": {"const": "1.0"},
+    "source_id": {"$ref": "#/$defs/source_id"},
+    "status": {
+      "enum": [
+        "prepared",
+        "artifacts_saved",
+        "receipt_saved",
+        "attested",
+        "committed",
+        "aborted"
+      ]
+    },
+    "source_record": {"$ref": "#/$defs/source_record"},
+    "receipt_sha256": {"$ref": "#/$defs/sha256"},
+    "receipt_snapshot": {"$ref": "source-receipt.schema.json"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "updated_at": {"type": "string", "format": "date-time"},
+    "abort_reason": {"type": "string", "minLength": 1, "maxLength": 16384},
+    "aborted_at": {"type": "string", "format": "date-time"}
+  },
+  "allOf": [
+    {
+      "if": {
+        "required": ["status"],
+        "properties": {"status": {"const": "aborted"}}
+      },
+      "then": {"required": ["abort_reason", "aborted_at"]},
+      "else": {
+        "not": {
+          "anyOf": [
+            {"required": ["abort_reason"]},
+            {"required": ["aborted_at"]}
+          ]
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "source_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+    },
+    "source_record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_id",
+        "active",
+        "receipt",
+        "source_tier",
+        "evidence_role",
+        "publication_date",
+        "freshness_status",
+        "freshness_rationale",
+        "origin_id"
+      ],
+      "properties": {
+        "source_id": {"$ref": "#/$defs/source_id"},
+        "active": {"const": true},
+        "receipt": {
+          "type": "string",
+          "pattern": "^receipts/[A-Za-z0-9][A-Za-z0-9._-]{0,63}\\.json$"
+        },
+        "source_tier": {"enum": ["A1", "A2", "B", "C"]},
+        "evidence_role": {
+          "enum": [
+            "original_record",
+            "subject_self_report",
+            "independent_replication",
+            "regulatory_record",
+            "professional_analysis",
+            "secondary_report",
+            "lead_only"
+          ]
+        },
+        "publication_date": {"type": "string", "minLength": 1},
+        "freshness_status": {"enum": ["current", "stale", "unknown"]},
+        "freshness_rationale": {"type": "string"},
+        "origin_id": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

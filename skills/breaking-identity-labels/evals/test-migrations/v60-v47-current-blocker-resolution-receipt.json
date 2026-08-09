@@ -1,0 +1,22 @@
+{
+  "evidence": [
+    {
+      "path": "evals/raw/v60-red/blocker-resolution-current-receipt.md",
+      "sha256": "88041b8ee531ff763aba94aa9aa51c6c5cbbade091127b82a136dd982deb094b"
+    }
+  ],
+  "from_sha256": "c8203be82198bd2c0978a0f97b8e2fc0e6dad5746cbacb8d131ac255d7d0cdf3",
+  "reason": "The prior positive blocker-resolution fixture used an audit receipt 1.1. The operational path now enforces the same current 1.2 script, input-snapshot and preregistration binding as the release gate; the migrated positive fixture preserves the original closure assertions under that stronger contract.",
+  "receipt_id": "v60-v47-current-blocker-resolution-receipt",
+  "replacement_tests": [
+    {
+      "path": "tests/test_v60_blocker_resolution_current_receipt.py",
+      "sha256": "5c0fe55e95737c900ffa1c5a7f19179e4dacebeed5bffeb17628de77e010cdbc"
+    }
+  ],
+  "reviewed_at": "2026-08-06T14:00:00Z",
+  "reviewed_by": "codex-v60-blocker-resolution-loop",
+  "schema_version": "1.0",
+  "test_path": "tests/test_v47_blocker_resolution_loop.py",
+  "to_sha256": "abddb3f9e91c75860917124c47d2b8ea72f53af5f995120a6790708a1c121f56"
+}

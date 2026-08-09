@@ -1,0 +1,84 @@
+RED round: countercheck state machine
+Run date: 2026-08-06 Australia/Sydney
+Command: python3 -m unittest discover -s tests -p 'test_countercheck_red_v3.py' -v
+
+test_assessment_change_makes_prior_countercheck_stale (test_countercheck_red_v3.CountercheckStateMachineRedTests.test_assessment_change_makes_prior_countercheck_stale) ... FAIL
+test_claim_change_cannot_reuse_old_basis_hash (test_countercheck_red_v3.CountercheckStateMachineRedTests.test_claim_change_cannot_reuse_old_basis_hash) ... FAIL
+test_decisive_assessment_routes_to_executable_countercheck_before_summary (test_countercheck_red_v3.CountercheckStateMachineRedTests.test_decisive_assessment_routes_to_executable_countercheck_before_summary) ... FAIL
+test_direct_summary_cannot_bypass_missing_decisive_countercheck (test_countercheck_red_v3.CountercheckStateMachineRedTests.test_direct_summary_cannot_bypass_missing_decisive_countercheck) ... FAIL
+test_evidence_change_makes_prior_countercheck_stale_after_reassessment (test_countercheck_red_v3.CountercheckStateMachineRedTests.test_evidence_change_makes_prior_countercheck_stale_after_reassessment) ... FAIL
+test_unverifiable_countercheck_accepts_explicit_stop_and_is_runtime_bound (test_countercheck_red_v3.CountercheckStateMachineRedTests.test_unverifiable_countercheck_accepts_explicit_stop_and_is_runtime_bound) ... FAIL
+test_unverifiable_countercheck_rejects_blank_stop_reason (test_countercheck_red_v3.CountercheckStateMachineRedTests.test_unverifiable_countercheck_rejects_blank_stop_reason) ... FAIL
+
+======================================================================
+FAIL: test_assessment_change_makes_prior_countercheck_stale (test_countercheck_red_v3.CountercheckStateMachineRedTests.test_assessment_change_makes_prior_countercheck_stale)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_countercheck_red_v3.py", line 250, in test_assessment_change_makes_prior_countercheck_stale
+    self.assertEqual(checked.returncode, 0, checked.stderr)
+AssertionError: 2 != 0 : usage: claim_audit.py [-h] [--version]
+                      {init,start,scope,exclude-candidate,claim,add-claim,evidence,link,assess,decide,summarize,quote,capture,fetch,retire-source,check,render,finish,next,status,replay,doctor} ...
+claim_audit.py: error: argument command: invalid choice: 'countercheck' (choose from init, start, scope, exclude-candidate, claim, add-claim, evidence, link, assess, decide, summarize, quote, capture, fetch, retire-source, check, render, finish, next, status, replay, doctor)
+
+======================================================================
+FAIL: test_claim_change_cannot_reuse_old_basis_hash (test_countercheck_red_v3.CountercheckStateMachineRedTests.test_claim_change_cannot_reuse_old_basis_hash)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_countercheck_red_v3.py", line 344, in test_claim_change_cannot_reuse_old_basis_hash
+    self.assertEqual(checked.returncode, 0, checked.stderr)
+AssertionError: 2 != 0 : usage: claim_audit.py [-h] [--version]
+                      {init,start,scope,exclude-candidate,claim,add-claim,evidence,link,assess,decide,summarize,quote,capture,fetch,retire-source,check,render,finish,next,status,replay,doctor} ...
+claim_audit.py: error: argument command: invalid choice: 'countercheck' (choose from init, start, scope, exclude-candidate, claim, add-claim, evidence, link, assess, decide, summarize, quote, capture, fetch, retire-source, check, render, finish, next, status, replay, doctor)
+
+======================================================================
+FAIL: test_decisive_assessment_routes_to_executable_countercheck_before_summary (test_countercheck_red_v3.CountercheckStateMachineRedTests.test_decisive_assessment_routes_to_executable_countercheck_before_summary)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_countercheck_red_v3.py", line 179, in test_decisive_assessment_routes_to_executable_countercheck_before_summary
+    assert_countercheck_transition(self, next_payload(workspace))
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_countercheck_red_v3.py", line 151, in assert_countercheck_transition
+    test.assertEqual(payload["stage"], "claim_countercheck")
+AssertionError: 'gate_repair' != 'claim_countercheck'
+- gate_repair
++ claim_countercheck
+
+======================================================================
+FAIL: test_direct_summary_cannot_bypass_missing_decisive_countercheck (test_countercheck_red_v3.CountercheckStateMachineRedTests.test_direct_summary_cannot_bypass_missing_decisive_countercheck)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_countercheck_red_v3.py", line 198, in test_direct_summary_cannot_bypass_missing_decisive_countercheck
+    self.assertNotEqual(summarized.returncode, 0)
+AssertionError: 0 == 0
+
+======================================================================
+FAIL: test_evidence_change_makes_prior_countercheck_stale_after_reassessment (test_countercheck_red_v3.CountercheckStateMachineRedTests.test_evidence_change_makes_prior_countercheck_stale_after_reassessment)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_countercheck_red_v3.py", line 305, in test_evidence_change_makes_prior_countercheck_stale_after_reassessment
+    self.assertEqual(checked.returncode, 0, checked.stderr)
+AssertionError: 2 != 0 : usage: claim_audit.py [-h] [--version]
+                      {init,start,scope,exclude-candidate,claim,add-claim,evidence,link,assess,decide,summarize,quote,capture,fetch,retire-source,check,render,finish,next,status,replay,doctor} ...
+claim_audit.py: error: argument command: invalid choice: 'countercheck' (choose from init, start, scope, exclude-candidate, claim, add-claim, evidence, link, assess, decide, summarize, quote, capture, fetch, retire-source, check, render, finish, next, status, replay, doctor)
+
+======================================================================
+FAIL: test_unverifiable_countercheck_accepts_explicit_stop_and_is_runtime_bound (test_countercheck_red_v3.CountercheckStateMachineRedTests.test_unverifiable_countercheck_accepts_explicit_stop_and_is_runtime_bound)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_countercheck_red_v3.py", line 213, in test_unverifiable_countercheck_accepts_explicit_stop_and_is_runtime_bound
+    self.assertEqual(checked.returncode, 0, checked.stderr)
+AssertionError: 2 != 0 : usage: claim_audit.py [-h] [--version]
+                      {init,start,scope,exclude-candidate,claim,add-claim,evidence,link,assess,decide,summarize,quote,capture,fetch,retire-source,check,render,finish,next,status,replay,doctor} ...
+claim_audit.py: error: argument command: invalid choice: 'countercheck' (choose from init, start, scope, exclude-candidate, claim, add-claim, evidence, link, assess, decide, summarize, quote, capture, fetch, retire-source, check, render, finish, next, status, replay, doctor)
+
+======================================================================
+FAIL: test_unverifiable_countercheck_rejects_blank_stop_reason (test_countercheck_red_v3.CountercheckStateMachineRedTests.test_unverifiable_countercheck_rejects_blank_stop_reason)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_countercheck_red_v3.py", line 239, in test_unverifiable_countercheck_rejects_blank_stop_reason
+    self.assertIn("stop_reason", checked.stderr)
+AssertionError: 'stop_reason' not found in "usage: claim_audit.py [-h] [--version]... invalid choice: 'countercheck' ..."
+
+----------------------------------------------------------------------
+Ran 7 tests in 2.136s
+
+FAILED (failures=7)

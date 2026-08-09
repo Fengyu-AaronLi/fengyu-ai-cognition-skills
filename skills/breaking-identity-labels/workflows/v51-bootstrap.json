@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "workflow_id": "breaking-identity-labels-v51-bootstrap",
+  "description": "One-time structural bootstrap used only to replace an obsolete invalid release state with a completed-run-bound pending state before the final workflow executes its acceptance test. This workflow is not completion evidence and cannot make the gate release-eligible.",
+  "steps": [
+    {
+      "id": "audit_harness_selfcheck",
+      "kind": "command",
+      "depends_on": [],
+      "description": "Prove only that the current audit harness inventory is executable; all four audits remain pending.",
+      "argv": [
+        "{python}",
+        "{root}/scripts/run_release_audits.py",
+        "self-check"
+      ],
+      "expected": "exit_zero"
+    }
+  ]
+}

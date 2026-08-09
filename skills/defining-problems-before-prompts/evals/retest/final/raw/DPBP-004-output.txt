@@ -1,0 +1,7 @@
+风谕知识操作系统 is not an answer machine that thinks on someone’s behalf. It brings scattered materials, judgment rules, and review records into one traceable workflow, so users can see where information comes from, which conclusions are only assumptions, and what needs to be verified next.
+
+观澜计划 collects failure cases from real use, rather than showing only successful screenshots. 星港实验室 then turns those cases into small-scale, repeatable tests.
+
+We aim to shorten execution time, but we do not treat speed as the only goal. If results cannot be verified, or if automation comes at the cost of privacy, judgment, or long-term maintainability, the system should stop.
+
+Truly valuable automation does not decide the direction for people. It reliably completes repetitive, tedious, and checkable work once the direction has already been made clear. Every update should preserve the original input, the reason for the change, and the conditions under which it failed, so that others can review the process later instead of seeing only a polished final answer.

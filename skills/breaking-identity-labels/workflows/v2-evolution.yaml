@@ -1,0 +1,216 @@
+schema_version: "1.0"
+workflow_id: "breaking-identity-labels-v2-evolution"
+language: "zh-CN"
+objective: "把身份标签拆解从单轮提示升级为可执行、可攻击、可复测、可审计的运行系统。"
+
+status_notice: "这是人类可读的设计地图。当前可执行 DAG 以 workflows/v78-final-release.json 为准；本文件不能作为完成证据。"
+
+clean_room:
+  required: true
+  rule: "只根据本项目的问题定义、测试契约和公开研究边界独立实现，不复刻第三方 Skill 的案例、句式或内部结构。"
+
+global_constraints:
+  - "保留正式诊断，不诊断也不撤销诊断。"
+  - "承认稳定偏好，不把无需改变的偏好改造成纠正任务。"
+  - "医疗方案、高成本决定和安全问题必须经过策略门。"
+  - "每个判断都必须能追溯到输入证据或明确标为未知。"
+  - "没有新鲜测试证据，不得进入下一节点。"
+  - "Forward 和 Release 只判定候选状态，不执行发布、推送或公开。"
+
+artifacts:
+  runtime_contract: "tests/test_identity_label_case.py"
+  final_forward_contract: "tests/test_final_forward_regressions.py"
+  runtime_entry: "scripts/identity_label_case.py"
+  evolution_controller: "scripts/run_evolution.py"
+  release_gate_schema: "schemas/release-gate.schema.json"
+  release_gate_state: "evals/release-gate.json"
+  test_generation_manifest: "evals/test-generation-manifest.json"
+  schemas: "schemas/"
+  analysis_template: "templates/analysis.json"
+  heldout_cases: "evals/heldout-cases.json"
+  evolution_log: "evals/evolution-log.md"
+
+dag:
+  rounds:
+    - id: "round_1_runtime"
+      label: "Runtime Loop"
+      owner: "runtime-engineer"
+      depends_on: []
+      nodes:
+        - id: "runtime_contract_read"
+          action: "读取现有测试、fixture、schema 约束与允许写入范围。"
+        - id: "runtime_red"
+          depends_on: ["runtime_contract_read"]
+          action: "运行契约测试并保存真实失败、命令和退出码。"
+        - id: "runtime_implement"
+          depends_on: ["runtime_red"]
+          action: "实现最小运行层、策略门、来源跨度校验和事件回放。"
+        - id: "runtime_green"
+          depends_on: ["runtime_implement"]
+          action: "重跑完整运行层测试，记录通过数、失败数和退出码。"
+      gate:
+        pass_when:
+          - "运行层契约测试退出码为 0。"
+          - "CLI 错误路径返回机器可读结果和稳定错误码。"
+          - "没有修改测试来迎合实现。"
+        fail_action: "留在 Runtime Loop，只修复已由测试证明的问题。"
+
+    - id: "round_2_boundary_attack"
+      label: "Adversarial / Clinical Loop"
+      depends_on: ["round_1_runtime"]
+      execution: "parallel"
+      branches:
+        - id: "adversarial_loop"
+          owner: "adversarial-tester"
+          nodes:
+            - id: "attack_design"
+              action: "从越权、伪造来源、标签偷渡、不可证伪实验和状态篡改设计攻击。"
+            - id: "attack_execute"
+              depends_on: ["attack_design"]
+              action: "只通过公开 CLI 和文件契约执行攻击，保存可复现证据。"
+            - id: "attack_classify"
+              depends_on: ["attack_execute"]
+              action: "区分实现缺陷、契约缺口与无效攻击。"
+        - id: "clinical_loop"
+          owner: "clinical-boundary-reviewer"
+          nodes:
+            - id: "boundary_matrix"
+              action: "覆盖正式诊断、疑似诊断、稳定偏好、功能受损、医疗变更与安全风险。"
+            - id: "boundary_execute"
+              depends_on: ["boundary_matrix"]
+              action: "验证系统既不否定事实，也不把诊断或偏好扩成人生判决。"
+            - id: "boundary_classify"
+              depends_on: ["boundary_execute"]
+              action: "记录阻断性越界、非阻断性表达问题和信息不足。"
+      join_gate:
+        pass_when:
+          - "两个分支都提交命令、输入、逐字输出与退出码。"
+          - "没有未解释的临床边界越权。"
+          - "没有可复现的策略门绕过。"
+        fail_action: "汇总为最小失败清单，进入 Refinement，不直接改测试结论。"
+
+    - id: "round_3_refine_forward_release"
+      label: "Refinement -> Forward / Release"
+      depends_on: ["round_2_boundary_attack"]
+      nodes:
+        - id: "refinement"
+          owner: "runtime-engineer"
+          action: "逐项修复第二轮已复现缺陷，不扩大问题范围；每项修复必须有对应复测。"
+        - id: "regression"
+          depends_on: ["refinement"]
+          owner: "adversarial-tester"
+          action: "重跑原始契约、攻击用例与临床边界用例，确认无回归。"
+        - id: "freeze_candidate"
+          depends_on: ["regression"]
+          owner: "release-auditor"
+          action: "记录 runtime 与 SKILL 哈希；冻结后任何生产变更都会使后续结果失效。"
+        - id: "state_integrity_retest"
+          depends_on: ["freeze_candidate"]
+          owner: "adversarial-tester"
+          action: "重跑写前回放、证据前缀和事件允许差分的最小复现。"
+        - id: "policy_mutation_retest"
+          depends_on: ["freeze_candidate"]
+          owner: "adversarial-tester"
+          action: "重跑冻结策略变体，区分机械硬边界、语义未知和无效预期。"
+        - id: "forward_evaluation"
+          depends_on: ["freeze_candidate"]
+          owner: "adversarial-tester"
+          action: "运行未参与迭代的全新输入，禁止用旧哈希输出证明新实现。"
+        - id: "release_audit"
+          depends_on: ["state_integrity_retest", "policy_mutation_retest", "forward_evaluation"]
+          owner: "release-auditor"
+          action: "核验来源、测试、哈希、工作区边界与发行声明，给出候选或阻断结论。"
+      gate:
+        pass_when:
+          - "原始契约、回归与 forward evaluation 均满足各自预先声明门槛。"
+          - "所有阻断性失败已关闭，并能定位到复测证据。"
+          - "发行状态被准确写为本地候选或明确阻断。"
+        fail_action: "标记 blocked，写明最小复现和下一轮入口；不得宣称完成。"
+
+logging:
+  target: "evals/evolution-log.md"
+  append_only: true
+  required_fields:
+    - "轮次"
+    - "输入"
+    - "门槛"
+    - "失败"
+    - "修改"
+    - "复测"
+    - "退出条件"
+  evidence_rule: "结论必须同时记录命令、时间、退出码和原始证据路径。"
+
+terminal_states:
+  candidate: "当前迭代的全部门槛通过且内部隔离审计 blocker 为零，但仍未发布。"
+  blocked: "存在可复现阻断项，保留证据并停止发行判断。"
+  invalid_run: "缺少输入、证据或预先声明门槛，本轮结果不得计入。"
+
+executable_controller:
+  entry: "scripts/run_evolution.py"
+  state: "evals/release-gate.json"
+  schema: "schemas/release-gate.schema.json"
+  test_generation_manifest: "evals/test-generation-manifest.json"
+  artifact_binding:
+    - "runtime_sha256"
+    - "schema_tree_sha256"
+    - "tests_tree_sha256"
+    - "demo_tree_sha256"
+    - "package_tree_sha256"
+    - "governance_tree_sha256"
+    - "workflow_sha256"
+  commands:
+    development_check: "python3 scripts/run_evolution.py check --allow-blocked"
+    strict_release_check: "python3 scripts/run_evolution.py check --strict-release"
+    run: "python3 scripts/run_evolution.py run --workflow workflows/v78-final-release.json --run-dir <run-dir> --run-id <run-id> --candidate-id <candidate-id>"
+    resume: "python3 scripts/run_evolution.py resume --run-dir <run-dir>"
+    status: "python3 scripts/run_evolution.py status --run-dir <run-dir>"
+    freeze: "python3 scripts/run_evolution.py freeze --candidate-id <id> --workflow workflows/v78-final-release.json --completed-run-dir <run-dir> [--blocker ID:P0:PATH]"
+    record_audit: "python3 scripts/run_evolution.py record-audit --receipt evals/receipts/<receipt-id>.json"
+    complete_external: "python3 scripts/run_evolution.py complete-external --run-dir <run-dir> --step-id <step-id> --receipt <receipt.json>"
+    next_iteration: "python3 scripts/run_evolution.py next-iteration --previous-run-dir <old-run> --run-dir <new-run> --run-id <new-id> --candidate-id <candidate-id> [--carry-over-blocker ID:P1:PATH] [--resolve-blocker <receipt.json>]"
+    add_only_test_sync: "python3 scripts/run_evolution.py sync-tests"
+    semantic_test_migration: "python3 scripts/run_evolution.py migrate-test --receipt <migration.json>"
+  exit_codes:
+    development_valid: 0
+    strict_release_blocked: 2
+    state_or_manifest_invalid: 3
+  invariants:
+    - "开发态检查可以如实返回 blocked 或 invalid_run，但不得把它们改写成 candidate。"
+    - "严格发行检查只有在 blocker_count 为零且四项内部隔离审计都绑定当前七类制品哈希与同一 completed run 时返回成功。"
+    - "任一制品哈希漂移都会使已经记录的 passed 或 blocked 审计失效。"
+    - "测试清单只允许直接增加代际文件；删除、未登记新增或哈希改变必须先被检测，既有测试修改只能通过语义 migration receipt。"
+    - "控制器只标记本地未发布状态，不执行 commit、push、公开或发布。"
+
+loop_controller:
+  no_fixed_iteration_limit: true
+  iteration_record:
+    required:
+      - "candidate_runtime_sha256"
+      - "frozen_red_test_sha256"
+      - "full_regression_result"
+      - "internal_isolated_audit_environment"
+      - "blocker_count"
+  freeze_rule:
+    action: "完整回归通过后冻结 candidate_runtime_sha256；所有内部隔离审计必须先核对同一哈希。"
+    invalidate_audit: "审计开始后若运行时变化，该审计只能标记 invalid_run，不得用于新候选。"
+  parallel_audits:
+    - id: "independent_attribution_audit"
+      minimum: "全新成对话语归因输入、三条公开 CLI 路径、逐字输出与人工判定。"
+    - id: "independent_clinical_safety_audit"
+      minimum: "临床来源、医疗决定主体、安全事件作用域和毒物暴露的全新成对输入。"
+    - id: "independent_state_integrity_audit"
+      minimum: "状态迁移、时间、哈希链、拒绝原子性、来源跨度和安装边界的全新攻击。"
+    - id: "release_package_audit"
+      minimum: "allowlist、逐文件哈希、独立 smoke、可重复 zip、篡改与覆盖拒绝。"
+  decision:
+    zero_blocker_exit:
+      when: "blocker_count == 0 且所有审计有效，完整回归、离线评测、demo 和发行包验证均通过。"
+      action: "只标记本地候选；不执行 commit、push、公开或发布。"
+    next_iteration:
+      when: "blocker_count > 0"
+      actions:
+        - "保存原始输入、argv、stdout、stderr、环境、候选哈希与人工判定。"
+        - "把每个有效 blocker 缩减为最小复现，并先冻结为新的红灯测试。"
+        - "只修改产生 blocker 的机制，不删除、放宽或改写旧测试。"
+        - "运行定向绿灯、全量回归、离线评测和 demo；产生新的 candidate_runtime_sha256。"
+        - "由未参与修复的审计者对新哈希重新生成陌生输入，禁止沿用旧哈希的通过结果。"

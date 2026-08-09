@@ -1,0 +1,31 @@
+{
+  "labels": [],
+  "context_claims": [],
+  "judgments": [],
+  "observations": [],
+  "counterexamples": [],
+  "candidate_variables": [],
+  "unknowns": [],
+  "minimal_question": {
+    "text": "",
+    "status": "proposed"
+  },
+  "experiment": {
+    "status": "not_planned",
+    "target_claim": "",
+    "target_judgment_ids": [],
+    "primary_variable": "",
+    "duration": {
+      "value": 0,
+      "unit": "days"
+    },
+    "action": "",
+    "kept_constant": [],
+    "measures": [],
+    "support_if": [],
+    "weaken_if": [],
+    "reversible": false,
+    "reversibility_note": ""
+  },
+  "reserved_judgments": []
+}

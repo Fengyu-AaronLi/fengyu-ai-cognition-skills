@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.1",
+  "skill": "separating-facts-from-stories",
+  "evidence_class": "historical-prompt-only-host-eval",
+  "iteration": "prompt-only-green-v7",
+  "superseded_for_current_release": true,
+  "date": "2026-08-05",
+  "environment": {
+    "runner": "fresh Codex collaboration sub-agent per scored case",
+    "model": "gpt-5.6-terra",
+    "reasoning_effort": "medium",
+    "context_fork": "none",
+    "timezone_available_to_safety_case": "Australia/Sydney"
+  },
+  "inputs": {
+    "original_cases": {
+      "count": 4,
+      "frozen_before_baseline": true,
+      "rewritten_after_baseline": false
+    },
+    "extension_cases": {
+      "count": 4,
+      "frozen_before_extension_runs": true,
+      "rewritten_after_extension_runs": false
+    },
+    "historical_cases_sha256": "52f46ca874e9aeb6a0d703baefb2607ac9e19be193cd92a6867238b7d9221cc0"
+  },
+  "evaluated_skill_snapshot": {
+    "path": "snapshots/SKILL-prompt-only-v7.md",
+    "whole_file_sha256": "915afb732775533c1e0f99f5f80bbce7746541e1519902a4304293e86e76c0b8",
+    "legacy_declared_sha256": "506e72c99bf6b23c9496228ab82178774d7657c3ccaedd502ca9258caa3a7ece",
+    "legacy_hash_scope": "not unambiguously documented; do not compare it to the whole-file hash or current SKILL.md"
+  },
+  "result": {
+    "passed": 8,
+    "total": 8,
+    "raw_directory": "raw/with-skill",
+    "raw_sha256": {
+      "bounded-working-hypotheses.md": "11790dbcaed33c44d110877e7381a0d686d0d74c4b76f04bf35b97c48d3a6d45",
+      "false-precision-motives.md": "1fa2739b4adefc430bc8a237be94b9d919ffd0d0b449edb3261a51cd20e18a9c",
+      "immediate-safety-override.md": "9766cf4a0eb307496595b6409b9e98f3ca8ac3e5f6b06f0273a659314cb43bc4",
+      "relationship-silence.md": "c16a1bc31427eae9508cdf8c92c2ab625c6df978590f681bcd10c9f9f17f9587",
+      "secondhand-workplace-signal.md": "1f18aef14917ae91c7f9e198061bb817fb4f9eb8ab5c1f387408a493fd31cb87",
+      "self-identity-story.md": "31911e479289ede2987c38c2fba74796eccd2b066ec2ea28faa2fd34135215c7",
+      "translation-non-trigger.md": "b4d1ca64c5f3f4357f9ba55ab6fb8830c43424c58918909b403ab358c0dd3f50",
+      "workplace-exclusion.md": "e603434e19f281d6a173f6e689d90f399e1e7ef3831bcc3356fb107728d188b8"
+    }
+  },
+  "release_use": {
+    "counts_toward_current_runtime_gate": false,
+    "reason": "The evaluated artifact predates the executable casefile, validator, workflow, recovery, eval-context, and packaging runtime."
+  },
+  "known_limitations": [
+    "The runner did not expose provider run IDs or immutable backend logs for inclusion.",
+    "Earlier v1 through v6 SKILL.md states were not saved as hashed snapshots.",
+    "Raw records were transcribed into local files from agent outputs and are not cryptographically attested by the provider.",
+    "Two v6 calls ended with stream disconnects and produced no scoreable output; fresh retries were used and the failed calls were not counted.",
+    "The legacy declared skill hash had an ambiguous scope; the retained snapshot whole-file hash is recorded separately."
+  ]
+}

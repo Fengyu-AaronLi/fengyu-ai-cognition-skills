@@ -1,0 +1,618 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/auditing-ai-claims/claim-ledger.schema.json",
+  "title": "AI claim audit ledger",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "audit_id",
+    "created_at",
+    "verification_date",
+    "input",
+    "scope",
+    "sources",
+    "claims",
+    "unknowns",
+    "next_action",
+    "summary_recorded"
+  ],
+  "properties": {
+    "schema_version": {"const": "3.1"},
+    "audit_id": {"type": "string", "minLength": 1},
+    "created_at": {"type": "string", "format": "date-time"},
+    "verification_date": {"type": "string", "format": "date"},
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "triggered",
+        "reason",
+        "unreviewed_claims",
+        "candidate_inventory",
+        "candidate_inventory_recorded"
+      ],
+      "properties": {
+        "triggered": {"type": "boolean"},
+        "reason": {"type": "string"},
+        "unreviewed_claims": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "candidate_inventory": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/candidate"}
+        },
+        "excluded_candidates": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/candidate_exclusion"}
+        },
+        "candidate_inventory_recorded": {"type": "boolean"}
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": ["triggered", "candidate_inventory_recorded"],
+            "properties": {
+              "triggered": {"const": true},
+              "candidate_inventory_recorded": {"const": true}
+            }
+          },
+          "then": {
+            "required": ["excluded_candidates"],
+            "properties": {
+              "candidate_inventory": {"minItems": 1},
+              "candidate_inventory_recorded": {"const": true}
+            }
+          }
+        }
+      ]
+    },
+    "sources": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/source"}
+    },
+    "claims": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/claim"}
+    },
+    "unknowns": {"type": "array", "items": {"type": "string"}},
+    "next_action": {"type": "string"},
+    "summary_recorded": {"type": "boolean"}
+  },
+  "allOf": [
+    {
+      "if": {
+        "required": ["scope", "summary_recorded"],
+        "properties": {
+          "scope": {
+            "required": ["triggered"],
+            "properties": {"triggered": {"const": true}}
+          },
+          "summary_recorded": {"const": true}
+        }
+      },
+      "then": {
+        "properties": {
+          "unknowns": {
+            "minItems": 1,
+            "items": {"type": "string", "minLength": 1}
+          },
+          "next_action": {"minLength": 1}
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "candidate_span": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start", "end"],
+      "properties": {
+        "start": {"type": "integer", "minimum": 0},
+        "end": {"type": "integer", "minimum": 1}
+      }
+    },
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidate_id", "text", "origin", "sha256", "spans"],
+      "properties": {
+        "candidate_id": {"type": "string", "pattern": "^U[0-9]{3,}$"},
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "description": "原始输入中的精确子串；declared 候选必须只出现一次。"
+        },
+        "origin": {
+          "enum": ["declared", "auto_gap"],
+          "description": "declared 由调用方明确声明；auto_gap 由字符区间补漏产生。"
+        },
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "spans": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/candidate_span"}
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": ["origin"],
+            "properties": {"origin": {"const": "declared"}}
+          },
+          "then": {"properties": {"spans": {"maxItems": 1}}}
+        }
+      ]
+    },
+    "candidate_exclusion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidate_id", "candidate", "classification", "reason", "excluded_at"],
+      "properties": {
+        "candidate_id": {"type": "string", "pattern": "^U[0-9]{3,}$"},
+        "candidate": {
+          "type": "string",
+          "minLength": 1,
+          "description": "只能引用 candidate_inventory 中 origin 为 auto_gap 的候选文本。"
+        },
+        "classification": {
+          "enum": [
+            "opinion",
+            "metaphor",
+            "creative_writing",
+            "personal_feeling",
+            "instruction",
+            "relationship_motive",
+            "other_nonfactual"
+          ]
+        },
+        "reason": {"type": "string", "minLength": 1},
+        "excluded_at": {"type": "string", "format": "date-time"}
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_id",
+        "active",
+        "receipt",
+        "source_tier",
+        "evidence_role",
+        "publication_date",
+        "freshness_status",
+        "freshness_rationale",
+        "origin_id"
+      ],
+      "properties": {
+        "source_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+        },
+        "active": {"type": "boolean"},
+        "receipt": {
+          "type": "string",
+          "pattern": "^receipts/[A-Za-z0-9][A-Za-z0-9._-]{0,63}\\.json$"
+        },
+        "source_tier": {"enum": ["A1", "A2", "B", "C"]},
+        "evidence_role": {
+          "enum": [
+            "original_record",
+            "subject_self_report",
+            "independent_replication",
+            "regulatory_record",
+            "professional_analysis",
+            "secondary_report",
+            "lead_only"
+          ]
+        },
+        "publication_date": {"type": "string", "minLength": 1},
+        "freshness_status": {"enum": ["current", "stale", "unknown"]},
+        "freshness_rationale": {"type": "string"},
+        "origin_id": {"type": "string", "minLength": 1},
+        "retired_at": {"type": "string", "format": "date-time"},
+        "retirement_reason": {"type": "string", "minLength": 1}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"active": {"const": false}}},
+          "then": {"required": ["retired_at", "retirement_reason"]}
+        }
+      ]
+    },
+    "selector": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start", "end", "quote_sha256"],
+      "properties": {
+        "start": {"type": "integer", "minimum": 0},
+        "end": {"type": "integer", "minimum": 0},
+        "quote_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_id",
+        "support",
+        "evidence_purpose",
+        "support_scope",
+        "locator",
+        "excerpt",
+        "inference_span"
+      ],
+      "properties": {
+        "source_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+        },
+        "support": {"enum": ["direct", "partial", "conflict", "context", "none"]},
+        "evidence_purpose": {
+          "enum": ["substantive", "study_design", "source_identity", "currentness"]
+        },
+        "support_scope": {"type": "string"},
+        "locator": {"type": "string"},
+        "excerpt": {"type": "string"},
+        "inference_span": {"type": "integer", "minimum": 0, "maximum": 3},
+        "selector": {"$ref": "#/$defs/selector"}
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": ["support"],
+            "properties": {
+              "support": {"enum": ["direct", "partial", "conflict"]}
+            }
+          },
+          "then": {
+            "properties": {
+              "support_scope": {"minLength": 1},
+              "locator": {"minLength": 1},
+              "excerpt": {"minLength": 1}
+            }
+          }
+        }
+      ]
+    },
+    "identity_evidence": {
+      "type": "object",
+      "required": ["support", "evidence_purpose", "inference_span", "selector"],
+      "properties": {
+        "support": {"const": "direct"},
+        "evidence_purpose": {"const": "source_identity"},
+        "inference_span": {"type": "integer", "maximum": 1},
+        "selector": {"$ref": "#/$defs/selector"}
+      }
+    },
+    "substantive_direct_evidence": {
+      "type": "object",
+      "required": ["support", "evidence_purpose", "selector"],
+      "properties": {
+        "support": {"const": "direct"},
+        "evidence_purpose": {"const": "substantive"},
+        "selector": {"$ref": "#/$defs/selector"}
+      }
+    },
+    "substantive_partial_evidence": {
+      "type": "object",
+      "required": ["support", "evidence_purpose", "selector"],
+      "properties": {
+        "support": {"enum": ["direct", "partial"]},
+        "evidence_purpose": {"const": "substantive"},
+        "selector": {"$ref": "#/$defs/selector"}
+      }
+    },
+    "substantive_conflict_evidence": {
+      "type": "object",
+      "required": ["support", "evidence_purpose", "selector"],
+      "properties": {
+        "support": {"const": "conflict"},
+        "evidence_purpose": {"const": "substantive"},
+        "selector": {"$ref": "#/$defs/selector"}
+      }
+    },
+    "study_design_evidence": {
+      "type": "object",
+      "required": ["support", "evidence_purpose", "inference_span", "selector"],
+      "properties": {
+        "support": {"const": "direct"},
+        "evidence_purpose": {"const": "study_design"},
+        "inference_span": {"type": "integer", "maximum": 1},
+        "selector": {"$ref": "#/$defs/selector"}
+      }
+    },
+    "currentness_evidence": {
+      "type": "object",
+      "required": ["support", "evidence_purpose", "inference_span", "selector"],
+      "properties": {
+        "support": {"const": "direct"},
+        "evidence_purpose": {"const": "currentness"},
+        "inference_span": {"type": "integer", "maximum": 1},
+        "selector": {"$ref": "#/$defs/selector"}
+      }
+    },
+    "countercheck": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "falsifier",
+        "checked_source_ids",
+        "result",
+        "stop_reason",
+        "checked_at",
+        "basis_hash"
+      ],
+      "properties": {
+        "falsifier": {"type": "string", "minLength": 1},
+        "checked_source_ids": {
+          "type": "array",
+          "maxItems": 256,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+          }
+        },
+        "result": {
+          "enum": [
+            "no_conflict_found",
+            "conflict_found",
+            "scope_narrowed",
+            "inconclusive"
+          ]
+        },
+        "stop_reason": {"type": "string", "minLength": 1},
+        "checked_at": {"type": "string", "format": "date-time"},
+        "basis_hash": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "claim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "claim_id",
+        "text",
+        "claim_type",
+        "temporal_sensitivity",
+        "as_of",
+        "criteria",
+        "requires_independent_evidence",
+        "risk_domain",
+        "causal_basis",
+        "evidence",
+        "source_identity_gate",
+        "content_support_gate",
+        "action_applicability_gate",
+        "conflicts",
+        "status",
+        "confidence_reason",
+        "next_step",
+        "assessment_recorded",
+        "unknowns",
+        "input_candidates"
+      ],
+      "properties": {
+        "claim_id": {"type": "string", "minLength": 1},
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "description": "必须是唯一 input_candidates 项中的精确连续子片段。"
+        },
+        "claim_type": {
+          "enum": [
+            "existence_identity",
+            "quantitative_comparison",
+            "product_capability",
+            "objective_performance",
+            "research_finding",
+            "causal",
+            "law_policy",
+            "quotation_attribution",
+            "prediction_commitment"
+          ]
+        },
+        "temporal_sensitivity": {"enum": ["low", "medium", "high"]},
+        "as_of": {"type": "string"},
+        "criteria": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["defined", "conditions", "failure_condition"],
+          "properties": {
+            "defined": {"type": "boolean"},
+            "conditions": {"type": "array", "items": {"type": "string"}},
+            "failure_condition": {"type": "string"}
+          }
+        },
+        "requires_independent_evidence": {"type": "boolean"},
+        "risk_domain": {"enum": ["none", "medical", "legal", "financial"]},
+        "causal_basis": {
+          "enum": [
+            "not_applicable",
+            "none",
+            "correlational",
+            "cross_sectional_self_report",
+            "randomized_controlled_trial",
+            "natural_experiment",
+            "quasi_experimental",
+            "longitudinal_with_identification",
+            "systematic_review_of_causal_studies"
+          ]
+        },
+        "evidence": {"type": "array", "items": {"$ref": "#/$defs/evidence"}},
+        "source_identity_gate": {"enum": ["pass", "fail", "unknown"]},
+        "content_support_gate": {"enum": ["pass", "partial", "fail", "unknown"]},
+        "action_applicability_gate": {
+          "enum": ["pass", "insufficient", "professional_review", "not_applicable", "unknown"]
+        },
+        "conflicts": {
+          "type": "array",
+          "items": {"oneOf": [{"type": "string"}, {"type": "object"}]}
+        },
+        "status": {
+          "enum": ["confirmed", "partially_supported", "refuted", "unverifiable", "current_unknown"]
+        },
+        "confidence_reason": {"type": "string", "minLength": 1},
+        "next_step": {"type": "string", "minLength": 1},
+        "assessment_recorded": {"type": "boolean"},
+        "unknowns": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        },
+        "input_candidates": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "uniqueItems": true,
+          "description": "只能精确引用一个冻结候选；claim.text 必须位于该候选文本内。",
+          "items": {"type": "string", "minLength": 1}
+        },
+        "countercheck": {"$ref": "#/$defs/countercheck"}
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": ["assessment_recorded"],
+            "properties": {"assessment_recorded": {"const": true}}
+          },
+          "then": {"properties": {"unknowns": {"minItems": 1}}}
+        },
+        {
+          "if": {
+            "required": ["temporal_sensitivity"],
+            "properties": {"temporal_sensitivity": {"const": "high"}}
+          },
+          "then": {
+            "properties": {
+              "as_of": {"type": "string", "format": "date"}
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["status"],
+            "properties": {
+              "status": {
+                "enum": ["confirmed", "partially_supported", "refuted"]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "assessment_recorded": {"const": true},
+              "source_identity_gate": {"const": "pass"},
+              "evidence": {"contains": {"$ref": "#/$defs/identity_evidence"}}
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["status"],
+            "properties": {"status": {"const": "confirmed"}}
+          },
+          "then": {
+            "properties": {
+              "content_support_gate": {"const": "pass"},
+              "evidence": {
+                "contains": {"$ref": "#/$defs/substantive_direct_evidence"}
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["status"],
+            "properties": {"status": {"const": "partially_supported"}}
+          },
+          "then": {
+            "properties": {
+              "content_support_gate": {"enum": ["pass", "partial"]},
+              "evidence": {
+                "contains": {"$ref": "#/$defs/substantive_partial_evidence"}
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["status"],
+            "properties": {"status": {"const": "refuted"}}
+          },
+          "then": {
+            "properties": {
+              "content_support_gate": {"const": "fail"},
+              "conflicts": {"minItems": 1},
+              "evidence": {
+                "contains": {"$ref": "#/$defs/substantive_conflict_evidence"}
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["temporal_sensitivity", "status"],
+            "properties": {
+              "temporal_sensitivity": {"const": "high"},
+              "status": {
+                "enum": ["confirmed", "partially_supported", "refuted"]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "evidence": {"contains": {"$ref": "#/$defs/currentness_evidence"}}
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["claim_type", "status"],
+            "properties": {
+              "claim_type": {"const": "causal"},
+              "status": {
+                "enum": ["confirmed", "partially_supported", "refuted"]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "causal_basis": {
+                "enum": [
+                  "randomized_controlled_trial",
+                  "natural_experiment",
+                  "quasi_experimental",
+                  "longitudinal_with_identification",
+                  "systematic_review_of_causal_studies"
+                ]
+              },
+              "evidence": {
+                "contains": {"$ref": "#/$defs/study_design_evidence"}
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

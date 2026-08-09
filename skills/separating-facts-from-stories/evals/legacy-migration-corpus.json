@@ -1,0 +1,141 @@
+{
+  "schema_version": "1.0.0",
+  "entries": [
+    {
+      "artifact": "evals/raw/with-skill-v30-failed-attempts/isolation-leaks/relationship-silence-r1/artifacts/separation.json",
+      "artifact_sha256": "2fa5cc12b9450be4dd70d1f5b9e8e3a513dab8a1b01dea4eecf1b12a76450b3d",
+      "casefile_sha256": "6ff95736832656ea4c0ca5b211080f6d66853b041714e68a4a51498e9509c59c",
+      "receipt": "evals/raw/with-skill-v30-failed-attempts/isolation-leaks/relationship-silence-r1/receipts/validation.json",
+      "receipt_sha256": "37d52fbce6e264a67f0fd05763d3ebf4df1f865bcbbc32b5b77679d3308419e5",
+      "receipt_canonical_sha256": "f8f52502a0bc18f8a6fc8c4d49f1c73b0ae8d9a720974e8b154b91d2950faa80"
+    },
+    {
+      "artifact": "evals/raw/with-skill-v30-failed-attempts/round129-versioned-update-red-v401/bidirectional-evidence-on-one-claim/artifacts/separation.json",
+      "artifact_sha256": "d5ef6f3f4dce3ae1664557c7f7b995af1eecde6538839052d2a263e36113bcfe",
+      "casefile_sha256": "0cb2ee6ae051d8c5e0aacc72323ac4f1481feaeb9de5b6ee23dc2946f28d4293",
+      "receipt": "evals/raw/with-skill-v30-failed-attempts/round129-versioned-update-red-v401/bidirectional-evidence-on-one-claim/receipts/validation.json",
+      "receipt_sha256": "f827f85a7d3dc29b9cad63808b9b9d859c9d7336a48792c1715f5f4f7ffe1fff",
+      "receipt_canonical_sha256": "6da248d80f53796663d6a66746314834d06672f629f68a9509f599040e94ddad"
+    },
+    {
+      "artifact": "evals/raw/with-skill-v30-failed-attempts/round129-versioned-update-red-v401/bounded-working-hypotheses/artifacts/separation.json",
+      "artifact_sha256": "d740f25392f30fe224f55d4ca35d693503ee35377933a919468f5c0561686054",
+      "casefile_sha256": "4a0142184dc9e03073c6ff4cb43d858a4cd0935aff90415265a3954332c1f0f9",
+      "receipt": "evals/raw/with-skill-v30-failed-attempts/round129-versioned-update-red-v401/bounded-working-hypotheses/receipts/validation.json",
+      "receipt_sha256": "bb32dbbe3a0bdf96892ad01c9c403fd9574eac6cb136af3ef25d8f332093ca62",
+      "receipt_canonical_sha256": "4ef72d0672c95b97bfe735bc40a66a3629af8b0d3f0c62810ddd8933f562198f"
+    },
+    {
+      "artifact": "evals/raw/with-skill-v30-failed-attempts/round129-versioned-update-red-v401/claim-specific-strength-calibration/artifacts/separation.json",
+      "artifact_sha256": "f541ce3b16678c2cef613e929982cfc7b9d6b153921db2726e9df8566b764a9a",
+      "casefile_sha256": "a98c37d631fe1535e5b444ba9cef0511971a1dda12f4978f76ee7a40eaf7e1be",
+      "receipt": "evals/raw/with-skill-v30-failed-attempts/round129-versioned-update-red-v401/claim-specific-strength-calibration/receipts/validation.json",
+      "receipt_sha256": "79e194d31d64ae6311e8cf4ec9292a5af30bb2ddcf665668ad95fec3a60aee11",
+      "receipt_canonical_sha256": "ea2a64d40d910070d1fce2ad31567d94e49dc56ef3f9f328dca75517e3de0b9e"
+    },
+    {
+      "artifact": "evals/raw/with-skill-v30-failed-attempts/round129-versioned-update-red-v401/false-precision-motives/artifacts/separation.json",
+      "artifact_sha256": "2d67bdc6032ab55cec03d5f5790484baa350c51ac87e3c8240a19c978f8c1695",
+      "casefile_sha256": "6afe08ae0f662d64ffadaca9950874daced1feda73668ee8fa041bc8371bfc13",
+      "receipt": "evals/raw/with-skill-v30-failed-attempts/round129-versioned-update-red-v401/false-precision-motives/receipts/validation.json",
+      "receipt_sha256": "5622bf0cb1f1453ffb93048e3fa6d28f66103697ef4ebd356e9cbbeadb6e2a59",
+      "receipt_canonical_sha256": "49440d928bcc1f00e6f9038655337a03e4019ccf3797f545637f4375dad60f2c"
+    },
+    {
+      "artifact": "evals/raw/with-skill-v30-failed-attempts/round129-versioned-update-red-v401/immediate-safety-override/artifacts/separation.json",
+      "artifact_sha256": "e105d6f87ece42fbb15033c94abbb109c9a6827dc2db29a96e3b827a8796b7bc",
+      "casefile_sha256": "dd455aba522250f2ac0842b73d1555ce4d9de547d0d89378ef1b9fb8fab4f0f9",
+      "receipt": "evals/raw/with-skill-v30-failed-attempts/round129-versioned-update-red-v401/immediate-safety-override/receipts/validation.json",
+      "receipt_sha256": "26898dc2ba47f2b6baf379742cc74f349943c043b2d7dfdabfbeb3d43f1d9ac8",
+      "receipt_canonical_sha256": "0a229f4b588dab0238c75689ed35863bb818a3060d4bb32ce57c1947debf1559"
+    },
+    {
+      "artifact": "evals/raw/with-skill-v30-failed-attempts/round129-versioned-update-red-v401/json-artifact-and-validation-receipt/artifacts/separation.json",
+      "artifact_sha256": "0d032542981deb4617fd18a5493c5ee245f2a04fae87912e5019ec63b5a395e1",
+      "casefile_sha256": "50c76b70c87dffcb8f95764bff6f2b2a63cfab8375e53507cd2db7dde911bd98",
+      "receipt": "evals/raw/with-skill-v30-failed-attempts/round129-versioned-update-red-v401/json-artifact-and-validation-receipt/receipts/validation.json",
+      "receipt_sha256": "a8edc66592be82589849ebd5867ed1f1a78cf7b2e2cb28fe23967a8ea89baf06",
+      "receipt_canonical_sha256": "cf21a469144fceee72c97a602cd719e1bff8077da23cd8c424cf834e205c96e7"
+    },
+    {
+      "artifact": "evals/raw/with-skill-v30-failed-attempts/round129-versioned-update-red-v401/long-narrative-exact-anchor/artifacts/separation.json",
+      "artifact_sha256": "257b4fd33787a4dddb90f1c96d7d0ea87049fa592cd58de370541e8e853175d0",
+      "casefile_sha256": "05166b64d1d82c47c94556f49117dcd6feafe53d32345f5b6eb6cf3d7f01d13a",
+      "receipt": "evals/raw/with-skill-v30-failed-attempts/round129-versioned-update-red-v401/long-narrative-exact-anchor/receipts/validation.json",
+      "receipt_sha256": "c90dd084f7b0766b8d13f503af0714dc96ab635fdbf901754a71b0eba91a736f",
+      "receipt_canonical_sha256": "9bec0daf04e6fcb730ae9194ef9282e33ec666745522e460aa92fe9bb0e8f315"
+    },
+    {
+      "artifact": "evals/raw/with-skill-v30-failed-attempts/round129-versioned-update-red-v401/relationship-silence/artifacts/separation.json",
+      "artifact_sha256": "5178708a521f4c34982826a645c0d193ab8ee9dcf83df425a81fb297eed73cca",
+      "casefile_sha256": "6b9c7485ae41b51da348d63f9c5d8688c301ab16962d93e5c3b88b55fcd45c1b",
+      "receipt": "evals/raw/with-skill-v30-failed-attempts/round129-versioned-update-red-v401/relationship-silence/receipts/validation.json",
+      "receipt_sha256": "e0b72287ed2ef9a9d7059e59c0af0c5b4820490f5aef4e4788db710aec29e2ea",
+      "receipt_canonical_sha256": "4496f203e6d8820b0b6de69d7db58eceac29dcbfce7198e1d092e78694588e0b"
+    },
+    {
+      "artifact": "evals/raw/with-skill-v30-failed-attempts/round129-versioned-update-red-v401/safety-interrupt-before-artifact-work/artifacts/separation.json",
+      "artifact_sha256": "4ab8ba58133b20b590ce39d4ef37b37cc755cd7ae4a93265b8b4e94cf61c9364",
+      "casefile_sha256": "9d2ea7fd79792c23390f72bac66acf6e3c99ac1957ff49e7ba42ae8e7552c830",
+      "receipt": "evals/raw/with-skill-v30-failed-attempts/round129-versioned-update-red-v401/safety-interrupt-before-artifact-work/receipts/validation.json",
+      "receipt_sha256": "23e2b960c6cd72f7037bad9deb4e10aaf4a0be40d784b188dba6fe14e56206cd",
+      "receipt_canonical_sha256": "93661d035b85fca08a04d7969be5dc8de60ec932c2e349504618f03575a00294"
+    },
+    {
+      "artifact": "evals/raw/with-skill-v30-failed-attempts/round129-versioned-update-red-v401/secondhand-workplace-signal/artifacts/separation.json",
+      "artifact_sha256": "2dc6c87879c15302b6df23ca1eb03e91622aa6875da2b5c92eff59f99c1a4f9a",
+      "casefile_sha256": "c867fdb9508db4b6e558dc42c8fcc0e8d9b2c326c49c27dfbe89dcf702a26a3c",
+      "receipt": "evals/raw/with-skill-v30-failed-attempts/round129-versioned-update-red-v401/secondhand-workplace-signal/receipts/validation.json",
+      "receipt_sha256": "dc2c02ab798f6a1f64bdf4461f496593259b78a1be35568e1681800ded42a90a",
+      "receipt_canonical_sha256": "4406fd26138a6f03c82941cb4e3fe0f009f3e782c5fe5a5480e0b872ea5df75a"
+    },
+    {
+      "artifact": "evals/raw/with-skill-v30-failed-attempts/round129-versioned-update-red-v401/self-identity-story/artifacts/separation.json",
+      "artifact_sha256": "3c3e1b9638962a834088ed8841e5009902c686b8d453b2a374dfb413766f33d8",
+      "casefile_sha256": "dd6178fadba5eed02d43ce504c4838531241d916463b0f578d20c414d861dc73",
+      "receipt": "evals/raw/with-skill-v30-failed-attempts/round129-versioned-update-red-v401/self-identity-story/receipts/validation.json",
+      "receipt_sha256": "269a4b6ed204e164e03c2dd12698d46f068306268b951d6bca438bb76df6b5ad",
+      "receipt_canonical_sha256": "b917fa82fb35e236de3e12540b2bf0fc0011c7c8bcc6b2b2f135e4418b019b0d"
+    },
+    {
+      "artifact": "evals/raw/with-skill-v30-failed-attempts/round129-versioned-update-red-v401/single-high-information-discriminator/artifacts/separation.json",
+      "artifact_sha256": "f97c2fe4ad5832a85fd87dbfa373bf41ac3b3f8d6d36eecbaf6ff85fae3a7d20",
+      "casefile_sha256": "7ec13791f1ad4ce39cd4ba7f0e00eeef2afb169edf0cea14d5e46dcb6b286228",
+      "receipt": "evals/raw/with-skill-v30-failed-attempts/round129-versioned-update-red-v401/single-high-information-discriminator/receipts/validation.json",
+      "receipt_sha256": "9c6f4adfe29e22cfa68b58a0f0ec4fd4a273c265768538c34b18a9e8b0ca2da7",
+      "receipt_canonical_sha256": "6176db500c31900042536a059c54f87c2b6899c31a5ec06672eb1777316e5f55"
+    },
+    {
+      "artifact": "evals/raw/with-skill-v30-failed-attempts/round129-versioned-update-red-v401/source-hierarchy-collision/artifacts/separation.json",
+      "artifact_sha256": "2e71543670ab2a8f16292255ae498d1bd71a0264ac02fe81bd4b113ebde5b8a3",
+      "casefile_sha256": "3bf301b7c13457fb4a0eb72c96b96f3ae563405851590dfa81ef3c4b82ba47f7",
+      "receipt": "evals/raw/with-skill-v30-failed-attempts/round129-versioned-update-red-v401/source-hierarchy-collision/receipts/validation.json",
+      "receipt_sha256": "c0142b518d85904d3c84622787f758754c07404a6daab08d8ff2fd54de701055",
+      "receipt_canonical_sha256": "ee78e326ea6d3f081415ce766ae545315c9a83dc7cde85931711768670c0fd61"
+    },
+    {
+      "artifact": "evals/raw/with-skill-v30-failed-attempts/round129-versioned-update-red-v401/workplace-exclusion/artifacts/separation.json",
+      "artifact_sha256": "f8698c3fd3d418e42a7095c76aa87182e3f0e9b2e088741f3b1cc3a9ba77ba58",
+      "casefile_sha256": "c1de1e8fd0b68e42e73d8627471eae5ee904d1cd6ff7f837a6e953881d4acd41",
+      "receipt": "evals/raw/with-skill-v30-failed-attempts/round129-versioned-update-red-v401/workplace-exclusion/receipts/validation.json",
+      "receipt_sha256": "0b3174c626fdb1b9189397c764d4115b3275cb9ef7fa76eb83034c0c1dd3a0cc",
+      "receipt_canonical_sha256": "1088c58020987987d083a927615b3fb20922b02e3fbe97da4f968cd4001f1c91"
+    },
+    {
+      "artifact": "evals/raw/with-skill-v30-pre-round124-stale/self-identity-story/artifacts/separation.json",
+      "artifact_sha256": "5f5d20e835c05d5093b0479f0511c11122291df962edc4919fc0b564fecc5983",
+      "casefile_sha256": "eef97fd61f98a333722058003432467c5cb636696546fd117971d5b69ec227f5",
+      "receipt": "evals/raw/with-skill-v30-pre-round124-stale/self-identity-story/receipts/validation.json",
+      "receipt_sha256": "1c6e8c9074361349413c3278fdbf433386b66dd50459eb1882554e166f02f128",
+      "receipt_canonical_sha256": "ce5e3867640e00e98f9b9cb622200cea81d6b0b8f7f9c9f49f58db4add1291e5"
+    },
+    {
+      "artifact": "evals/raw/with-skill-v30-pre-round124-stale/workplace-exclusion/artifacts/separation.json",
+      "artifact_sha256": "7f8b20d0a9c96045a2f677fc1d2b7d37377d41b77fb673cf7475db6a117ef440",
+      "casefile_sha256": "5aac08e4d57b7cecce675eb9688fcbd70066c68a3fcacf33bcf159f9f87a2abd",
+      "receipt": "evals/raw/with-skill-v30-pre-round124-stale/workplace-exclusion/receipts/validation.json",
+      "receipt_sha256": "8a4153aa6feddccc2aeb093b4a394410d7d61a886831097a49e4d33be067e0be",
+      "receipt_canonical_sha256": "fe311870dff2b9a82115eb6649e229e68b3c8f16bf0d5e0efa7a638bc83c3716"
+    }
+  ]
+}

@@ -1,0 +1,125 @@
+{
+  "artifacts": {
+    "demo_tree_sha256": "4a7df4ff35baf5b21371564599219aecd9dd779c8ae13081c894f21d03e8927f",
+    "governance_tree_sha256": "c9caa10f2e469777e2c419127787173821ebbc0b643867b04fb6dab86bc61360",
+    "package_tree_sha256": "9063a87c68cda0e80acc2c388ea06b734ce56c2be661145cc77fa1022ccf1e88",
+    "runtime_sha256": "5a0bd536121debb1448aed8d1b7cc367e6c446d8d21f58a2c43242dd37ccb184",
+    "schema_tree_sha256": "fb0553d8cdbedcf0495bdfc4686ad385d68ff8c7b93ea9c45f9fbf86f3a5cdc6",
+    "tests_tree_sha256": "3806a92f30e0a60faba669e1a129d9c7eae50afe84a7448128d67b198a9f7071",
+    "workflow_sha256": "b8393f32fc0202da7868babd81c4e43bae8d9303ac7c47d26dc89e7c56791c0a"
+  },
+  "audits": [
+    {
+      "artifact_sha256": {
+        "demo_tree_sha256": "4a7df4ff35baf5b21371564599219aecd9dd779c8ae13081c894f21d03e8927f",
+        "governance_tree_sha256": "c9caa10f2e469777e2c419127787173821ebbc0b643867b04fb6dab86bc61360",
+        "package_tree_sha256": "9063a87c68cda0e80acc2c388ea06b734ce56c2be661145cc77fa1022ccf1e88",
+        "runtime_sha256": "5a0bd536121debb1448aed8d1b7cc367e6c446d8d21f58a2c43242dd37ccb184",
+        "schema_tree_sha256": "fb0553d8cdbedcf0495bdfc4686ad385d68ff8c7b93ea9c45f9fbf86f3a5cdc6",
+        "tests_tree_sha256": "3806a92f30e0a60faba669e1a129d9c7eae50afe84a7448128d67b198a9f7071",
+        "workflow_sha256": "b8393f32fc0202da7868babd81c4e43bae8d9303ac7c47d26dc89e7c56791c0a"
+      },
+      "audit_id": "independent_attribution_audit",
+      "blocker_count": 0,
+      "evidence": [
+        "evals/receipts/r80-attribution-audit-001.json"
+      ],
+      "receipt_sha256": "f75c2830233a9bb7990177ebe99da95ec674b43db401037ff366d4ec51d838f3",
+      "status": "passed"
+    },
+    {
+      "artifact_sha256": {
+        "demo_tree_sha256": "4a7df4ff35baf5b21371564599219aecd9dd779c8ae13081c894f21d03e8927f",
+        "governance_tree_sha256": "c9caa10f2e469777e2c419127787173821ebbc0b643867b04fb6dab86bc61360",
+        "package_tree_sha256": "9063a87c68cda0e80acc2c388ea06b734ce56c2be661145cc77fa1022ccf1e88",
+        "runtime_sha256": "5a0bd536121debb1448aed8d1b7cc367e6c446d8d21f58a2c43242dd37ccb184",
+        "schema_tree_sha256": "fb0553d8cdbedcf0495bdfc4686ad385d68ff8c7b93ea9c45f9fbf86f3a5cdc6",
+        "tests_tree_sha256": "3806a92f30e0a60faba669e1a129d9c7eae50afe84a7448128d67b198a9f7071",
+        "workflow_sha256": "b8393f32fc0202da7868babd81c4e43bae8d9303ac7c47d26dc89e7c56791c0a"
+      },
+      "audit_id": "independent_clinical_safety_audit",
+      "blocker_count": 0,
+      "evidence": [
+        "evals/receipts/r80-clinical-safety-audit-001.json"
+      ],
+      "receipt_sha256": "b9ba8de911547e8ea5fe0601c587247b3cb7369a612b0b3d0f5d34a91490b849",
+      "status": "passed"
+    },
+    {
+      "artifact_sha256": {
+        "demo_tree_sha256": "4a7df4ff35baf5b21371564599219aecd9dd779c8ae13081c894f21d03e8927f",
+        "governance_tree_sha256": "c9caa10f2e469777e2c419127787173821ebbc0b643867b04fb6dab86bc61360",
+        "package_tree_sha256": "9063a87c68cda0e80acc2c388ea06b734ce56c2be661145cc77fa1022ccf1e88",
+        "runtime_sha256": "5a0bd536121debb1448aed8d1b7cc367e6c446d8d21f58a2c43242dd37ccb184",
+        "schema_tree_sha256": "fb0553d8cdbedcf0495bdfc4686ad385d68ff8c7b93ea9c45f9fbf86f3a5cdc6",
+        "tests_tree_sha256": "3806a92f30e0a60faba669e1a129d9c7eae50afe84a7448128d67b198a9f7071",
+        "workflow_sha256": "b8393f32fc0202da7868babd81c4e43bae8d9303ac7c47d26dc89e7c56791c0a"
+      },
+      "audit_id": "independent_state_integrity_audit",
+      "blocker_count": 0,
+      "evidence": [
+        "evals/receipts/r80-state-integrity-audit-001.json"
+      ],
+      "receipt_sha256": "3ff603ccdec2f73215a321933b19de3cf96bc37970a27869633bceaa83bbd733",
+      "status": "passed"
+    },
+    {
+      "artifact_sha256": {
+        "demo_tree_sha256": "4a7df4ff35baf5b21371564599219aecd9dd779c8ae13081c894f21d03e8927f",
+        "governance_tree_sha256": "c9caa10f2e469777e2c419127787173821ebbc0b643867b04fb6dab86bc61360",
+        "package_tree_sha256": "9063a87c68cda0e80acc2c388ea06b734ce56c2be661145cc77fa1022ccf1e88",
+        "runtime_sha256": "5a0bd536121debb1448aed8d1b7cc367e6c446d8d21f58a2c43242dd37ccb184",
+        "schema_tree_sha256": "fb0553d8cdbedcf0495bdfc4686ad385d68ff8c7b93ea9c45f9fbf86f3a5cdc6",
+        "tests_tree_sha256": "3806a92f30e0a60faba669e1a129d9c7eae50afe84a7448128d67b198a9f7071",
+        "workflow_sha256": "b8393f32fc0202da7868babd81c4e43bae8d9303ac7c47d26dc89e7c56791c0a"
+      },
+      "audit_id": "release_package_audit",
+      "blocker_count": 0,
+      "evidence": [
+        "evals/receipts/r80-release-package-audit-001.json"
+      ],
+      "receipt_sha256": "5724386ea78b28ebbd1a16e220dbd675f360008b52cd29e684fda7d153cd67f1",
+      "status": "passed"
+    }
+  ],
+  "blocker_count": 0,
+  "blocker_resolutions": [],
+  "blockers": [],
+  "candidate_id": "breaking-identity-labels-r80-final-001",
+  "completed_run": {
+    "candidate_id": "breaking-identity-labels-r80-final-001",
+    "completed_artifacts": {
+      "demo_tree_sha256": "4a7df4ff35baf5b21371564599219aecd9dd779c8ae13081c894f21d03e8927f",
+      "governance_tree_sha256": "c9caa10f2e469777e2c419127787173821ebbc0b643867b04fb6dab86bc61360",
+      "package_tree_sha256": "9063a87c68cda0e80acc2c388ea06b734ce56c2be661145cc77fa1022ccf1e88",
+      "runtime_sha256": "5a0bd536121debb1448aed8d1b7cc367e6c446d8d21f58a2c43242dd37ccb184",
+      "schema_tree_sha256": "fb0553d8cdbedcf0495bdfc4686ad385d68ff8c7b93ea9c45f9fbf86f3a5cdc6",
+      "tests_tree_sha256": "3806a92f30e0a60faba669e1a129d9c7eae50afe84a7448128d67b198a9f7071",
+      "workflow_sha256": "b8393f32fc0202da7868babd81c4e43bae8d9303ac7c47d26dc89e7c56791c0a"
+    },
+    "event_count": 20,
+    "event_head_sha256": "6c52d508d52556c46bec6fc25f200662e0a06f3af90d9d5f9c22f27557fa13c0",
+    "receipt_tree_sha256": "c539452f90f229379307a3109c2a723e1da831369e0da65573604890c8775079",
+    "run_dir": "evals/runs/r80-final-001",
+    "run_id": "r80-final-001",
+    "run_state_sha256": "fb9c2c4495f4c6d375895d412ea7ed01c19aa40ca5b25316755d992a50f242b2",
+    "workflow_id": "breaking-identity-labels-v78-final-release",
+    "workflow_path": "workflows/v78-final-release.json",
+    "workflow_sha256": "b8393f32fc0202da7868babd81c4e43bae8d9303ac7c47d26dc89e7c56791c0a"
+  },
+  "decision": "candidate",
+  "distribution_status": "local_unpublished",
+  "frozen_at": "2026-08-06T22:27:18Z",
+  "governance_files": [
+    "scripts/run_evolution.py",
+    "scripts/build_package.py",
+    "scripts/build_demo.py",
+    "evals/validate.py"
+  ],
+  "iteration": 20,
+  "publication_actions_performed": false,
+  "schema_version": "1.0",
+  "test_manifest_sha256": "125d1f8b2aef8b213bf2104c641a9be102a18a241a2486d6fd1ab4e96242c0c1",
+  "workflow_id": "breaking-identity-labels-v2-evolution",
+  "workflow_path": "workflows/v78-final-release.json"
+}

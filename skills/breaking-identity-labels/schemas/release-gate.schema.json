@@ -1,0 +1,175 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fengyu.example/schemas/breaking-identity-labels/release-gate.schema.json",
+  "title": "Breaking Identity Labels Evolution Release Gate",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "workflow_id",
+    "iteration",
+    "frozen_at",
+    "candidate_id",
+    "completed_run",
+    "workflow_path",
+    "governance_files",
+    "artifacts",
+    "test_manifest_sha256",
+    "audits",
+    "blockers",
+    "blocker_count",
+    "decision",
+    "distribution_status",
+    "publication_actions_performed"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "workflow_id": {"const": "breaking-identity-labels-v2-evolution"},
+    "iteration": {"type": "integer", "minimum": 1},
+    "frozen_at": {"type": "string", "format": "date-time"},
+    "candidate_id": {"type": "string", "minLength": 1},
+    "completed_run": {"$ref": "#/$defs/completedRun"},
+    "workflow_path": {
+      "type": "string",
+      "pattern": "^workflows/[A-Za-z0-9._/-]+\\.json$"
+    },
+    "governance_files": {
+      "type": "array",
+      "minItems": 4,
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "artifacts": {"$ref": "#/$defs/artifactHashes"},
+    "test_manifest_sha256": {"$ref": "#/$defs/sha256"},
+    "audits": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {"$ref": "#/$defs/audit"}
+    },
+    "blockers": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/blocker"}
+    },
+    "blocker_resolutions": {
+      "type": "array",
+      "items": {
+        "$ref": "evolution-run-state.schema.json#/$defs/resolvedBlocker"
+      }
+    },
+    "blocker_count": {"type": "integer", "minimum": 0},
+    "decision": {"enum": ["pending", "blocked", "candidate", "invalid_run"]},
+    "distribution_status": {"const": "local_unpublished"},
+    "publication_actions_performed": {"const": false}
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "artifactHashes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "runtime_sha256",
+        "schema_tree_sha256",
+        "tests_tree_sha256",
+        "demo_tree_sha256",
+        "package_tree_sha256",
+        "governance_tree_sha256",
+        "workflow_sha256"
+      ],
+      "properties": {
+        "runtime_sha256": {"$ref": "#/$defs/sha256"},
+        "schema_tree_sha256": {"$ref": "#/$defs/sha256"},
+        "tests_tree_sha256": {"$ref": "#/$defs/sha256"},
+        "demo_tree_sha256": {"$ref": "#/$defs/sha256"},
+        "package_tree_sha256": {"$ref": "#/$defs/sha256"},
+        "governance_tree_sha256": {"$ref": "#/$defs/sha256"},
+        "workflow_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "completedRun": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "run_dir",
+        "run_id",
+        "candidate_id",
+        "workflow_id",
+        "workflow_path",
+        "workflow_sha256",
+        "run_state_sha256",
+        "event_count",
+        "event_head_sha256",
+        "receipt_tree_sha256",
+        "completed_artifacts"
+      ],
+      "properties": {
+        "run_dir": {"type": "string", "pattern": "^evals/runs/[A-Za-z0-9._/-]+$"},
+        "run_id": {"type": "string", "minLength": 1},
+        "candidate_id": {"type": "string", "minLength": 1},
+        "workflow_id": {"type": "string", "minLength": 1},
+        "workflow_path": {"type": "string", "pattern": "^workflows/[A-Za-z0-9._/-]+\\.json$"},
+        "workflow_sha256": {"$ref": "#/$defs/sha256"},
+        "run_state_sha256": {"$ref": "#/$defs/sha256"},
+        "event_count": {"type": "integer", "minimum": 2},
+        "event_head_sha256": {"$ref": "#/$defs/sha256"},
+        "receipt_tree_sha256": {"$ref": "#/$defs/sha256"},
+        "completed_artifacts": {"$ref": "#/$defs/artifactHashes"}
+      }
+    },
+    "audit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "audit_id",
+        "status",
+        "blocker_count",
+        "artifact_sha256",
+        "evidence",
+        "receipt_sha256"
+      ],
+      "properties": {
+        "audit_id": {
+          "enum": [
+            "independent_attribution_audit",
+            "independent_clinical_safety_audit",
+            "independent_state_integrity_audit",
+            "release_package_audit"
+          ]
+        },
+        "status": {"enum": ["pending", "passed", "blocked", "invalid_run"]},
+        "blocker_count": {"type": "integer", "minimum": 0},
+        "artifact_sha256": {
+          "oneOf": [
+            {"type": "null"},
+            {"$ref": "#/$defs/artifactHashes"}
+          ]
+        },
+        "evidence": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "uniqueItems": true
+        },
+        "receipt_sha256": {
+          "oneOf": [
+            {"type": "null"},
+            {"$ref": "#/$defs/sha256"}
+          ]
+        }
+      }
+    },
+    "blocker": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "severity", "evidence"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "severity": {"enum": ["P0", "P1", "P2"]},
+        "evidence": {"type": "string", "minLength": 1},
+        "evidence_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    }
+  }
+}

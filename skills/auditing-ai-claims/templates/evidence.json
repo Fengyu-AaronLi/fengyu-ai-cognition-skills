@@ -1,0 +1,15 @@
+{
+  "claim_id": "C1",
+  "source_id": "S1",
+  "support": "direct",
+  "evidence_purpose": "substantive",
+  "support_scope": "写明证据实际支持的对象、版本、日期、人群、指标和条件。",
+  "locator": "章节、页码、段落、表格或字符区间",
+  "excerpt": "从已保存解析文本中精确复制的短引文。",
+  "inference_span": 0,
+  "selector": {
+    "start": 0,
+    "end": 0,
+    "quote_sha256": "替换为所选 UTF-8 文本的 SHA-256"
+  }
+}

@@ -1,0 +1,7 @@
+checked_at=2026-08-05T18:24:00+10:00
+request=https://doi.org/10.1145/3765124.3768891
+follow_redirects=true
+http_code=404
+url_effective=https://doi.org/10.1145/3765124.3768891
+
+Interpretation: the supplied DOI did not resolve on the check date. This does not prove that no paper with a similar title could exist elsewhere or that the identifier will never be registered.

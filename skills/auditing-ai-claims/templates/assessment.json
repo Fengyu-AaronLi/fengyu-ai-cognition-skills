@@ -1,0 +1,12 @@
+{
+  "claim_id": "C1",
+  "source_identity_gate": "unknown",
+  "content_support_gate": "unknown",
+  "action_applicability_gate": "not_applicable",
+  "status": "unverifiable",
+  "confidence_reason": "说明现有证据为何只允许这个状态，而不允许更强结论。",
+  "conflicts": [],
+  "next_step": "写出这条主张当前信息增益最高的一项核验动作。",
+  "unknowns": ["写出至少一项当前未知；若无，也要明确写明没有剩余未知。"],
+  "next_action": "写出整份审计当前价值最高的一项下一步动作。"
+}

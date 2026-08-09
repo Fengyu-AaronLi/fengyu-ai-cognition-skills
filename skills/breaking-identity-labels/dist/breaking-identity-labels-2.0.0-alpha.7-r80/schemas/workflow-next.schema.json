@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fengyu.local/schemas/breaking-identity-labels/workflow-next.schema.json",
+  "title": "Identity label workflow transition",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["workflow_version", "complete", "stage", "next_steps", "errors"],
+  "properties": {
+    "workflow_version": {"type": "string", "enum": ["1.0"]},
+    "case_id": {"type": "string"},
+    "revision": {"type": "integer", "minimum": 0},
+    "status": {"type": "string"},
+    "route_mode": {"type": "string"},
+    "complete": {"type": "boolean"},
+    "stage": {
+      "type": "string",
+      "enum": [
+        "analysis",
+        "experiment_ready",
+        "observation",
+        "review",
+        "complete",
+        "preference_acknowledgement",
+        "clinical_report_only",
+        "needs_information",
+        "safety_support",
+        "support_escalation",
+        "integrity_failure",
+        "invalid_case",
+        "invalid_state"
+      ]
+    },
+    "next_steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["action", "why"],
+        "properties": {
+          "action": {"type": "string"},
+          "why": {"type": "string"}
+        }
+      }
+    },
+    "errors": {"type": "array", "items": {"type": "object"}}
+  }
+}

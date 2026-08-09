@@ -1,0 +1,7 @@
+{
+  "claim_id": "C1",
+  "falsifier": "写出最可能推翻或显著缩窄当前判断的具体证据。",
+  "checked_source_ids": [],
+  "result": "inconclusive",
+  "stop_reason": "写明本轮实际检查了什么，以及为什么当前应停止并保留未知。"
+}

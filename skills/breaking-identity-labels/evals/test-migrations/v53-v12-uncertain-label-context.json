@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "receipt_id": "v53-v12-uncertain-label-context",
+  "test_path": "tests/test_v12_preattribution_blockers.py",
+  "from_sha256": "a6bc41d9958d9320e963488ec5c89dea28cebe043d429d002f3a340cc459667d",
+  "to_sha256": "6d3e463b711954945f8ef09ec0a8e6baab24f0bbb03a9917b39567d48ff1ee35",
+  "reason": "The direct question AT-004-A must remain a current-user uncertain context claim instead of being promoted to an affirmed label. Exact claim, subject, source and polarity checks replace the older label-presence assertion; the AT-020 social-source expectation remains unchanged.",
+  "replacement_tests": [
+    {
+      "path": "tests/test_v42_proposition_boundary_hardening.py",
+      "sha256": "913a2b7217fc6b45ccac0a9c9755e13dfd2cffeec46f08d58a6f6e257f52e931"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "evals/raw/v53-red/uncertain-label-context-migration.md",
+      "sha256": "6be4d47656cb29d647db45f4b537a1eec11a51b8e62bcaf7e1d918c0214a9910"
+    }
+  ],
+  "reviewed_by": "full-regression-proposition-boundary-audit",
+  "reviewed_at": "2026-08-06T10:00:00Z"
+}

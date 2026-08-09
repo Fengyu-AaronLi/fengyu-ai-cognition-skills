@@ -1,0 +1,30 @@
+auditing-ai-claims 3.1.0 final engineering regression
+Date: 2026-08-06 Australia/Sydney
+Host: macOS 26.5.2 Build 25F84, arm64
+Python: 3.14.4
+
+New report-deduplication RED:
+Command:
+  python3 -m unittest skills.auditing-ai-claims.tests.test_claim_audit.RuntimeContractTests.test_report_lists_each_source_once_per_claim_section
+Observed before implementation:
+  AssertionError: 3 != 1
+  Ran 1 test
+  FAILED (failures=1)
+
+Focused GREEN after implementation:
+  Ran 1 test in 0.040s
+  OK
+
+Final full-suite command:
+  python3 -m unittest discover -s skills/auditing-ai-claims/tests -p 'test_*.py' -v
+
+Final result:
+  Ran 187 tests in 19.411s
+  OK
+
+Post-documentation full-suite recheck:
+  Ran 187 tests in 19.091s
+  OK
+
+Boundary:
+  This transcript records deterministic engineering tests. It is not a fresh-model semantic evaluation or an auto-discovery result.

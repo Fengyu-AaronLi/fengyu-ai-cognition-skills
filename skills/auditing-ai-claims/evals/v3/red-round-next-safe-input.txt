@@ -1,0 +1,86 @@
+test_exclude_candidate_accepts_candidate_id_not_raw_candidate_text (__main__.NextSafeInputProtocolRedTests.test_exclude_candidate_accepts_candidate_id_not_raw_candidate_text) ... FAIL
+test_next_assessment_names_claim_and_all_missing_evidence_purposes (__main__.NextSafeInputProtocolRedTests.test_next_assessment_names_claim_and_all_missing_evidence_purposes) ... FAIL
+test_next_claim_extraction_is_machine_executable_and_candidate_id_addressed (__main__.NextSafeInputProtocolRedTests.test_next_claim_extraction_is_machine_executable_and_candidate_id_addressed) ... FAIL
+test_next_never_embeds_candidate_or_excerpt_in_executable_fields (__main__.NextSafeInputProtocolRedTests.test_next_never_embeds_candidate_or_excerpt_in_executable_fields) ... FAIL
+test_start_accepts_candidates_file_json_without_candidate_cli_text (__main__.NextSafeInputProtocolRedTests.test_start_accepts_candidates_file_json_without_candidate_cli_text) ... FAIL
+test_summarize_accepts_json_file (__main__.NextSafeInputProtocolRedTests.test_summarize_accepts_json_file) ... FAIL
+
+======================================================================
+FAIL: test_exclude_candidate_accepts_candidate_id_not_raw_candidate_text (__main__.NextSafeInputProtocolRedTests.test_exclude_candidate_accepts_candidate_id_not_raw_candidate_text)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_next_protocol_red_v3.py", line 227, in test_exclude_candidate_accepts_candidate_id_not_raw_candidate_text
+    self.assertEqual(excluded.returncode, 0, excluded.stderr)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 0 : usage: claim_audit.py exclude-candidate [-h] --workspace WORKSPACE
+                                        --candidate CANDIDATE
+                                        --classification {creative_writing,instruction,metaphor,opinion,other_nonfactual,personal_feeling,relationship_motive}
+                                        --reason REASON
+claim_audit.py exclude-candidate: error: the following arguments are required: --candidate
+
+
+======================================================================
+FAIL: test_next_assessment_names_claim_and_all_missing_evidence_purposes (__main__.NextSafeInputProtocolRedTests.test_next_assessment_names_claim_and_all_missing_evidence_purposes)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_next_protocol_red_v3.py", line 154, in test_next_assessment_names_claim_and_all_missing_evidence_purposes
+    assert_machine_step(self, step)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_next_protocol_red_v3.py", line 87, in assert_machine_step
+    test.assertIn("cli_subcommand", step)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'cli_subcommand' not found in {'action': 'research_or_decide_unknown', 'why': 'No linked eligible evidence exists; open the highest-value source or record an honest unknown.', 'claim_id': 'C1', 'suggested_action': 'Open the original study and its current record.', 'source_count': 0}
+
+======================================================================
+FAIL: test_next_claim_extraction_is_machine_executable_and_candidate_id_addressed (__main__.NextSafeInputProtocolRedTests.test_next_claim_extraction_is_machine_executable_and_candidate_id_addressed)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_next_protocol_red_v3.py", line 137, in test_next_claim_extraction_is_machine_executable_and_candidate_id_addressed
+    assert_machine_step(self, step)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_next_protocol_red_v3.py", line 87, in assert_machine_step
+    test.assertIn("cli_subcommand", step)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'cli_subcommand' not found in {'action': 'add_claim', 'why': 'Every declared factual candidate must map to at least one atomic claim.', 'candidates': ['A named paper exists.'], 'candidate_origins': {'A named paper exists.': 'declared'}, 'required_fields': ['claim_id', 'text', 'claim_type', 'temporal_sensitivity', 'criteria', 'failure_condition', 'next_step', 'input_candidates']}
+
+======================================================================
+FAIL: test_next_never_embeds_candidate_or_excerpt_in_executable_fields (__main__.NextSafeInputProtocolRedTests.test_next_never_embeds_candidate_or_excerpt_in_executable_fields)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_next_protocol_red_v3.py", line 246, in test_next_never_embeds_candidate_or_excerpt_in_executable_fields
+    assert_machine_step(self, extraction_step)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_next_protocol_red_v3.py", line 87, in assert_machine_step
+    test.assertIn("cli_subcommand", step)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'cli_subcommand' not found in {'action': 'add_claim', 'why': 'Every declared factual candidate must map to at least one atomic claim.', 'candidates': ['The CEO is $(touch /var/folders/2s/cq27nh7x44zd399j4_j898qr0000gn/T/tmp3efhy1u4/should-not-exist) and `id` with quote "; rm marker.'], 'candidate_origins': {'The CEO is $(touch /var/folders/2s/cq27nh7x44zd399j4_j898qr0000gn/T/tmp3efhy1u4/should-not-exist) and `id` with quote "; rm marker.': 'declared'}, 'required_fields': ['claim_id', 'text', 'claim_type', 'temporal_sensitivity', 'criteria', 'failure_condition', 'next_step', 'input_candidates']}
+
+======================================================================
+FAIL: test_start_accepts_candidates_file_json_without_candidate_cli_text (__main__.NextSafeInputProtocolRedTests.test_start_accepts_candidates_file_json_without_candidate_cli_text)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_next_protocol_red_v3.py", line 120, in test_start_accepts_candidates_file_json_without_candidate_cli_text
+    self.assertEqual(started.returncode, 0, started.stderr)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 0 : usage: claim_audit.py start [-h] --input INPUT --workspace WORKSPACE
+                            [--as-of AS_OF] [--audit-id AUDIT_ID]
+                            --reason REASON --candidate CANDIDATE
+claim_audit.py start: error: the following arguments are required: --candidate
+
+
+======================================================================
+FAIL: test_summarize_accepts_json_file (__main__.NextSafeInputProtocolRedTests.test_summarize_accepts_json_file)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_next_protocol_red_v3.py", line 200, in test_summarize_accepts_json_file
+    self.assertEqual(summarized.returncode, 0, summarized.stderr)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 0 : usage: claim_audit.py summarize [-h] --workspace WORKSPACE --unknown UNKNOWN
+                                --next-action NEXT_ACTION
+claim_audit.py summarize: error: the following arguments are required: --unknown, --next-action
+
+
+----------------------------------------------------------------------
+Ran 6 tests in 1.122s
+
+FAILED (failures=6)

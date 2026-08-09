@@ -1,0 +1,3047 @@
+#!/usr/bin/env python3
+"""Deterministic runtime for defining-problems-before-prompts.
+
+The runtime deliberately does not decide what a user should value.  It gates
+an already-declared set of signals, validates a model-authored Problem Spec,
+renders that spec, and persists question/answer state without network access.
+"""
+
+from __future__ import annotations
+
+import copy
+import fcntl
+import hashlib
+import json
+import os
+import re
+import sys
+import tempfile
+from pathlib import Path
+from typing import Any, Iterable
+
+
+SCHEMA_VERSION = "1.0"
+STATE_SCHEMA_VERSION = "2.1"
+SKILL_ROOT = Path(__file__).resolve().parents[1]
+ROUTES_PATH = SKILL_ROOT / "runtime" / "routes.json"
+STATE_SCHEMA_PATH = SKILL_ROOT / "schemas" / "problem-state.schema.json"
+SPEC_SCHEMA_PATH = SKILL_ROOT / "schemas" / "problem-spec.schema.json"
+VERSION_PATH = SKILL_ROOT / "VERSION"
+
+USAGE = """Usage: dpbp <command> [options]
+
+Commands:
+  gate --offline      Route a request envelope from stdin.
+  init                Build a deterministic Problem Spec draft from stdin.
+  validate            Validate a Problem Spec from stdin.
+  render              Render a validated Problem Spec from stdin.
+  start --state PATH  Start resumable state from a valid spec.
+  resume --state PATH Resume state with one answer from stdin.
+  advance --state PATH
+                      Validate a revised spec and advance or stop the loop.
+  amend --state PATH  Supersede one recorded answer without erasing history.
+  decide --state PATH Record a user-owned high-risk value decision.
+  status --state PATH Read loop state and allowed next actions without writing.
+  doctor              Check local runtime assets without modifying them.
+  version             Print the VERSION file.
+  help                Show this help.
+"""
+
+DOMAINS = frozenset(
+    {
+        "general",
+        "ai_efficiency",
+        "ai_product",
+        "career",
+        "relationship",
+        "medical",
+        "legal",
+        "investment",
+    }
+)
+PROBLEM_CATEGORIES = frozenset(
+    {
+        "desired_outcome",
+        "current_bottleneck",
+        "measurement_source",
+        "target_user",
+        "recurring_pain",
+        "payment_evidence",
+        "resources",
+        "success_criteria",
+        "financial_capacity",
+        "alternatives",
+        "health_status",
+        "risk_tolerance",
+        "decision_target",
+        "other",
+    }
+)
+DOMAIN_CATEGORY_COVERAGE = {
+    "ai_efficiency": (
+        "AI_EFFICIENCY_CATEGORY_COVERAGE_MISSING",
+        frozenset({"desired_outcome", "current_bottleneck", "measurement_source"}),
+    ),
+    "ai_product": (
+        "AI_PRODUCT_CATEGORY_COVERAGE_MISSING",
+        frozenset(
+            {
+                "target_user",
+                "recurring_pain",
+                "payment_evidence",
+                "resources",
+                "success_criteria",
+            }
+        ),
+    ),
+}
+CAREER_EXIT_CATEGORY_COVERAGE = (
+    "CAREER_CATEGORY_COVERAGE_MISSING",
+    frozenset(
+        {
+            "financial_capacity",
+            "alternatives",
+            "health_status",
+            "desired_outcome",
+            "risk_tolerance",
+            "decision_target",
+        }
+    ),
+)
+SIGNAL_FIELDS = (
+    "domain",
+    "deliverable_clear",
+    "inputs_sufficient",
+    "success_criteria_clear",
+    "decisive_unknowns",
+    "high_risk_value_decision",
+)
+BOOLEAN_SIGNAL_FIELDS = SIGNAL_FIELDS[1:]
+
+REQUIRED_SPEC_FIELDS = (
+    "schema_version",
+    "request_id",
+    "request_sha256",
+    "request_envelope",
+    "gate_receipt",
+    "mode",
+    "domain",
+    "status",
+    "original_request",
+    "original_question",
+    "desired_outcome",
+    "proxy_problem",
+    "hidden_assumptions",
+    "known_facts",
+    "decisive_unknowns",
+    "hard_constraints",
+    "value_tradeoffs",
+    "success_evidence",
+    "failure_conditions",
+    "change_evidence",
+    "rewritten_problem",
+    "next_test",
+    "questions",
+    "decision_owner",
+    "execution_allowed",
+)
+
+NEXT_TEST_ACTION_TYPES = frozenset(
+    {"evidence_collection", "solution_design", "implementation", "decision", "communication"}
+)
+
+ALLOWED_SPEC_FIELDS = frozenset(REQUIRED_SPEC_FIELDS)
+HIGH_RISK_VERDICT_FIELDS = frozenset(
+    {"recommendation", "verdict", "selected_option", "decision"}
+)
+
+SECTION_HEADINGS = (
+    "1. 原始问题",
+    "2. 用户真正想改变的结果",
+    "3. 当前问题可能是哪个代理问题",
+    "4. 隐藏假设",
+    "5. 已知事实",
+    "6. 决定性未知",
+    "7. 硬约束",
+    "8. 需要用户本人决定的价值取舍",
+    "9. 成功证据和失败条件",
+    "10. 改写后更值得回答的问题",
+    "11. 最小、可逆、低成本的下一步测试",
+    "12. 信息不足时最多三个高价值问题",
+)
+
+
+def canonical_json(value: Any) -> str:
+    return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+
+
+def sha256_text(value: str) -> str:
+    return hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+
+def emit(value: Any, exit_code: int = 0) -> int:
+    sys.stdout.write(canonical_json(value) + "\n")
+    return exit_code
+
+
+def one_error(code: str, message: str, *, path: str | None = None) -> dict[str, Any]:
+    error: dict[str, Any] = {"code": code, "message": message}
+    if path is not None:
+        error["path"] = path
+    return {"error": error, "ok": False}
+
+
+def validation_error(code: str, path: str, message: str) -> dict[str, str]:
+    return {"code": code, "message": message, "path": path}
+
+
+def read_stdin_json() -> tuple[Any | None, int | None]:
+    raw = sys.stdin.read()
+    try:
+        value = json.loads(raw)
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        return None, emit(one_error("INVALID_JSON", "stdin 必须是一个有效 JSON 值。"), 2)
+    if not isinstance(value, dict):
+        return None, emit(one_error("INVALID_INPUT", "stdin JSON 必须是对象。"), 2)
+    return value, None
+
+
+def check_version(value: dict[str, Any]) -> int | None:
+    version = value.get("schema_version")
+    if version != SCHEMA_VERSION:
+        return emit(
+            one_error(
+                "SCHEMA_VERSION_UNSUPPORTED",
+                f"仅支持 schema_version={SCHEMA_VERSION}。",
+                path="$.schema_version",
+            ),
+            3,
+        )
+    return None
+
+
+def validate_envelope(envelope: dict[str, Any]) -> list[dict[str, str]]:
+    errors: list[dict[str, str]] = []
+    required = {"schema_version", "request_id", "original_request", "signals"}
+    for field in sorted(required - set(envelope)):
+        errors.append(validation_error("MISSING_FIELD", f"$.{field}", f"缺少必需字段 {field}。"))
+    for field in sorted(set(envelope) - required):
+        errors.append(validation_error("UNEXPECTED_FIELD", f"$.{field}", f"不允许字段 {field}。"))
+
+    for field in ("request_id", "original_request"):
+        value = envelope.get(field)
+        if not isinstance(value, str) or not value.strip():
+            errors.append(validation_error("INVALID_FIELD", f"$.{field}", f"{field} 必须是非空字符串。"))
+
+    signals = envelope.get("signals")
+    if not isinstance(signals, dict):
+        errors.append(validation_error("INVALID_FIELD", "$.signals", "signals 必须是对象。"))
+        return errors
+
+    expected_signals = set(SIGNAL_FIELDS)
+    for field in sorted(expected_signals - set(signals)):
+        errors.append(
+            validation_error("MISSING_FIELD", f"$.signals.{field}", f"缺少必需字段 signals.{field}。")
+        )
+    for field in sorted(set(signals) - expected_signals):
+        errors.append(
+            validation_error("UNEXPECTED_FIELD", f"$.signals.{field}", f"不允许字段 signals.{field}。")
+        )
+    if signals.get("domain") not in DOMAINS:
+        errors.append(validation_error("INVALID_FIELD", "$.signals.domain", "domain 不在允许范围内。"))
+    for field in BOOLEAN_SIGNAL_FIELDS:
+        if field in signals and not isinstance(signals[field], bool):
+            errors.append(
+                validation_error("INVALID_FIELD", f"$.signals.{field}", f"signals.{field} 必须是布尔值。")
+            )
+    return errors
+
+
+def load_routes() -> dict[str, Any]:
+    with ROUTES_PATH.open("r", encoding="utf-8") as handle:
+        routes = json.load(handle)
+    if not isinstance(routes, dict) or routes.get("schema_version") != SCHEMA_VERSION:
+        raise ValueError("invalid routes configuration")
+    return routes
+
+
+def gate(envelope: dict[str, Any]) -> dict[str, Any]:
+    routes = load_routes()
+    signals = envelope["signals"]
+    selected_rule = "default_define"
+    selected_index = len(routes["priority"]) - 1
+
+    for index, rule_name in enumerate(routes["priority"]):
+        matched = False
+        if rule_name == "high_risk_value_decision":
+            matched = signals["high_risk_value_decision"] is True
+        elif rule_name == "decisive_unknowns":
+            matched = signals["decisive_unknowns"] is True
+        elif rule_name == "clear_execution":
+            required = routes["rules"][rule_name].get("requires_all", [])
+            matched = all(signals.get(field) is True for field in required)
+        elif rule_name == "default_define":
+            matched = True
+        if matched:
+            selected_rule = rule_name
+            selected_index = index
+            break
+
+    rule = routes["rules"][selected_rule]
+    mode = rule["mode"]
+    configured_resources = routes["resources"][mode]
+    if isinstance(configured_resources, dict):
+        resources = configured_resources.get(
+            signals["domain"], configured_resources.get("default", [])
+        )
+    else:
+        resources = configured_resources
+
+    raw = envelope["original_request"]
+    return {
+        "domain": signals["domain"],
+        "execution_allowed": rule["execution_allowed"],
+        "mode": mode,
+        "request_id": envelope["request_id"],
+        "request_sha256": sha256_text(raw),
+        "resources": list(resources),
+        "schema_version": SCHEMA_VERSION,
+        "trace": {
+            "priority_index": selected_index,
+            "rule": selected_rule,
+            "source": "runtime/routes.json",
+        },
+    }
+
+
+def initialize_spec(envelope: dict[str, Any], route: dict[str, Any]) -> dict[str, Any]:
+    """Create an evidence-neutral draft; semantic fields remain for the model."""
+    raw = envelope["original_request"]
+    draft = {
+        "change_evidence": [],
+        "decision_owner": "user",
+        "decisive_unknowns": [],
+        "desired_outcome": {"sources": [], "status": "unknown", "value": "当前未知"},
+        "domain": envelope["signals"]["domain"],
+        "execution_allowed": False,
+        "failure_conditions": [],
+        "gate_receipt": copy.deepcopy(route),
+        "hard_constraints": [],
+        "hidden_assumptions": [],
+        "known_facts": [],
+        "mode": route["mode"],
+        "next_test": {
+            "action": "",
+            "action_type": "evidence_collection",
+            "evidence_only": True,
+            "evidence_sought": "",
+            "low_cost": True,
+            "reversible": True,
+            "solution_commitment": "none",
+            "stops_before_solution": True,
+        },
+        "original_question": raw,
+        "original_request": raw,
+        "proxy_problem": {"sources": [], "status": "unknown", "value": "当前未知"},
+        "questions": [],
+        "request_envelope": copy.deepcopy(envelope),
+        "request_id": envelope["request_id"],
+        "request_sha256": route["request_sha256"],
+        "rewritten_problem": "",
+        "schema_version": SCHEMA_VERSION,
+        "status": "provisional",
+        "success_evidence": [],
+        "value_tradeoffs": [],
+    }
+    with SPEC_SCHEMA_PATH.open("r", encoding="utf-8") as handle:
+        required = set(json.load(handle)["required"])
+    if set(draft) != required:
+        raise ValueError("initializer is out of sync with problem-spec schema")
+    return draft
+
+
+def _is_int(value: Any) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool)
+
+
+def _walk_evidence(value: Any, path: str = "$") -> Iterable[tuple[str, dict[str, Any]]]:
+    if isinstance(value, dict):
+        if {"start", "end", "quote"}.issubset(value):
+            yield path, value
+        for key in sorted(value):
+            yield from _walk_evidence(value[key], f"{path}.{key}")
+    elif isinstance(value, list):
+        for index, item in enumerate(value):
+            yield from _walk_evidence(item, f"{path}[{index}]")
+
+
+def _semantic_strings(spec: dict[str, Any]) -> Iterable[tuple[str, str]]:
+    scalar_paths = (
+        "original_question",
+        "rewritten_problem",
+    )
+    for key in scalar_paths:
+        value = spec.get(key)
+        if isinstance(value, str):
+            yield f"$.{key}", value
+
+    for key in ("desired_outcome", "proxy_problem"):
+        item = spec.get(key)
+        if isinstance(item, dict) and isinstance(item.get("value"), str):
+            yield f"$.{key}.value", item["value"]
+
+    list_value_fields = (
+        "hidden_assumptions",
+        "known_facts",
+        "decisive_unknowns",
+        "hard_constraints",
+        "value_tradeoffs",
+    )
+    for key in list_value_fields:
+        items = spec.get(key)
+        if isinstance(items, list):
+            for index, item in enumerate(items):
+                if not isinstance(item, dict):
+                    continue
+                for subkey in ("value", "changes"):
+                    text = item.get(subkey)
+                    if isinstance(text, str):
+                        yield f"$.{key}[{index}].{subkey}", text
+
+    for key in ("success_evidence", "failure_conditions", "change_evidence"):
+        items = spec.get(key)
+        if isinstance(items, list):
+            for index, text in enumerate(items):
+                if isinstance(text, str):
+                    yield f"$.{key}[{index}]", text
+                elif (
+                    key == "success_evidence"
+                    and isinstance(text, dict)
+                    and isinstance(text.get("value"), str)
+                ):
+                    yield f"$.{key}[{index}].value", text["value"]
+
+    next_test = spec.get("next_test")
+    if isinstance(next_test, dict):
+        for key in ("action", "evidence_sought"):
+            text = next_test.get(key)
+            if isinstance(text, str):
+                yield f"$.next_test.{key}", text
+
+    questions = spec.get("questions")
+    if isinstance(questions, list):
+        for index, item in enumerate(questions):
+            if not isinstance(item, dict):
+                continue
+            for key in ("question", "changes"):
+                text = item.get(key)
+                if isinstance(text, str):
+                    yield f"$.questions[{index}].{key}", text
+
+
+def _number_tokens(text: str) -> set[str]:
+    tokens = {
+        re.sub(r"\s+", "", token)
+        for token in re.findall(r"\d+(?:\.\d+)?(?:\s*[%％])?", text)
+    }
+    chinese_number = "零〇一二两三四五六七八九十百千万亿点半"
+    patterns = (
+        rf"百分之[{chinese_number}]+",
+        rf"[{chinese_number}]+(?:秒|分钟|小时|天|日|周|星期|个月|月|年)",
+        rf"(?:人民币|美元|澳元|港币)?[{chinese_number}]+(?:元|块|万元|亿元|美元|澳元|港元)",
+        rf"[二两三四五六七八九十百千万]+(?:个)?(?:样本|案例|用户|访谈|人|次|份)",
+        rf"至少[{chinese_number}]+(?:组|种|条|项)",
+        rf"[{chinese_number}]+(?:成|[%％])",
+    )
+    for pattern in patterns:
+        tokens.update(re.findall(pattern, text))
+    return tokens
+
+
+def _require_exact_keys(
+    value: Any,
+    path: str,
+    required: set[str],
+    errors: list[dict[str, str]],
+) -> bool:
+    if not isinstance(value, dict):
+        errors.append(validation_error("INVALID_FIELD", path, f"{path} 必须是对象。"))
+        return False
+    for field in sorted(required - set(value)):
+        errors.append(validation_error("MISSING_FIELD", f"{path}.{field}", f"缺少必需字段 {field}。"))
+    for field in sorted(set(value) - required):
+        errors.append(validation_error("UNEXPECTED_FIELD", f"{path}.{field}", f"不允许字段 {field}。"))
+    return set(value) == required
+
+
+def _require_nonempty_string(value: Any, path: str, errors: list[dict[str, str]]) -> None:
+    if not isinstance(value, str):
+        errors.append(validation_error("INVALID_FIELD", path, f"{path} 必须是非空字符串。"))
+    elif not value.strip():
+        errors.append(validation_error("BLANK_STRING", path, f"{path} trim 后不得为空。"))
+
+
+def _validate_source_shape(value: Any, path: str, errors: list[dict[str, str]]) -> None:
+    if not isinstance(value, dict):
+        errors.append(validation_error("INVALID_FIELD", path, f"{path} 必须是对象。"))
+        return
+    required = {"start", "end", "quote"}
+    allowed = required | {"source_id"}
+    for field in sorted(required - set(value)):
+        errors.append(validation_error("MISSING_FIELD", f"{path}.{field}", f"缺少必需字段 {field}。"))
+    for field in sorted(set(value) - allowed):
+        errors.append(validation_error("UNEXPECTED_FIELD", f"{path}.{field}", f"不允许字段 {field}。"))
+    if not required.issubset(value) or not set(value).issubset(allowed):
+        return
+    if "source_id" in value:
+        _require_nonempty_string(value.get("source_id"), f"{path}.source_id", errors)
+    if not _is_int(value.get("start")) or value["start"] < 0:
+        errors.append(validation_error("INVALID_FIELD", f"{path}.start", "source.start 必须是非负整数。"))
+    if not _is_int(value.get("end")) or value["end"] < 1:
+        errors.append(validation_error("INVALID_FIELD", f"{path}.end", "source.end 必须是正整数。"))
+    _require_nonempty_string(value.get("quote"), f"{path}.quote", errors)
+
+
+def _validate_claim(
+    value: Any,
+    path: str,
+    errors: list[dict[str, str]],
+    *,
+    hypothesis_only: bool = False,
+) -> None:
+    if not _require_exact_keys(value, path, {"status", "value", "sources"}, errors):
+        return
+    status = value.get("status")
+    allowed = {"hypothesis"} if hypothesis_only else {"stated", "unknown", "hypothesis"}
+    if status not in allowed:
+        errors.append(validation_error("INVALID_FIELD", f"{path}.status", "claim.status 不在允许范围内。"))
+    _require_nonempty_string(value.get("value"), f"{path}.value", errors)
+    sources = value.get("sources")
+    if not isinstance(sources, list):
+        errors.append(validation_error("INVALID_FIELD", f"{path}.sources", "claim.sources 必须是数组。"))
+        return
+    for index, source in enumerate(sources):
+        _validate_source_shape(source, f"{path}.sources[{index}]", errors)
+    _validate_unique_items(sources, f"{path}.sources", errors)
+    if status == "unknown" and (value.get("value") != "当前未知" or sources):
+        errors.append(
+            validation_error(
+                "UNKNOWN_MUST_REMAIN_UNKNOWN",
+                path,
+                "unknown claim 必须保留为“当前未知”且不携带来源。",
+            )
+        )
+    if status in {"stated", "hypothesis"} and not sources:
+        errors.append(
+            validation_error(
+                "UNGROUNDED_CLAIM",
+                path,
+                "stated 或 hypothesis claim 必须有原始请求证据。",
+            )
+        )
+
+
+def _validate_success_evidence(
+    value: Any,
+    path: str,
+    errors: list[dict[str, str]],
+) -> None:
+    if not isinstance(value, list):
+        errors.append(validation_error("INVALID_FIELD", path, f"{path} 必须是数组。"))
+        return
+    for index, item in enumerate(value):
+        item_path = f"{path}[{index}]"
+        if isinstance(item, str):
+            _require_nonempty_string(item, item_path, errors)
+            continue
+        if not _require_exact_keys(item, item_path, {"value", "sources"}, errors):
+            continue
+        _require_nonempty_string(item.get("value"), f"{item_path}.value", errors)
+        sources = item.get("sources")
+        if not isinstance(sources, list) or not sources:
+            errors.append(
+                validation_error(
+                    "EMPTY_REQUIRED_EVIDENCE",
+                    f"{item_path}.sources",
+                    "已确认的成功标准必须至少引用一条用户证据。",
+                )
+            )
+            continue
+        for source_index, source in enumerate(sources):
+            _validate_source_shape(source, f"{item_path}.sources[{source_index}]", errors)
+        _validate_unique_items(sources, f"{item_path}.sources", errors)
+    _validate_unique_items(value, path, errors)
+
+
+def _normalized_claim_text(value: str) -> str:
+    return re.sub(r"[\s。！？!?，,；;：:'\"“”‘’（）()]+", "", value)
+
+
+def _claim_value_appears_in_quoted_sources(claim: Any) -> bool:
+    if not isinstance(claim, dict) or not isinstance(claim.get("value"), str):
+        return False
+    normalized_value = _normalized_claim_text(claim["value"])
+    if not normalized_value:
+        return False
+    quotes = [
+        source.get("quote")
+        for source in claim.get("sources", [])
+        if isinstance(source, dict) and isinstance(source.get("quote"), str)
+    ]
+    return any(normalized_value in _normalized_claim_text(quote) for quote in quotes)
+
+
+def _claim_uses_active_user_evidence(
+    claim: Any,
+    active_user_evidence: dict[str, str] | None,
+) -> bool:
+    if not isinstance(claim, dict) or not active_user_evidence:
+        return False
+    sources = claim.get("sources")
+    if not isinstance(sources, list) or not sources:
+        return False
+    source_ids = [
+        source.get("source_id") if isinstance(source, dict) else None
+        for source in sources
+    ]
+    return all(
+        isinstance(source_id, str)
+        and source_id.startswith(("answer:", "amendment:"))
+        and source_id in active_user_evidence
+        for source_id in source_ids
+    )
+
+
+def _success_evidence_text(value: Any) -> str | None:
+    if isinstance(value, str):
+        return value
+    if isinstance(value, dict) and isinstance(value.get("value"), str):
+        return value["value"]
+    return None
+
+
+LOW_INFORMATION_CONFIRMATIONS = frozenset(
+    {
+        "好",
+        "好的",
+        "更好",
+        "变好",
+        "很好",
+        "变优秀",
+        "改善",
+        "提升",
+        "优化",
+        "成功",
+        "可以",
+        "行",
+        "嗯",
+        "哦",
+        "不知道",
+        "不清楚",
+        "没有",
+        "随便",
+        "都行",
+        "你决定",
+        "按你说的",
+        "ok",
+        "okay",
+        "yes",
+        "no",
+        "none",
+        "unknown",
+        "na",
+        "better",
+        "improve",
+        "success",
+    }
+)
+
+
+def _is_low_information_confirmation(value: Any) -> bool:
+    if not isinstance(value, str):
+        return True
+    normalized = _normalized_claim_text(value).lower()
+    return not normalized or normalized in LOW_INFORMATION_CONFIRMATIONS
+
+
+def _acceptance_core(value: str) -> str:
+    normalized = _normalized_claim_text(value).lower()
+    confirmation_prefixes = (
+        r"^(?:我)?(?:确认|同意)(?:成功|验收)?标准(?:是|为)?",
+        r"^(?:成功|验收)?标准(?:是|为)",
+    )
+    observation_prefixes = (
+        r"^(?:用|通过)?(?:现有)?(?:数据|证据)?(?:来)?"
+        r"(?:记录|衡量|观察|检查|确认|验证)(?:我)?是否",
+        r"^(?:记录|衡量|观察|检查|确认|验证)(?:我)?是否",
+    )
+    intent_prefixes = (
+        r"^(?:我的)?目标(?:是|为)",
+        r"^(?:我)?(?:想要|想|希望|要)",
+    )
+    previous = None
+    while previous != normalized:
+        previous = normalized
+        for pattern in confirmation_prefixes + observation_prefixes + intent_prefixes:
+            normalized = re.sub(pattern, "", normalized)
+    return normalized
+
+
+def _success_evidence_is_determinate(value: Any, outcome: Any) -> bool:
+    text = _success_evidence_text(value)
+    if _is_low_information_confirmation(text) or not isinstance(text, str):
+        return False
+    normalized = _normalized_claim_text(text).lower()
+    outcome_normalized = (
+        _normalized_claim_text(outcome).lower() if isinstance(outcome, str) else ""
+    )
+    if normalized == outcome_normalized:
+        return False
+    if outcome_normalized and _acceptance_core(text) == _acceptance_core(outcome):
+        return False
+    determinate_markers = re.compile(
+        r"(?:数量|次数|时长|日期|期限|截止|完成|通过|下降|增加|减少|错误|遗漏|"
+        r"返工|等待|收入|现金|睡眠|症状|付款|签署|签收|交付|使用|保留|出现|发生|"
+        r"比例|比率|工单|样本|count|duration|deadline|completed|passed|decrease|"
+        r"increase|error|omission|rework|waiting|payment|signed|delivered|observed)",
+        re.IGNORECASE,
+    )
+    return determinate_markers.search(text) is not None or bool(_number_tokens(text))
+
+
+def _is_explicit_user_decision(value: Any) -> bool:
+    if not isinstance(value, str) or not value.strip():
+        return False
+    return re.search(
+        r"(?:我(?:选择|决定|接受|拒绝)|我的(?:选择|决定)是|"
+        r"I\s+(?:choose|decide|accept|reject))",
+        value,
+        re.IGNORECASE,
+    ) is not None
+
+
+def _contains_decision_language(value: Any) -> bool:
+    if not isinstance(value, str) or not value.strip():
+        return False
+    return re.search(
+        r"(?:选择|决定|接受|拒绝|choose|decide|accept|reject)",
+        value,
+        re.IGNORECASE,
+    ) is not None
+
+
+def _is_committed_user_decision(value: Any) -> bool:
+    if not _is_explicit_user_decision(value):
+        return False
+    assert isinstance(value, str)
+    if re.search(r"[?？]", value) or re.search(
+        r"(?:难道|究竟|到底|是否|是不是|要不要|该不该|能不能|会不会|\bwhether\b)",
+        value,
+        re.IGNORECASE,
+    ):
+        return False
+    non_commitment = re.compile(
+        r"(?:(?:我)?(?:还|仍|尚)?(?:没(?:有)?|未|无法|不能|没法|不知道(?:该|怎么|如何)?)"
+        r"(?:选择|决定|接受|拒绝)|"
+        r"(?:选择|决定|接受|拒绝)(?:不了|不下|不出来|未定|待定)|"
+        r"(?:可能|也许|或许|大概|不确定|考虑中|再看|看情况).{0,12}(?:选择|决定|接受|拒绝)|"
+        r"(?:选择|决定|接受|拒绝).{0,12}(?:可能|也许|或许|大概|不确定|待定|再看|看情况)|"
+        r"\b(?:cannot|can't|can\s+not|have\s+not|haven't|did\s+not|didn't|unable\s+to)"
+        r"\s+(?:choose|decide|accept|reject)\b)",
+        re.IGNORECASE,
+    )
+    return non_commitment.search(value) is None
+
+
+def _validate_string_array(
+    value: Any,
+    path: str,
+    errors: list[dict[str, str]],
+    *,
+    nonempty: bool = False,
+) -> None:
+    if not isinstance(value, list):
+        errors.append(validation_error("INVALID_FIELD", path, f"{path} 必须是数组。"))
+        return
+    if nonempty and not value:
+        errors.append(validation_error("EMPTY_REQUIRED_EVIDENCE", path, f"{path} 至少需要一项。"))
+    seen: set[str] = set()
+    for index, item in enumerate(value):
+        _require_nonempty_string(item, f"{path}[{index}]", errors)
+        if isinstance(item, str) and item in seen:
+            errors.append(validation_error("DUPLICATE_ITEM", f"{path}[{index}]", f"{path} 不得重复。"))
+        if isinstance(item, str):
+            seen.add(item)
+
+
+def _validate_unique_items(
+    value: Any,
+    path: str,
+    errors: list[dict[str, str]],
+) -> None:
+    if not isinstance(value, list):
+        return
+    seen: dict[str, int] = {}
+    for index, item in enumerate(value):
+        fingerprint = canonical_json(item)
+        if fingerprint in seen:
+            errors.append(
+                validation_error(
+                    "DUPLICATE_ITEM",
+                    f"{path}[{index}]",
+                    f"{path} 不得包含重复项；与索引 {seen[fingerprint]} 重复。",
+                )
+            )
+        else:
+            seen[fingerprint] = index
+
+
+def _contains_high_risk_verdict(text: str) -> bool:
+    action_classes = (
+        r"(?:不辞(?:职)?|辞职|离职|裸辞|走人|"
+        r"(?:离开|退出)(?:这|该|当前|这家|这份|这个)?(?:公司|岗位|职位|工作|团队)|"
+        r"(?:留下|留任|继续留在)(?:这|该|当前|这家|这份|这个)?(?:公司|岗位|职位|工作|团队)?|"
+        r"接受(?:外部|新的?)?(?:机会|岗位|职位|offer))",
+        r"(?:不分手|分手|结束(?:这段)?关系|离开(?:伴侣|对方)|继续(?:这段)?关系)",
+        r"(?:买入|卖出|加仓|减仓|清仓|持有|投资)",
+        r"(?:起诉|撤诉|报警|和解)",
+        r"(?:用药|停药|加药|减药|更换药物)",
+    )
+    action = "(?:" + "|".join(action_classes) + ")"
+    directive = (
+        r"(?:应该|应当|最好|必须|不要|你别|请别|千万别|"
+        r"(?<![\u4e00-\u9fff])别|建议你|我建议|我的建议是)"
+    )
+    terse = rf"(?:结论|答案|最终建议|我的判断)\s*[：:,，]?\s*(?:就是|是)?\s*{action}"
+    standalone = rf"^\s*{action}\s*[!！。.]?\s*$"
+    paraphrased = (
+        rf"(?:我的判断|综合来看|总体来看).{{0,16}}{action}|"
+        r"(?:综合来看|总体来看).{0,12}(?:继续)?(?:留下|留任).{0,8}(?:不划算|不值得|不合适)|"
+        rf"最(?:合适|优|好的).{{0,8}}(?:路径|选择).{{0,12}}{action}"
+    )
+    for clause in re.split(r"[。；;\n]", text):
+        if not clause.strip():
+            continue
+        guardrail = re.search(
+            r"(?:(?:模型|助手|AI).{0,10}(?:不得|不能|不应|禁止|避免).{0,12}(?:替|为)?用户|"
+            r"(?:不得|不能|不应|禁止|避免).{0,12}(?:模型|助手|AI|替用户|给出.{0,6}结论))",
+            clause,
+            re.IGNORECASE,
+        )
+        if guardrail is not None:
+            continue
+        if (
+            re.search(rf"{directive}.{{0,16}}{action}", clause, re.IGNORECASE) is not None
+            or re.search(terse, clause, re.IGNORECASE) is not None
+            or re.search(standalone, clause, re.IGNORECASE) is not None
+            or re.search(paraphrased, clause, re.IGNORECASE) is not None
+        ):
+            return True
+    return False
+
+
+HIGH_RISK_NON_SEMANTIC_TOP_LEVEL_FIELDS = frozenset(
+    {
+        "schema_version",
+        "request_id",
+        "request_sha256",
+        "request_envelope",
+        "gate_receipt",
+        "mode",
+        "domain",
+        "status",
+        "original_request",
+        "original_question",
+        "decision_owner",
+        "execution_allowed",
+    }
+)
+
+
+def _walk_model_semantic_strings(value: Any, path: str) -> Iterable[tuple[str, str]]:
+    if isinstance(value, dict):
+        if {"start", "end", "quote"}.issubset(value):
+            return
+        for key in sorted(value):
+            if key in {"source", "sources"}:
+                continue
+            yield from _walk_model_semantic_strings(value[key], f"{path}.{key}")
+    elif isinstance(value, list):
+        for index, item in enumerate(value):
+            yield from _walk_model_semantic_strings(item, f"{path}[{index}]")
+    elif isinstance(value, str):
+        yield path, value
+
+
+def _model_generated_semantic_strings(spec: dict[str, Any]) -> Iterable[tuple[str, str]]:
+    for key in sorted(spec):
+        if key in HIGH_RISK_NON_SEMANTIC_TOP_LEVEL_FIELDS:
+            continue
+        yield from _walk_model_semantic_strings(spec[key], f"$.{key}")
+
+
+def _constrained_output_strings(
+    spec: dict[str, Any], *, include_failure: bool, include_change: bool = True,
+    include_tradeoffs: bool = False,
+) -> Iterable[tuple[str, str]]:
+    for key in ("rewritten_problem",):
+        value = spec.get(key)
+        if isinstance(value, str):
+            yield f"$.{key}", value
+
+    evidence_fields = ["success_evidence"]
+    if include_change:
+        evidence_fields.append("change_evidence")
+    if include_failure:
+        evidence_fields.append("failure_conditions")
+    for key in evidence_fields:
+        values = spec.get(key)
+        if isinstance(values, list):
+            for index, value in enumerate(values):
+                if isinstance(value, str):
+                    yield f"$.{key}[{index}]", value
+                elif (
+                    key == "success_evidence"
+                    and isinstance(value, dict)
+                    and isinstance(value.get("value"), str)
+                ):
+                    yield f"$.{key}[{index}].value", value["value"]
+
+    next_test = spec.get("next_test")
+    if isinstance(next_test, dict):
+        for key in ("action", "evidence_sought"):
+            value = next_test.get(key)
+            if isinstance(value, str):
+                yield f"$.next_test.{key}", value
+
+    questions = spec.get("questions")
+    if isinstance(questions, list):
+        for index, question in enumerate(questions):
+            if not isinstance(question, dict):
+                continue
+            for key in ("question", "changes"):
+                value = question.get(key)
+                if isinstance(value, str):
+                    yield f"$.questions[{index}].{key}", value
+
+    if include_tradeoffs:
+        tradeoffs = spec.get("value_tradeoffs")
+        if isinstance(tradeoffs, list):
+            for index, tradeoff in enumerate(tradeoffs):
+                if isinstance(tradeoff, dict) and isinstance(tradeoff.get("value"), str):
+                    yield f"$.value_tradeoffs[{index}].value", tradeoff["value"]
+
+
+def _contains_ai_relevance_judgment(text: str) -> bool:
+    subject = (
+        r"(?:AI|人工智能|工具|ChatGPT(?:\s+Team)?|Notion\s+AI|Zapier|Claude|Copilot|自动化)"
+    )
+    judgment = r"(?:相关|适合|匹配|辅助|介入|采用|使用|接入|部署|改善|提升)"
+    return (
+        re.search(rf"{subject}.{{0,96}}{judgment}", text, re.IGNORECASE) is not None
+        or re.search(rf"{judgment}.{{0,96}}{subject}", text, re.IGNORECASE) is not None
+    )
+
+
+def _contains_ai_or_tool_reference(text: str) -> bool:
+    without_allowed_phrase = re.sub(r"无\s*AI\s*基线", "", text, flags=re.IGNORECASE)
+    subject = (
+        r"(?:(?<![A-Za-z0-9])AI(?![A-Za-z0-9])|人工智能|工具|ChatGPT(?:\s+Team)?|"
+        r"Notion(?:\s+AI)?|Zapier|Slack|Claude|Copilot)"
+    )
+    return re.search(subject, without_allowed_phrase, re.IGNORECASE) is not None
+
+
+def _contains_candidate_use_case_menu(text: str) -> bool:
+    return re.search(r"(?:例如|比如|譬如).{0,80}(?:、|，|/|或者|还是)", text) is not None
+
+
+def _efficiency_outcome_is_solution_label(text: str) -> bool:
+    if _contains_ai_or_tool_reference(text):
+        return True
+    return re.search(r"(?:自动化|提效|(?:提高|提升|改善|优化)?\s*(?:效率|效能))", text) is not None
+
+
+def _contains_single_sample_reference(text: str) -> bool:
+    return re.search(
+        r"(?:一个|单个|一份|一条)(?:已有|现有|近期|真实)?(?:的)?(?:样本|记录|案例|访谈|交付)",
+        text,
+    ) is not None
+
+
+def _claim_is_negated(text: str, claim_start: int) -> bool:
+    prefix = text[max(0, claim_start - 28):claim_start]
+    return re.search(
+        r"(?:不足以|不能|无法|不得|不用于|不应|尚不能|不声称|不主张|未能)"
+        r"[^，。；;\n]{0,24}$",
+        prefix,
+    ) is not None
+
+
+def _contains_single_sample_overclaim(text: str) -> bool:
+    dominant_loss = re.compile(
+        r"(?:找出|找到|确认|确定|定位|识别|证明|显示|表明|得出)"
+        r"[^，。；;\n]{0,10}(?:最大|主要)(?:的)?损失"
+    )
+    representative_baseline = re.compile(
+        r"(?:形成|建立|确认|得到|得出)[^，。；;\n]{0,8}代表性基线|"
+        r"已(?:经)?(?:形成|建立)(?:了)?基线"
+    )
+    for pattern in (dominant_loss, representative_baseline):
+        for match in pattern.finditer(text):
+            if not _claim_is_negated(text, match.start()):
+                return True
+    return False
+
+
+def _contains_delay_or_reply_tactic(text: str) -> bool:
+    delay = (
+        r"(?:保留选择|不锁死|再决定|之后再决定|稍后再决定|"
+        r"暂不|暂时不|先不|不急于|维持现状|延后|推迟|拖延|"
+        r"再给出(?:正式)?决定|先确认.{0,20}再.{0,12}决定)"
+    )
+    reply = (
+        r"(?:(?:起草|拟|写|生成).{0,12}(?:回复|话术|消息|邮件|短信)|"
+        r"具体回复话术|(?:只|先|请)?回复(?:老板|导师|伴侣|对方|医生|律师|顾问))"
+    )
+    return re.search(delay, text) is not None or re.search(reply, text) is not None
+
+
+def _contains_ungrounded_option_consequence(text: str) -> bool:
+    option = r"(?:留下|留任|继续留在|离开|辞职|不辞职|分手|不分手|买入|卖出|起诉|不起诉|用药|停药)"
+    connector = r"(?:=|＝|意味着|等于|会|将|必然|注定|导致|换来)"
+    uncertainty = r"(?:是否|可能|也许|或许|尚未知|未知|不确定|会不会)"
+    for clause in re.split(r"[。；;\n]", text):
+        if re.search(uncertainty, clause):
+            continue
+        if re.search(rf"{option}\s*{connector}\s*\S+", clause):
+            return True
+    return False
+
+
+def _ai_product_demand_is_unknown(spec: dict[str, Any]) -> bool:
+    unknowns = spec.get("decisive_unknowns")
+    if not isinstance(unknowns, list):
+        return False
+    return any(
+        isinstance(item, dict)
+        and item.get("category") in {"target_user", "recurring_pain", "payment_evidence"}
+        for item in unknowns
+    )
+
+
+def _contains_premature_product_implementation(text: str) -> bool:
+    pattern = (
+        r"(?:假门|fake[- ]?door|manual\s+concierge|concierge|手工增强|人工增强|"
+        r"人工代跑|手工代跑|人肉代跑|人工礼宾|手工服务|原型|MVP)"
+    )
+    return re.search(pattern, text, re.IGNORECASE) is not None
+
+
+def _contains_competitor_page_as_evidence(text: str) -> bool:
+    page = r"(?:竞品|竞争对手).{0,20}(?:付费|价格|报价|收费|定价)(?:页面|页)?"
+    evidence = r"(?:当作|视为|证明|作为).{0,30}(?:需求|付费证据|需求证据)"
+    return re.search(page, text) is not None and re.search(evidence, text) is not None
+
+
+def _contains_ai_product_form_bias(text: str) -> bool:
+    pattern = (
+        r"(?:AI\s*(?:相关)?(?:痛点|需求)|AI\s*场景(?:需求|痛点)|"
+        r"(?:痛点|需求).{0,12}AI\s*(?:场景|应用)?)"
+    )
+    return re.search(pattern, text, re.IGNORECASE) is not None
+
+
+def _contains_conditional_target_rewrite(text: str) -> bool:
+    return re.search(
+        r"(?:(?:应|应该|需要).{0,4}把(?:用户)?目标改(?:为|成)|"
+        r"目标(?:应|应该)改(?:为|成)|"
+        r"(?:计划|方案)\s*(?:应|应该|需要)?\s*(?:转向|改为|改成))",
+        text,
+    ) is not None
+
+
+def _contains_sunk_cost_feedback(text: str) -> bool:
+    forward = (
+        r"(?:不能|不要|不应|别|避免)?(?:让)?[^，。；;\n]{0,6}(?:浪费|白费)"
+        r"[^，。；;\n]{0,14}(?:既有|已有|已经|现有|投入|功能|开发|成本)"
+    )
+    reverse = (
+        r"(?:既有|已有|已经|现有)[^，。；;\n]{0,14}(?:投入|功能|开发|成本)"
+        r"[^，。；;\n]{0,8}(?:不能|不要|不应|别|避免)?(?:浪费|白费)"
+    )
+    return re.search(forward, text) is not None or re.search(reverse, text) is not None
+
+
+def validate_spec(
+    spec: dict[str, Any],
+    *,
+    evidence_sources: dict[str, str] | None = None,
+    active_user_evidence: dict[str, str] | None = None,
+    allow_confirmed: bool = False,
+) -> list[dict[str, str]]:
+    errors: list[dict[str, str]] = []
+
+    for field in REQUIRED_SPEC_FIELDS:
+        if field not in spec:
+            errors.append(validation_error("MISSING_FIELD", f"$.{field}", f"缺少必需字段 {field}。"))
+
+    for field in sorted(set(spec) - ALLOWED_SPEC_FIELDS):
+        if spec.get("mode") == "defer_to_user" and field in HIGH_RISK_VERDICT_FIELDS:
+            errors.append(
+                validation_error(
+                    "HIGH_RISK_VERDICT_FORBIDDEN",
+                    f"$.{field}",
+                    "高风险价值决定不得包含模型拍板字段。",
+                )
+            )
+        errors.append(validation_error("UNEXPECTED_FIELD", f"$.{field}", f"不允许字段 {field}。"))
+
+    raw = spec.get("original_request")
+    if not isinstance(raw, str):
+        errors.append(validation_error("INVALID_FIELD", "$.original_request", "original_request 必须是字符串。"))
+        raw = ""
+
+    request_envelope = spec.get("request_envelope")
+    expected_receipt: dict[str, Any] | None = None
+    envelope_errors: list[dict[str, str]] = []
+    if not isinstance(request_envelope, dict):
+        envelope_errors.append(
+            validation_error(
+                "INVALID_FIELD",
+                "$.request_envelope",
+                "request_envelope 必须是对象。",
+            )
+        )
+    else:
+        envelope_errors = validate_envelope(request_envelope)
+        if request_envelope.get("schema_version") != SCHEMA_VERSION:
+            envelope_errors.append(
+                validation_error(
+                    "INVALID_FIELD",
+                    "$.request_envelope.schema_version",
+                    "request_envelope.schema_version 不匹配。",
+                )
+            )
+    if envelope_errors:
+        errors.append(
+            validation_error(
+                "GATE_BINDING_ENVELOPE_INVALID",
+                "$.request_envelope",
+                "request_envelope 不满足 gate 输入契约。",
+            )
+        )
+    else:
+        assert isinstance(request_envelope, dict)
+        expected_receipt = gate(request_envelope)
+        if spec.get("gate_receipt") != expected_receipt:
+            errors.append(
+                validation_error(
+                    "GATE_RECEIPT_MISMATCH",
+                    "$.gate_receipt",
+                    "gate_receipt 必须与 validator 重跑 gate 的结果完全一致。",
+                )
+            )
+        bound_fields = {
+            "request_id": request_envelope["request_id"],
+            "request_sha256": expected_receipt["request_sha256"],
+            "original_request": request_envelope["original_request"],
+            "mode": expected_receipt["mode"],
+            "domain": expected_receipt["domain"],
+            "execution_allowed": expected_receipt["execution_allowed"],
+        }
+        mismatched = [field for field, expected in bound_fields.items() if spec.get(field) != expected]
+        if mismatched:
+            errors.append(
+                validation_error(
+                    "SPEC_GATE_BINDING_MISMATCH",
+                    "$." + mismatched[0],
+                    "Problem Spec 与 gate 绑定字段不一致：" + ", ".join(mismatched) + "。",
+                )
+            )
+
+    _require_nonempty_string(spec.get("request_id"), "$.request_id", errors)
+    supplied_hash = spec.get("request_sha256")
+    if not isinstance(supplied_hash, str) or re.fullmatch(r"[a-f0-9]{64}", supplied_hash) is None:
+        errors.append(validation_error("INVALID_FIELD", "$.request_sha256", "request_sha256 必须是 64 位小写十六进制字符串。"))
+
+    if isinstance(supplied_hash, str) and supplied_hash != sha256_text(raw):
+        errors.append(
+            validation_error(
+                "REQUEST_HASH_MISMATCH",
+                "$.request_sha256",
+                "request_sha256 与 original_request 不匹配。",
+            )
+        )
+
+    mode = spec.get("mode")
+    if mode not in {"execute", "define", "defer_to_user"}:
+        errors.append(validation_error("INVALID_MODE", "$.mode", "mode 值无效。"))
+    if mode == "execute":
+        errors.append(
+            validation_error(
+                "PROBLEM_SPEC_FOR_EXECUTE",
+                "$.mode",
+                "execute 模式应直接执行，不应构造 Problem Spec。",
+            )
+        )
+
+    if spec.get("domain") not in DOMAINS:
+        errors.append(validation_error("INVALID_FIELD", "$.domain", "domain 不在允许范围内。"))
+    status = spec.get("status")
+    if status not in {"provisional", "confirmed"}:
+        errors.append(validation_error("INVALID_FIELD", "$.status", "status 不在允许范围内。"))
+    if status == "confirmed" and not allow_confirmed:
+        errors.append(
+            validation_error(
+                "CONFIRMED_REQUIRES_STATE",
+                "$.status",
+                "confirmed 必须在可审计状态中由 advance 收敛，不能单独声明。",
+            )
+        )
+
+    original_question = spec.get("original_question")
+    _require_nonempty_string(original_question, "$.original_question", errors)
+    if isinstance(original_question, str) and original_question and original_question not in raw:
+        errors.append(
+            validation_error(
+                "ORIGINAL_QUESTION_MISMATCH",
+                "$.original_question",
+                "original_question 必须是 original_request 中的连续原文。",
+            )
+        )
+
+    _validate_claim(spec.get("desired_outcome"), "$.desired_outcome", errors)
+    _validate_claim(spec.get("proxy_problem"), "$.proxy_problem", errors)
+
+    assumptions = spec.get("hidden_assumptions")
+    if not isinstance(assumptions, list):
+        errors.append(validation_error("INVALID_FIELD", "$.hidden_assumptions", "hidden_assumptions 必须是数组。"))
+    else:
+        for index, item in enumerate(assumptions):
+            _validate_claim(item, f"$.hidden_assumptions[{index}]", errors, hypothesis_only=True)
+        _validate_unique_items(assumptions, "$.hidden_assumptions", errors)
+
+    facts = spec.get("known_facts")
+    if not isinstance(facts, list):
+        errors.append(validation_error("INVALID_FIELD", "$.known_facts", "known_facts 必须是数组。"))
+    else:
+        fact_value_indexes: dict[str, int] = {}
+        for index, item in enumerate(facts):
+            path = f"$.known_facts[{index}]"
+            if _require_exact_keys(item, path, {"value", "source"}, errors):
+                fact_value = item.get("value")
+                _require_nonempty_string(fact_value, f"{path}.value", errors)
+                if isinstance(fact_value, str) and fact_value.strip():
+                    normalized_fact_value = fact_value.strip()
+                    if normalized_fact_value in fact_value_indexes:
+                        errors.append(
+                            validation_error(
+                                "DUPLICATE_FACT_VALUE",
+                                f"{path}.value",
+                                "known_facts.value 去除首尾空白后不得重复；"
+                                f"与索引 {fact_value_indexes[normalized_fact_value]} 重复。",
+                            )
+                        )
+                    else:
+                        fact_value_indexes[normalized_fact_value] = index
+                if "source" in item:
+                    _validate_source_shape(item["source"], f"{path}.source", errors)
+        _validate_unique_items(facts, "$.known_facts", errors)
+
+    unknowns = spec.get("decisive_unknowns")
+    seen_unknown_ids: set[str] = set()
+    unknown_ids_by_category: dict[str, set[str]] = {}
+    if not isinstance(unknowns, list):
+        errors.append(validation_error("INVALID_FIELD", "$.decisive_unknowns", "decisive_unknowns 必须是数组。"))
+    else:
+        for index, item in enumerate(unknowns):
+            path = f"$.decisive_unknowns[{index}]"
+            if _require_exact_keys(item, path, {"id", "category", "value", "changes"}, errors):
+                unknown_id = item.get("id")
+                valid_unknown_id = (
+                    isinstance(unknown_id, str)
+                    and re.fullmatch(r"u[1-9][0-9]*", unknown_id) is not None
+                )
+                if not valid_unknown_id:
+                    errors.append(
+                        validation_error(
+                            "INVALID_UNKNOWN_ID",
+                            f"{path}.id",
+                            "decisive_unknown.id 必须为 u1、u2 等稳定 ID。",
+                        )
+                    )
+                elif unknown_id in seen_unknown_ids:
+                    errors.append(
+                        validation_error(
+                            "DUPLICATE_UNKNOWN_ID",
+                            f"{path}.id",
+                            "decisive_unknown.id 不得重复。",
+                        )
+                    )
+                if isinstance(unknown_id, str):
+                    seen_unknown_ids.add(unknown_id)
+                category = item.get("category")
+                if not isinstance(category, str) or category not in PROBLEM_CATEGORIES:
+                    errors.append(
+                        validation_error(
+                            "INVALID_UNKNOWN_CATEGORY",
+                            f"{path}.category",
+                            "decisive_unknown.category 不在允许范围内。",
+                        )
+                    )
+                elif valid_unknown_id:
+                    unknown_ids_by_category.setdefault(category, set()).add(unknown_id)
+                _require_nonempty_string(item.get("value"), f"{path}.value", errors)
+                _require_nonempty_string(item.get("changes"), f"{path}.changes", errors)
+        _validate_unique_items(unknowns, "$.decisive_unknowns", errors)
+
+    constraints = spec.get("hard_constraints")
+    allowed_constraint_types = {
+        "deadline", "budget", "safety", "legal", "ethical", "scope", "resource",
+        "health", "non_negotiable_preference",
+    }
+    if not isinstance(constraints, list):
+        errors.append(validation_error("INVALID_FIELD", "$.hard_constraints", "hard_constraints 必须是数组。"))
+    else:
+        for index, item in enumerate(constraints):
+            path = f"$.hard_constraints[{index}]"
+            if _require_exact_keys(item, path, {"value", "constraint_type", "source"}, errors):
+                _require_nonempty_string(item.get("value"), f"{path}.value", errors)
+                constraint_type = item.get("constraint_type")
+                if constraint_type == "sunk_cost":
+                    errors.append(
+                        validation_error(
+                            "SUNK_COST_NOT_CONSTRAINT",
+                            f"{path}.constraint_type",
+                            "沉没成本是事实或压力，不是硬约束。",
+                        )
+                    )
+                elif constraint_type not in allowed_constraint_types:
+                    errors.append(validation_error("INVALID_FIELD", f"{path}.constraint_type", "constraint_type 不在允许范围内。"))
+                if "source" in item:
+                    _validate_source_shape(item["source"], f"{path}.source", errors)
+        _validate_unique_items(constraints, "$.hard_constraints", errors)
+
+    tradeoffs = spec.get("value_tradeoffs")
+    if not isinstance(tradeoffs, list):
+        errors.append(validation_error("INVALID_FIELD", "$.value_tradeoffs", "value_tradeoffs 必须是数组。"))
+    else:
+        for index, item in enumerate(tradeoffs):
+            path = f"$.value_tradeoffs[{index}]"
+            if _require_exact_keys(item, path, {"value", "decision_owner"}, errors):
+                _require_nonempty_string(item.get("value"), f"{path}.value", errors)
+                if item.get("decision_owner") != "user":
+                    errors.append(validation_error("INVALID_DECISION_OWNER", f"{path}.decision_owner", "价值取舍的 decision_owner 必须为 user。"))
+        _validate_unique_items(tradeoffs, "$.value_tradeoffs", errors)
+
+    _validate_success_evidence(spec.get("success_evidence"), "$.success_evidence", errors)
+    _validate_string_array(spec.get("failure_conditions"), "$.failure_conditions", errors, nonempty=True)
+    _validate_string_array(spec.get("change_evidence"), "$.change_evidence", errors, nonempty=True)
+    _require_nonempty_string(spec.get("rewritten_problem"), "$.rewritten_problem", errors)
+
+    next_test = spec.get("next_test")
+    next_test_fields = {
+        "action",
+        "evidence_sought",
+        "reversible",
+        "low_cost",
+        "stops_before_solution",
+        "action_type",
+        "evidence_only",
+        "solution_commitment",
+    }
+    if _require_exact_keys(next_test, "$.next_test", next_test_fields, errors):
+        _require_nonempty_string(next_test.get("action"), "$.next_test.action", errors)
+        _require_nonempty_string(next_test.get("evidence_sought"), "$.next_test.evidence_sought", errors)
+        action_type = next_test.get("action_type")
+        if action_type not in NEXT_TEST_ACTION_TYPES:
+            errors.append(
+                validation_error(
+                    "INVALID_NEXT_TEST_ACTION_TYPE",
+                    "$.next_test.action_type",
+                    "next_test.action_type 不在允许枚举内。",
+                )
+            )
+        if (
+            action_type in NEXT_TEST_ACTION_TYPES
+            and (
+                action_type != "evidence_collection"
+                or next_test.get("evidence_only") is not True
+                or next_test.get("solution_commitment") != "none"
+            )
+        ):
+            errors.append(
+                validation_error(
+                    "NEXT_TEST_STOP_BOUNDARY_VIOLATION",
+                    "$.next_test",
+                    "Problem Spec 的 next_test 只能收集证据，且不得设计、实施、决策、沟通或承诺方案。",
+                )
+            )
+
+    questions = spec.get("questions")
+    if not isinstance(questions, list):
+        errors.append(validation_error("INVALID_FIELD", "$.questions", "questions 必须是数组。"))
+    elif len(questions) > 3:
+        errors.append(
+            validation_error(
+                "TOO_MANY_QUESTIONS",
+                "$.questions",
+                "高价值问题最多三个。",
+            )
+        )
+    if isinstance(questions, list):
+        seen_question_ids: set[str] = set()
+        addressed_unknown_ids: set[str] = set()
+        for index, item in enumerate(questions):
+            path = f"$.questions[{index}]"
+            if not _require_exact_keys(
+                item,
+                path,
+                {"id", "question", "changes", "addresses"},
+                errors,
+            ):
+                continue
+            question_id = item.get("id")
+            if not isinstance(question_id, str) or re.fullmatch(r"q[1-3]", question_id) is None:
+                errors.append(validation_error("INVALID_FIELD", f"{path}.id", "question.id 必须为 q1、q2 或 q3。"))
+            elif question_id in seen_question_ids:
+                errors.append(validation_error("DUPLICATE_QUESTION_ID", f"{path}.id", "question.id 不得重复。"))
+            if isinstance(question_id, str):
+                seen_question_ids.add(question_id)
+            _require_nonempty_string(item.get("question"), f"{path}.question", errors)
+            _require_nonempty_string(item.get("changes"), f"{path}.changes", errors)
+            addresses = item.get("addresses")
+            if not isinstance(addresses, list) or not addresses:
+                errors.append(
+                    validation_error(
+                        "INVALID_QUESTION_ADDRESSES",
+                        f"{path}.addresses",
+                        "question.addresses 必须包含至少一个问题类别。",
+                    )
+                )
+            else:
+                seen_addresses: set[str] = set()
+                for address_index, address in enumerate(addresses):
+                    address_path = f"{path}.addresses[{address_index}]"
+                    valid_address = (
+                        isinstance(address, str)
+                        and re.fullmatch(r"u[1-9][0-9]*", address) is not None
+                    )
+                    if not valid_address:
+                        errors.append(
+                            validation_error(
+                                "INVALID_QUESTION_ADDRESS",
+                                address_path,
+                                "question.addresses 必须引用 u1、u2 等 unknown ID。",
+                            )
+                        )
+                    elif address not in seen_unknown_ids:
+                        errors.append(
+                            validation_error(
+                                "QUESTION_ADDRESS_UNKNOWN_ID",
+                                address_path,
+                                "question.addresses 必须引用现有 decisive_unknown.id。",
+                            )
+                        )
+                    if isinstance(address, str) and address in seen_addresses:
+                        errors.append(
+                            validation_error(
+                                "DUPLICATE_QUESTION_ADDRESS",
+                                address_path,
+                                "question.addresses 不得重复。",
+                            )
+                        )
+                    if isinstance(address, str):
+                        seen_addresses.add(address)
+                    if valid_address and address in seen_unknown_ids:
+                        addressed_unknown_ids.add(address)
+    else:
+        addressed_unknown_ids = set()
+
+    coverage = DOMAIN_CATEGORY_COVERAGE.get(spec.get("domain"))
+    if spec.get("domain") == "career" and mode == "defer_to_user":
+        coverage = CAREER_EXIT_CATEGORY_COVERAGE
+    if coverage is not None and isinstance(unknowns, list) and unknowns:
+        coverage_code, required_categories = coverage
+        unknown_categories = set(unknown_ids_by_category)
+        covered_categories = {
+            category
+            for category, unknown_ids in unknown_ids_by_category.items()
+            if unknown_ids.intersection(addressed_unknown_ids)
+        }
+        missing_unknowns = sorted(required_categories - unknown_categories)
+        missing_addresses = sorted(required_categories - covered_categories)
+        if missing_unknowns or missing_addresses:
+            details: list[str] = []
+            if missing_unknowns:
+                details.append("decisive_unknowns 缺少 " + ", ".join(missing_unknowns))
+            if missing_addresses:
+                details.append("questions.addresses 缺少 " + ", ".join(missing_addresses))
+            errors.append(
+                validation_error(
+                    coverage_code,
+                    "$.decisive_unknowns" if missing_unknowns else "$.questions",
+                    "；".join(details) + "。",
+                )
+            )
+
+    decisive_unknowns = spec.get("decisive_unknowns")
+    if isinstance(decisive_unknowns, list) and decisive_unknowns and spec.get("execution_allowed") is True:
+        errors.append(
+            validation_error(
+                "DECISIVE_UNKNOWNS_BLOCK_EXECUTION",
+                "$.execution_allowed",
+                "存在决定性未知时不得进入执行。",
+            )
+        )
+
+    if mode in {"define", "defer_to_user"} and spec.get("execution_allowed") is not False:
+        errors.append(
+            validation_error(
+                "EXECUTION_NOT_ALLOWED",
+                "$.execution_allowed",
+                "define 和 defer_to_user 模式的 execution_allowed 必须为 false。",
+            )
+        )
+
+    available_sources = {"request": raw}
+    if evidence_sources is not None:
+        available_sources.update(evidence_sources)
+    for path, evidence in _walk_evidence(spec):
+        start = evidence.get("start")
+        end = evidence.get("end")
+        quote = evidence.get("quote")
+        source_id = evidence.get("source_id", "request")
+        source_text = available_sources.get(source_id) if isinstance(source_id, str) else None
+        valid_span = (
+            isinstance(source_text, str)
+            and
+            _is_int(start)
+            and _is_int(end)
+            and isinstance(quote, str)
+            and 0 <= start <= end <= len(source_text)
+            and source_text[start:end] == quote
+        )
+        if not valid_span:
+            errors.append(
+                validation_error(
+                    "EVIDENCE_SPAN_MISMATCH",
+                    path,
+                    "证据 source_id 必须可用，且 quote 必须与对应来源的 start/end 切片完全相同。",
+                )
+            )
+
+    source_numbers: set[str] = set()
+    for source_text in available_sources.values():
+        source_numbers.update(_number_tokens(source_text))
+    numeric_error_paths: set[str] = set()
+    for path, text in _semantic_strings(spec):
+        for token in _number_tokens(text):
+            if token not in source_numbers and path not in numeric_error_paths:
+                numeric_error_paths.add(path)
+                errors.append(
+                    validation_error(
+                        "UNSOURCED_NUMERIC_THRESHOLD",
+                        path,
+                        f"数字 {token} 未出现在用户原始请求中。",
+                    )
+                )
+
+    if isinstance(next_test, dict):
+        expected_flags = {
+            "reversible": True,
+            "low_cost": True,
+            "stops_before_solution": True,
+        }
+        for key, expected in expected_flags.items():
+            if next_test.get(key) is not expected:
+                errors.append(
+                    validation_error(
+                        "INVALID_NEXT_TEST_BOUNDARY",
+                        f"$.next_test.{key}",
+                        f"{key} 必须为 {str(expected).lower()}。",
+                    )
+                )
+
+    if spec.get("decision_owner") != "user":
+        errors.append(
+            validation_error(
+                "INVALID_DECISION_OWNER",
+                "$.decision_owner",
+                "decision_owner 必须为 user。",
+            )
+        )
+
+    desired_outcome = spec.get("desired_outcome")
+    if status == "confirmed":
+        unresolved_ids = [
+            item.get("id")
+            for item in decisive_unknowns
+            if isinstance(item, dict) and isinstance(item.get("id"), str)
+        ] if isinstance(decisive_unknowns, list) else []
+        if unresolved_ids:
+            errors.append(
+                validation_error(
+                    "CONFIRMED_WITH_UNRESOLVED_UNKNOWNS",
+                    "$.decisive_unknowns",
+                    "confirmed 不得保留决定性未知。",
+                )
+            )
+        if not isinstance(desired_outcome, dict) or desired_outcome.get("status") != "stated":
+            errors.append(
+                validation_error(
+                    "CONFIRMED_OUTCOME_NOT_STATED",
+                    "$.desired_outcome",
+                    "confirmed 的现实结果必须是用户已陈述事实，不能是 unknown 或 hypothesis。",
+                )
+            )
+        elif not _claim_value_appears_in_quoted_sources(desired_outcome):
+            errors.append(
+                validation_error(
+                    "CONFIRMED_OUTCOME_NOT_SOURCE_TEXT",
+                    "$.desired_outcome.value",
+                    "confirmed 的现实结果必须保留为证据 quote 中出现的用户原话，而不是无关改写。",
+                )
+            )
+        if isinstance(desired_outcome, dict) and not _claim_uses_active_user_evidence(
+            desired_outcome,
+            active_user_evidence,
+        ):
+            errors.append(
+                validation_error(
+                    "CONFIRMED_OUTCOME_NOT_ACTIVE_USER_SUPPORTED",
+                    "$.desired_outcome.sources",
+                    "confirmed 的现实结果必须引用当前 active 的 answer 或 amendment，不能只引用原始请求或失效证据。",
+                )
+            )
+        if isinstance(desired_outcome, dict) and _is_low_information_confirmation(
+            desired_outcome.get("value")
+        ):
+            errors.append(
+                validation_error(
+                    "CONFIRMED_OUTCOME_NOT_DETERMINATE",
+                    "$.desired_outcome.value",
+                    "confirmed 的现实结果不能只是“好、可以、不知道、没有”等低信息回应。",
+                )
+            )
+        success_evidence = spec.get("success_evidence")
+        if not isinstance(success_evidence, list) or not success_evidence:
+            errors.append(
+                validation_error(
+                    "CONFIRMED_SUCCESS_EVIDENCE_REQUIRED",
+                    "$.success_evidence",
+                    "confirmed 必须至少声明一项可验证的成功证据。",
+                )
+            )
+        else:
+            if not all(
+                isinstance(item, dict)
+                and _claim_uses_active_user_evidence(item, active_user_evidence)
+                and _claim_value_appears_in_quoted_sources(item)
+                for item in success_evidence
+            ):
+                errors.append(
+                    validation_error(
+                        "CONFIRMED_SUCCESS_EVIDENCE_NOT_USER_SUPPORTED",
+                        "$.success_evidence",
+                        "confirmed 的每项成功标准都必须由后续 active answer 或 amendment 明确确认；模型提出的标准只能保留在 provisional。",
+                    )
+                )
+            if not all(
+                _success_evidence_is_determinate(
+                    item,
+                    desired_outcome.get("value") if isinstance(desired_outcome, dict) else None,
+                )
+                for item in success_evidence
+            ):
+                errors.append(
+                    validation_error(
+                        "CONFIRMED_SUCCESS_EVIDENCE_NOT_DETERMINATE",
+                        "$.success_evidence",
+                        "confirmed 的成功标准必须比目标更可判定，不能只用记录、是否或验收等元措辞重述目标。",
+                    )
+                )
+        if isinstance(questions, list) and questions:
+            errors.append(
+                validation_error(
+                    "CONFIRMED_WITH_PENDING_QUESTIONS",
+                    "$.questions",
+                    "confirmed 不得继续安排问题。",
+                )
+            )
+
+    if (
+        isinstance(desired_outcome, dict)
+        and desired_outcome.get("status") == "unknown"
+        and isinstance(decisive_unknowns, list)
+        and len(decisive_unknowns) > 1
+        and isinstance(questions, list)
+        and not questions
+    ):
+        errors.append(
+            validation_error(
+                "DECISIVE_UNKNOWNS_REQUIRE_QUESTIONS",
+                "$.questions",
+                "真实结果未知且有多项决定性未知时，需要一至三个高价值问题。",
+            )
+        )
+
+    if spec.get("domain") == "ai_efficiency":
+        if isinstance(desired_outcome, dict) and desired_outcome.get("status") != "unknown":
+            outcome_value = desired_outcome.get("value")
+            if isinstance(outcome_value, str) and _efficiency_outcome_is_solution_label(outcome_value):
+                errors.append(
+                    validation_error(
+                        "AI_EFFICIENCY_OUTCOME_NOT_OBSERVABLE",
+                        "$.desired_outcome.value",
+                        "AI、工具、自动化或泛化效率标签不是可观察的现实结果。",
+                    )
+                )
+
+    if spec.get("domain") == "ai_efficiency" and isinstance(decisive_unknowns, list) and decisive_unknowns:
+        constrained_fields = list(_constrained_output_strings(spec, include_failure=False))
+        for path, text in constrained_fields:
+            if _contains_ai_or_tool_reference(text) or _contains_ai_relevance_judgment(text):
+                errors.append(
+                    validation_error(
+                        "AI_EFFICIENCY_PREMATURE_JUDGMENT",
+                        path,
+                        "决定性未知存在时，必须停在流程损失与无 AI 基线，不得判断 AI 或工具是否相关。",
+                    )
+                )
+        if isinstance(questions, list):
+            for index, item in enumerate(questions):
+                if isinstance(item, dict) and isinstance(item.get("question"), str):
+                    if _contains_candidate_use_case_menu(item["question"]):
+                        errors.append(
+                            validation_error(
+                                "AI_EFFICIENCY_USE_CASE_MENU_FORBIDDEN",
+                                f"$.questions[{index}].question",
+                                "决定性未知时，问题不得用‘例如/比如’枚举候选用例菜单。",
+                            )
+                        )
+        if any(_contains_single_sample_reference(text) for _, text in constrained_fields):
+            for path, text in constrained_fields:
+                if _contains_single_sample_overclaim(text):
+                    errors.append(
+                        validation_error(
+                            "SINGLE_SAMPLE_OVERCLAIMS_BASELINE",
+                            path,
+                            "单个样本只能标记候选损失，不得确认最大或主要损失，也不得形成代表性基线。",
+                        )
+                    )
+
+    if spec.get("domain") == "ai_product":
+        if isinstance(desired_outcome, dict) and desired_outcome.get("status") != "unknown":
+            outcome_value = desired_outcome.get("value")
+            if isinstance(outcome_value, str) and re.search(
+                r"(?:方案|功能清单|功能列表|技术栈|收费方案|定价方案|开发排期|PRD|产品原型|"
+                r"(?:做出|上线|交付|完成|搭建|开发|构建|发布)\s*(?:AI\s*App|App|应用|产品|平台|软件)|"
+                r"(?:AI\s*App|App|应用|产品|平台|软件)本身)",
+                outcome_value,
+                re.IGNORECASE,
+            ):
+                errors.append(
+                    validation_error(
+                        "AI_PRODUCT_DELIVERABLE_NOT_OUTCOME",
+                        "$.desired_outcome.value",
+                        "方案、功能、技术、收费或排期交付物不是已证实的现实结果。",
+                    )
+                )
+        if _ai_product_demand_is_unknown(spec):
+            product_fields = list(_constrained_output_strings(
+                spec,
+                include_failure=False,
+                include_tradeoffs=True,
+            ))
+            for path, text in product_fields:
+                if _contains_premature_product_implementation(text):
+                    errors.append(
+                        validation_error(
+                            "AI_PRODUCT_PREMATURE_IMPLEMENTATION",
+                            path,
+                            "重复需求证据未知时，不得引入假门、人工代跑或其他实施选项。",
+                        )
+                    )
+                if _contains_competitor_page_as_evidence(text):
+                    errors.append(
+                        validation_error(
+                            "AI_PRODUCT_COMPETITOR_EVIDENCE_FORBIDDEN",
+                            path,
+                            "竞品付费或报价页面不能证明本项目存在需求或付费证据。",
+                        )
+                    )
+                if _contains_ai_product_form_bias(text):
+                    errors.append(
+                        validation_error(
+                            "AI_PRODUCT_FORM_BIAS",
+                            path,
+                            "需求未知时，不得把取证对象预先限定为 AI 相关痛点或 AI 场景需求。",
+                        )
+                    )
+                if path.startswith("$.change_evidence[") and _contains_conditional_target_rewrite(text):
+                    errors.append(
+                        validation_error(
+                            "AI_PRODUCT_TARGET_REWRITE_FORBIDDEN",
+                            path,
+                            "change_evidence 可改变判断，不得用条件句替用户改写目标。",
+                        )
+                    )
+            feedback_fields: list[tuple[str, str]] = []
+            rewritten = spec.get("rewritten_problem")
+            if isinstance(rewritten, str):
+                feedback_fields.append(("$.rewritten_problem", rewritten))
+            if isinstance(questions, list):
+                for index, question in enumerate(questions):
+                    if not isinstance(question, dict):
+                        continue
+                    for key in ("question", "changes"):
+                        value = question.get(key)
+                        if isinstance(value, str):
+                            feedback_fields.append((f"$.questions[{index}].{key}", value))
+            for path, text in feedback_fields:
+                if _contains_sunk_cost_feedback(text):
+                    errors.append(
+                        validation_error(
+                            "AI_PRODUCT_SUNK_COST_FEEDBACK_FORBIDDEN",
+                            path,
+                            "改写问题和追问不得把不浪费既有投入当作需求或方向约束。",
+                        )
+                    )
+
+    if mode == "defer_to_user":
+        if not isinstance(tradeoffs, list) or not tradeoffs:
+            errors.append(
+                validation_error(
+                    "HIGH_RISK_TRADEOFF_REQUIRED",
+                    "$.value_tradeoffs",
+                    "defer_to_user 模式至少需要一项由用户决定的价值取舍。",
+                )
+            )
+        for path, text in _model_generated_semantic_strings(spec):
+            if _contains_high_risk_verdict(text):
+                errors.append(
+                    validation_error(
+                        "HIGH_RISK_VERDICT_FORBIDDEN",
+                        path,
+                        "高风险模式的任何模型语义字段都不得用指令或结论姿态替用户选择某类行动。",
+                    )
+                )
+        constrained_high_risk_fields = list(
+            _constrained_output_strings(
+                spec,
+                include_failure=True,
+                include_change=False,
+            )
+        )
+        for path, text in constrained_high_risk_fields:
+            if _contains_delay_or_reply_tactic(text):
+                errors.append(
+                    validation_error(
+                        "HIGH_RISK_DELAY_OR_REPLY_FORBIDDEN",
+                        path,
+                        "保留选择、拖延决定或具体回复话术仍可能隐性选择一边。",
+                    )
+                )
+            if _contains_ungrounded_option_consequence(text):
+                errors.append(
+                    validation_error(
+                        "HIGH_RISK_UNGROUNDED_OPTION_CONSEQUENCE",
+                        path,
+                        "未经证实时，不得把当前感受或价值冲突写成任一选项的必然后果。",
+                    )
+                )
+
+    return errors
+
+
+def _status_text(item: Any) -> str:
+    if not isinstance(item, dict):
+        return "当前未知"
+    value = item.get("value")
+    text = value if isinstance(value, str) and value else "当前未知"
+    if item.get("status") == "hypothesis":
+        return f"[暂定假设] {text}"
+    return text
+
+
+def _bullets(values: Any, formatter: Any = None) -> str:
+    if not isinstance(values, list) or not values:
+        return "当前未知"
+    lines: list[str] = []
+    for item in values:
+        if formatter is not None:
+            text = formatter(item)
+        elif isinstance(item, dict):
+            text = str(item.get("value", "当前未知"))
+        else:
+            text = str(item)
+        lines.append(f"- {text}")
+    return "\n".join(lines)
+
+
+def render_spec(spec: dict[str, Any]) -> str:
+    sections: list[tuple[str, str]] = []
+    sections.append((SECTION_HEADINGS[0], str(spec["original_question"])))
+    sections.append((SECTION_HEADINGS[1], _status_text(spec["desired_outcome"])))
+    sections.append((SECTION_HEADINGS[2], _status_text(spec["proxy_problem"])))
+    sections.append((SECTION_HEADINGS[3], _bullets(spec["hidden_assumptions"], _status_text)))
+    sections.append((SECTION_HEADINGS[4], _bullets(spec["known_facts"])))
+
+    def unknown_formatter(item: Any) -> str:
+        if not isinstance(item, dict):
+            return str(item)
+        value = item.get("value", "当前未知")
+        changes = item.get("changes")
+        return f"{value}（影响：{changes}）" if changes else str(value)
+
+    sections.append((SECTION_HEADINGS[5], _bullets(spec["decisive_unknowns"], unknown_formatter)))
+    sections.append((SECTION_HEADINGS[6], _bullets(spec["hard_constraints"])))
+    sections.append((SECTION_HEADINGS[7], _bullets(spec["value_tradeoffs"])))
+
+    evidence_body = "\n".join(
+        (
+            "### 成功证据",
+            _bullets(spec["success_evidence"]),
+            "",
+            "### 失败条件",
+            _bullets(spec["failure_conditions"]),
+            "",
+            "### 会改变当前判断的证据",
+            _bullets(spec["change_evidence"]),
+        )
+    )
+    sections.append((SECTION_HEADINGS[8], evidence_body))
+    sections.append((SECTION_HEADINGS[9], str(spec["rewritten_problem"])))
+
+    next_test = spec["next_test"]
+    next_test_body = "\n".join(
+        (
+            f"行动：{next_test.get('action', '当前未知')}",
+            f"要取得的证据：{next_test.get('evidence_sought', '当前未知')}",
+        )
+    )
+    sections.append((SECTION_HEADINGS[10], next_test_body))
+
+    def question_formatter(item: Any) -> str:
+        if not isinstance(item, dict):
+            return str(item)
+        question = item.get("question", "当前未知")
+        changes = item.get("changes")
+        return f"{question}（会改变：{changes}）" if changes else str(question)
+
+    sections.append((SECTION_HEADINGS[11], _bullets(spec["questions"], question_formatter)))
+    return "\n\n".join(f"## {heading}\n\n{body}" for heading, body in sections) + "\n"
+
+
+def _atomic_write(path: Path, value: dict[str, Any]) -> None:
+    parent = path.parent
+    if not parent.is_dir():
+        raise FileNotFoundError(str(parent))
+    fd, temporary_name = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=parent)
+    temporary_path = Path(temporary_name)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as handle:
+            handle.write(canonical_json(value) + "\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary_path, path)
+        try:
+            directory_fd = os.open(parent, os.O_RDONLY)
+            try:
+                os.fsync(directory_fd)
+            finally:
+                os.close(directory_fd)
+        except OSError:
+            pass
+    finally:
+        if temporary_path.exists():
+            temporary_path.unlink()
+
+
+def _read_state(path: Path) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
+    if not path.is_file():
+        return None, one_error("STATE_NOT_FOUND", f"状态文件不存在：{path}。")
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError, UnicodeDecodeError):
+        return None, one_error("STATE_INVALID", "状态文件无法读取或不是有效 JSON。")
+    if not isinstance(value, dict):
+        return None, one_error("STATE_INVALID", "状态文件必须是 JSON 对象。")
+    if not _state_matches_schema(value):
+        return None, one_error("STATE_INVALID", "状态文件不匹配 problem-state schema。")
+    return value, None
+
+
+TERMINAL_PHASES = frozenset({"ready_for_answer", "budget_exhausted", "user_decision_recorded"})
+LOOP_PHASES = frozenset(
+    {
+        "awaiting_answers",
+        "needs_reassessment",
+        "ready_for_answer",
+        "awaiting_user_decision",
+        "budget_exhausted",
+        "user_decision_recorded",
+    }
+)
+
+
+def _state_sources(state: dict[str, Any], *, include_superseded: bool = False) -> dict[str, str]:
+    sources: dict[str, str] = {}
+    for item in state.get("evidence_log", []):
+        if (
+            isinstance(item, dict)
+            and (item.get("status") == "active" or include_superseded)
+            and isinstance(item.get("source_id"), str)
+            and isinstance(item.get("text"), str)
+        ):
+            sources[item["source_id"]] = item["text"]
+    sources.pop("request", None)
+    return sources
+
+
+def _unresolved_ids(spec: dict[str, Any]) -> list[str]:
+    return [
+        item["id"]
+        for item in spec.get("decisive_unknowns", [])
+        if isinstance(item, dict) and isinstance(item.get("id"), str)
+    ]
+
+
+def _event(event_id: str, event_type: str, payload: Any, revision: int) -> dict[str, Any]:
+    return {
+        "event_id": event_id,
+        "event_type": event_type,
+        "payload_digest": sha256_text(canonical_json(payload)),
+        "revision": revision,
+    }
+
+
+def _find_event(state: dict[str, Any], event_id: str, event_type: str) -> dict[str, Any] | None:
+    for item in state.get("events", []):
+        if (
+            isinstance(item, dict)
+            and item.get("event_id") == event_id
+            and item.get("event_type") == event_type
+        ):
+            return item
+    return None
+
+
+def _state_matches_schema(state: dict[str, Any]) -> bool:
+    try:
+        schema = json.loads(STATE_SCHEMA_PATH.read_text(encoding="utf-8"))
+        required = set(schema["required"])
+    except (OSError, json.JSONDecodeError, KeyError, TypeError):
+        return False
+    if set(state) != required or state.get("schema_version") != STATE_SCHEMA_VERSION:
+        return False
+    if not isinstance(state.get("request_id"), str) or not state["request_id"].strip():
+        return False
+    raw = state.get("original_request")
+    if not isinstance(raw, str) or not raw.strip():
+        return False
+    request_sha256 = state.get("request_sha256")
+    if not isinstance(request_sha256, str) or request_sha256 != sha256_text(raw):
+        return False
+    if not _is_int(state.get("revision")) or state["revision"] < 1:
+        return False
+    if not _is_int(state.get("round")) or state["round"] < 1:
+        return False
+    if state.get("mode") not in {"define", "defer_to_user"}:
+        return False
+    if state.get("phase") not in LOOP_PHASES:
+        return False
+    if state.get("validation_status") not in {"valid", "needs_model_update"}:
+        return False
+
+    budget = state.get("budget")
+    if (
+        not isinstance(budget, dict)
+        or set(budget) != {"max_rounds"}
+        or not _is_int(budget.get("max_rounds"))
+        or not 1 <= budget["max_rounds"] <= 10
+        or state["round"] > budget["max_rounds"]
+    ):
+        return False
+    usage = state.get("usage")
+    usage_fields = {
+        "rounds",
+        "questions_scheduled",
+        "answers_recorded",
+        "advances",
+        "amendments",
+        "user_decisions",
+    }
+    if (
+        not isinstance(usage, dict)
+        or set(usage) != usage_fields
+        or any(not _is_int(value) or value < 0 for value in usage.values())
+        or usage.get("rounds") != state["round"]
+    ):
+        return False
+
+    evidence_log = state.get("evidence_log")
+    if not isinstance(evidence_log, list) or not evidence_log:
+        return False
+    source_ids: set[str] = set()
+    for source in evidence_log:
+        if not isinstance(source, dict) or set(source) != {
+            "source_id", "kind", "text", "sha256", "status", "superseded_by"
+        }:
+            return False
+        source_id = source.get("source_id")
+        text = source.get("text")
+        if not isinstance(source_id, str) or not source_id.strip() or source_id in source_ids:
+            return False
+        if not isinstance(text, str) or not text.strip() or source.get("sha256") != sha256_text(text):
+            return False
+        if source.get("status") not in {"active", "superseded"}:
+            return False
+        source_ids.add(source_id)
+    request_sources = [item for item in evidence_log if item.get("source_id") == "request"]
+    if len(request_sources) != 1 or request_sources[0].get("text") != raw or request_sources[0].get("status") != "active":
+        return False
+
+    events = state.get("events")
+    if not isinstance(events, list) or len(events) != state["revision"]:
+        return False
+    event_ids: set[str] = set()
+    for expected_revision, event_item in enumerate(events, start=1):
+        if not isinstance(event_item, dict) or set(event_item) != {
+            "event_id", "event_type", "payload_digest", "revision"
+        }:
+            return False
+        if (
+            not isinstance(event_item.get("event_id"), str)
+            or not event_item["event_id"].strip()
+            or event_item["event_id"] in event_ids
+            or event_item.get("event_type") not in {"start", "answer", "advance", "amendment", "decision"}
+            or not isinstance(event_item.get("payload_digest"), str)
+            or re.fullmatch(r"[a-f0-9]{64}", event_item["payload_digest"]) is None
+            or event_item.get("revision") != expected_revision
+        ):
+            return False
+        event_ids.add(event_item["event_id"])
+    if events[0].get("event_id") != "start:1" or events[0].get("event_type") != "start":
+        return False
+
+    spec = state.get("spec")
+    if not isinstance(spec, dict) or validate_spec(
+        spec,
+        evidence_sources=_state_sources(
+            state,
+            include_superseded=state.get("validation_status") == "needs_model_update",
+        ),
+        active_user_evidence=_state_sources(state),
+        allow_confirmed=True,
+    ):
+        return False
+    if (
+        spec.get("request_id") != state["request_id"]
+        or spec.get("request_sha256") != request_sha256
+        or spec.get("original_request") != raw
+        or spec.get("mode") != state["mode"]
+    ):
+        return False
+
+    answers = state.get("answers")
+    if not isinstance(answers, list):
+        return False
+    answer_ids: set[str] = set()
+    active_current_questions: set[str] = set()
+    for answer in answers:
+        if not isinstance(answer, dict) or set(answer) != {
+            "answer_id", "question_id", "answer", "round", "source_id", "status", "superseded_by"
+        }:
+            return False
+        if not all(isinstance(answer.get(key), str) and answer[key].strip() for key in ("answer_id", "question_id", "answer", "source_id")):
+            return False
+        if answer["answer_id"] in answer_ids or not _is_int(answer.get("round")) or answer["round"] < 1:
+            return False
+        if answer.get("status") not in {"active", "superseded"} or answer["source_id"] not in source_ids:
+            return False
+        answer_ids.add(answer["answer_id"])
+        expected_event_type = "amendment" if answer["source_id"].startswith("amendment:") else "answer"
+        expected_event_id = answer["source_id"].split(":", 1)[1] if ":" in answer["source_id"] else ""
+        if _find_event(state, expected_event_id, expected_event_type) is None:
+            return False
+        if answer["status"] == "active" and answer["round"] == state["round"]:
+            if answer["question_id"] in active_current_questions:
+                return False
+            active_current_questions.add(answer["question_id"])
+
+    answer_sources = {answer["source_id"]: answer for answer in answers}
+    decisions = state.get("user_decisions")
+    if not isinstance(decisions, list):
+        return False
+    tradeoffs = spec.get("value_tradeoffs")
+    if not isinstance(tradeoffs, list):
+        return False
+    expected_tradeoff_ids = {f"t{index + 1}" for index in range(len(tradeoffs))}
+    decision_ids: set[str] = set()
+    decided_tradeoff_ids: set[str] = set()
+    decision_sources: dict[str, dict[str, Any]] = {}
+    for decision in decisions:
+        if not isinstance(decision, dict):
+            return False
+        decision_id = decision.get("decision_id")
+        tradeoff_id = decision.get("tradeoff_id")
+        if (
+            not isinstance(decision_id, str)
+            or not decision_id.strip()
+            or decision_id in decision_ids
+            or not isinstance(tradeoff_id, str)
+            or tradeoff_id not in expected_tradeoff_ids
+            or tradeoff_id in decided_tradeoff_ids
+        ):
+            return False
+        decision_ids.add(decision_id)
+        decided_tradeoff_ids.add(tradeoff_id)
+        decision_source = decision.get("source") if isinstance(decision, dict) else None
+        decision_source_id = (
+            decision_source.get("source_id") if isinstance(decision_source, dict) else None
+        )
+        if not isinstance(decision_source_id, str) or decision_source_id in decision_sources:
+            return False
+        decision_sources[decision_source_id] = decision
+    for source in evidence_log:
+        if source["source_id"] == "request":
+            continue
+        answer = answer_sources.get(source["source_id"])
+        decision = decision_sources.get(source["source_id"])
+        if answer is not None:
+            expected_kind = (
+                "amendment" if source["source_id"].startswith("amendment:") else "answer"
+            )
+            if (
+                source.get("kind") != expected_kind
+                or source.get("text") != answer.get("answer")
+                or source.get("status") != answer.get("status")
+                or source.get("superseded_by") != answer.get("superseded_by")
+            ):
+                return False
+        elif decision is not None:
+            if (
+                source.get("kind") != "decision_input"
+                or source.get("text") != decision.get("user_input")
+                or source.get("status") != "active"
+                or source.get("superseded_by") is not None
+            ):
+                return False
+        else:
+            return False
+    expected_non_request_sources = set(answer_sources) | set(decision_sources)
+    if expected_non_request_sources != {
+        item["source_id"] for item in evidence_log if item["source_id"] != "request"
+    }:
+        return False
+
+    questions = spec.get("questions")
+    if not isinstance(questions, list):
+        return False
+    expected_pending = [
+        copy.deepcopy(question)
+        for question in questions
+        if isinstance(question, dict) and question.get("id") not in active_current_questions
+    ]
+    if state["phase"] in TERMINAL_PHASES or state["phase"] == "awaiting_user_decision":
+        expected_pending = []
+    if state.get("pending_questions") != expected_pending:
+        return False
+    if state["phase"] == "awaiting_answers" and not expected_pending:
+        return False
+    if state["phase"] == "needs_reassessment" and expected_pending:
+        return False
+
+    convergence = state.get("convergence")
+    if not isinstance(convergence, dict) or set(convergence) != {"status", "unresolved_unknown_ids"}:
+        return False
+    if convergence.get("unresolved_unknown_ids") != _unresolved_ids(spec):
+        return False
+    if convergence.get("status") not in {"unresolved", "defined", "user_owned"}:
+        return False
+    expected_convergence = "unresolved" if _unresolved_ids(spec) else ("user_owned" if state["mode"] == "defer_to_user" else "defined")
+    if convergence.get("status") != expected_convergence:
+        return False
+
+    stop_contract = {
+        "awaiting_answers": None,
+        "needs_reassessment": None,
+        "ready_for_answer": "problem_defined",
+        "awaiting_user_decision": "value_tradeoff_requires_user",
+        "budget_exhausted": "max_rounds_reached",
+        "user_decision_recorded": "user_decision_recorded",
+    }
+    if state.get("stop_reason") != stop_contract[state["phase"]]:
+        return False
+    unresolved = _unresolved_ids(spec)
+    if state["phase"] == "ready_for_answer" and not (
+        state["mode"] == "define" and spec.get("status") == "confirmed" and not unresolved
+    ):
+        return False
+    if state["phase"] in {"awaiting_user_decision", "user_decision_recorded"} and not (
+        state["mode"] == "defer_to_user" and spec.get("status") == "confirmed" and not unresolved
+    ):
+        return False
+    if state["phase"] == "budget_exhausted" and state["round"] != budget["max_rounds"]:
+        return False
+
+    if state["phase"] == "awaiting_user_decision" and not (
+        decided_tradeoff_ids < expected_tradeoff_ids
+    ):
+        return False
+    if state["phase"] == "user_decision_recorded" and (
+        decided_tradeoff_ids != expected_tradeoff_ids
+    ):
+        return False
+    for decision in decisions:
+        if not isinstance(decision, dict) or set(decision) != {
+            "decision_id", "actor", "tradeoff_id", "selection", "source", "user_input"
+        }:
+            return False
+        if decision.get("actor") != "user" or _find_event(state, decision.get("decision_id"), "decision") is None:
+            return False
+        decision_source = decision.get("source")
+        if not isinstance(decision_source, dict):
+            return False
+        source_id = decision_source.get("source_id")
+        source_text = _state_sources(state).get(source_id) if isinstance(source_id, str) else None
+        start = decision_source.get("start")
+        end = decision_source.get("end")
+        quote = decision_source.get("quote")
+        expected_source_id = f"decision_input:{decision.get('decision_id')}"
+        if not (
+            source_id == expected_source_id
+            and isinstance(source_text, str)
+            and source_text == decision.get("user_input")
+            and _is_int(start)
+            and _is_int(end)
+            and isinstance(quote, str)
+            and 0 <= start <= end <= len(source_text)
+            and source_text[start:end] == quote
+            and decision.get("selection") == quote
+            and _is_committed_user_decision(decision.get("selection"))
+        ):
+            return False
+    return True
+
+
+def start_state(path: Path, spec: dict[str, Any], *, max_rounds: int = 3) -> tuple[dict[str, Any], int]:
+    if path.exists():
+        existing, error = _read_state(path)
+        if error is not None:
+            return error, 4
+        assert existing is not None
+        if existing.get("spec") == spec and existing.get("budget", {}).get("max_rounds") == max_rounds:
+            return existing, 0
+        return one_error("STATE_CONFLICT", "已有状态与本次请求或 spec 不同。"), 5
+
+    state = {
+        "answers": [],
+        "budget": {"max_rounds": max_rounds},
+        "convergence": {"status": "unresolved", "unresolved_unknown_ids": _unresolved_ids(spec)},
+        "events": [_event("start:1", "start", {"spec": spec, "max_rounds": max_rounds}, 1)],
+        "evidence_log": [
+            {
+                "kind": "original_request",
+                "sha256": spec["request_sha256"],
+                "source_id": "request",
+                "status": "active",
+                "superseded_by": None,
+                "text": spec["original_request"],
+            }
+        ],
+        "mode": spec["mode"],
+        "original_request": spec["original_request"],
+        "pending_questions": copy.deepcopy(spec["questions"]),
+        "phase": "awaiting_answers" if spec["questions"] else "needs_reassessment",
+        "request_id": spec["request_id"],
+        "request_sha256": spec["request_sha256"],
+        "revision": 1,
+        "round": 1,
+        "schema_version": STATE_SCHEMA_VERSION,
+        "spec": copy.deepcopy(spec),
+        "stop_reason": None,
+        "usage": {
+            "rounds": 1,
+            "questions_scheduled": len(spec["questions"]),
+            "answers_recorded": 0,
+            "advances": 0,
+            "amendments": 0,
+            "user_decisions": 0,
+        },
+        "user_decisions": [],
+        "validation_status": "valid",
+    }
+    try:
+        _atomic_write(path, state)
+    except FileNotFoundError:
+        return one_error("STATE_PARENT_NOT_FOUND", f"状态目录不存在：{path.parent}。"), 4
+    except OSError:
+        return one_error("STATE_WRITE_FAILED", "状态文件无法原子写入。"), 10
+    return state, 0
+
+
+def _resume_state_locked(path: Path, answer: dict[str, Any]) -> tuple[dict[str, Any], int]:
+    state, error = _read_state(path)
+    if error is not None:
+        return error, 4
+    assert state is not None
+
+    required = {"answer_id", "question_id", "answer", "expected_revision"}
+    string_fields = {"answer_id", "question_id", "answer"}
+    if (
+        set(answer) != required
+        or not all(
+            isinstance(answer.get(key), str) and answer[key].strip()
+            for key in string_fields
+        )
+        or not _is_int(answer.get("expected_revision"))
+        or answer["expected_revision"] < 1
+    ):
+        return one_error(
+            "INVALID_ANSWER",
+            "answer 必须含三个 trim 后非空字符串和正整数 expected_revision。",
+        ), 5
+
+    persisted_payload = {key: copy.deepcopy(answer[key]) for key in string_fields}
+
+    for recorded in state.get("answers", []):
+        if isinstance(recorded, dict) and recorded.get("answer_id") == answer["answer_id"]:
+            recorded_event = _find_event(state, answer["answer_id"], "answer")
+            if (
+                recorded_event is not None
+                and recorded_event.get("payload_digest") == sha256_text(canonical_json(answer))
+            ):
+                return state, 0
+            return one_error("ANSWER_ID_CONFLICT", "相同 answer_id 不得对应不同内容。"), 5
+
+    if state.get("phase") in TERMINAL_PHASES or state.get("phase") == "awaiting_user_decision":
+        return one_error("LOOP_TERMINAL", "当前 loop 已停止，不再接受答案。"), 5
+
+    if answer["expected_revision"] != state.get("revision"):
+        return one_error(
+            "REVISION_CONFLICT",
+            "expected_revision 与当前状态 revision 不一致，请重新读取状态。",
+        ), 5
+
+    pending = state.get("pending_questions")
+    if not isinstance(pending, list):
+        return one_error("STATE_INVALID", "pending_questions 结构无效。"), 4
+    if not any(isinstance(item, dict) and item.get("id") == answer["question_id"] for item in pending):
+        return one_error("QUESTION_NOT_PENDING", "question_id 不在待回答问题中。"), 5
+
+    updated = copy.deepcopy(state)
+    source_id = f"answer:{answer['answer_id']}"
+    persisted_answer = {
+        **persisted_payload,
+        "round": updated["round"],
+        "source_id": source_id,
+        "status": "active",
+        "superseded_by": None,
+    }
+    answers = updated.setdefault("answers", [])
+    answers.append(persisted_answer)
+    updated["evidence_log"].append(
+        {
+            "kind": "answer",
+            "sha256": sha256_text(answer["answer"]),
+            "source_id": source_id,
+            "status": "active",
+            "superseded_by": None,
+            "text": answer["answer"],
+        }
+    )
+    updated["pending_questions"] = [
+        item for item in updated["pending_questions"] if item.get("id") != answer["question_id"]
+    ]
+    revision = updated.get("revision")
+    if not _is_int(revision) or revision < 1:
+        return one_error("STATE_INVALID", "revision 结构无效。"), 4
+    updated["revision"] = revision + 1
+    updated["phase"] = "awaiting_answers" if updated["pending_questions"] else "needs_reassessment"
+    updated["validation_status"] = "needs_model_update"
+    updated["usage"]["answers_recorded"] += 1
+    updated["events"].append(_event(answer["answer_id"], "answer", answer, updated["revision"]))
+
+    if not _state_matches_schema(updated):
+        return one_error("STATE_TRANSITION_INVALID", "answer 事件无法形成有效状态。"), 5
+    try:
+        _atomic_write(path, updated)
+    except OSError:
+        return one_error("STATE_WRITE_FAILED", "状态文件无法原子写入。"), 10
+    return updated, 0
+
+
+def resume_state(path: Path, answer: dict[str, Any]) -> tuple[dict[str, Any], int]:
+    if not path.is_file():
+        return one_error("STATE_NOT_FOUND", f"状态文件不存在：{path}。"), 4
+    lock_path = path.with_name(f".{path.name}.lock")
+    try:
+        with lock_path.open("a+", encoding="utf-8") as lock_handle:
+            fcntl.flock(lock_handle.fileno(), fcntl.LOCK_EX)
+            return _resume_state_locked(path, answer)
+    except FileNotFoundError:
+        return one_error("STATE_NOT_FOUND", f"状态文件不存在：{path}。"), 4
+    except OSError:
+        return one_error("STATE_LOCK_FAILED", "状态文件无法取得排他锁。"), 10
+
+
+def _write_updated_state(path: Path, updated: dict[str, Any]) -> tuple[dict[str, Any], int]:
+    if not _state_matches_schema(updated):
+        return one_error("STATE_TRANSITION_INVALID", "状态迁移违反内部不变量。"), 5
+    try:
+        _atomic_write(path, updated)
+    except OSError:
+        return one_error("STATE_WRITE_FAILED", "状态文件无法原子写入。"), 10
+    return updated, 0
+
+
+def _validate_mutation(
+    state: dict[str, Any],
+    payload: dict[str, Any],
+    *,
+    required: set[str],
+    event_id_field: str,
+    event_type: str,
+    optional: set[str] | None = None,
+) -> tuple[dict[str, Any] | None, tuple[dict[str, Any], int] | None]:
+    optional = optional or set()
+    if not required.issubset(payload) or not set(payload).issubset(required | optional):
+        return None, (one_error("INVALID_EVENT", f"{event_type} payload 字段不匹配。"), 5)
+    event_id = payload.get(event_id_field)
+    revision = payload.get("expected_revision")
+    if not isinstance(event_id, str) or not event_id.strip() or not _is_int(revision) or revision < 1:
+        return None, (one_error("INVALID_EVENT", f"{event_id_field} 与 expected_revision 无效。"), 5)
+    existing = _find_event(state, event_id, event_type)
+    if existing is not None:
+        digest = sha256_text(canonical_json(payload))
+        if existing.get("payload_digest") == digest:
+            return existing, (state, 0)
+        return None, (one_error("EVENT_ID_CONFLICT", f"相同 {event_id_field} 不得对应不同内容。"), 5)
+    if revision != state.get("revision"):
+        return None, (
+            one_error("REVISION_CONFLICT", "expected_revision 与当前状态 revision 不一致，请先读取 status。"),
+            5,
+        )
+    return None, None
+
+
+def _advance_state_locked(path: Path, payload: dict[str, Any]) -> tuple[dict[str, Any], int]:
+    state, error = _read_state(path)
+    if error is not None:
+        return error, 4
+    assert state is not None
+    _, early = _validate_mutation(
+        state,
+        payload,
+        required={"advance_id", "expected_revision", "spec"},
+        event_id_field="advance_id",
+        event_type="advance",
+    )
+    if early is not None:
+        return early
+    if state.get("phase") in TERMINAL_PHASES or state.get("phase") == "awaiting_user_decision":
+        return one_error("LOOP_TERMINAL", "当前 loop 已停止或等待用户本人决定。"), 5
+    if state.get("pending_questions"):
+        return one_error("ANSWERS_PENDING", "仍有待回答问题，不能 advance。"), 5
+
+    spec = payload.get("spec")
+    if not isinstance(spec, dict):
+        return one_error("INVALID_SPEC", "advance.spec 必须是对象。"), 5
+    if any(
+        spec.get(key) != state.get(key)
+        for key in ("request_id", "request_sha256", "original_request", "mode")
+    ):
+        return one_error("STATE_SPEC_BINDING_MISMATCH", "revised spec 与当前请求或 mode 不一致。"), 5
+    errors = validate_spec(
+        spec,
+        evidence_sources=_state_sources(state),
+        active_user_evidence=_state_sources(state),
+        allow_confirmed=True,
+    )
+    if errors:
+        return {"errors": errors, "valid": False}, 5
+
+    updated = copy.deepcopy(state)
+    updated["spec"] = copy.deepcopy(spec)
+    updated["pending_questions"] = []
+    unresolved = _unresolved_ids(spec)
+    updated["convergence"] = {
+        "status": "unresolved" if unresolved else ("user_owned" if state["mode"] == "defer_to_user" else "defined"),
+        "unresolved_unknown_ids": unresolved,
+    }
+    updated["usage"]["advances"] += 1
+    updated["validation_status"] = "valid"
+    updated["stop_reason"] = None
+
+    if spec.get("status") == "confirmed" and not unresolved:
+        if state["mode"] == "defer_to_user":
+            updated["phase"] = "awaiting_user_decision"
+            updated["stop_reason"] = "value_tradeoff_requires_user"
+        else:
+            updated["phase"] = "ready_for_answer"
+            updated["stop_reason"] = "problem_defined"
+    elif state["round"] >= state["budget"]["max_rounds"]:
+        updated["phase"] = "budget_exhausted"
+        updated["stop_reason"] = "max_rounds_reached"
+    else:
+        updated["round"] += 1
+        updated["usage"]["rounds"] = updated["round"]
+        updated["pending_questions"] = copy.deepcopy(spec["questions"])
+        updated["usage"]["questions_scheduled"] += len(updated["pending_questions"])
+        updated["phase"] = (
+            "awaiting_answers" if updated["pending_questions"] else "needs_reassessment"
+        )
+
+    updated["revision"] += 1
+    updated["events"].append(
+        _event(payload["advance_id"], "advance", payload, updated["revision"])
+    )
+    return _write_updated_state(path, updated)
+
+
+def advance_state(path: Path, payload: dict[str, Any]) -> tuple[dict[str, Any], int]:
+    return _locked_state_mutation(path, _advance_state_locked, payload)
+
+
+def _amend_state_locked(path: Path, payload: dict[str, Any]) -> tuple[dict[str, Any], int]:
+    state, error = _read_state(path)
+    if error is not None:
+        return error, 4
+    assert state is not None
+    _, early = _validate_mutation(
+        state,
+        payload,
+        required={"amendment_id", "answer_id", "answer", "expected_revision"},
+        event_id_field="amendment_id",
+        event_type="amendment",
+    )
+    if early is not None:
+        return early
+    if state.get("phase") in TERMINAL_PHASES or state.get("phase") == "awaiting_user_decision":
+        return one_error("LOOP_TERMINAL", "当前 loop 已停止，不能修订答案。"), 5
+    if not isinstance(payload.get("answer_id"), str) or not isinstance(payload.get("answer"), str) or not payload["answer"].strip():
+        return one_error("INVALID_AMENDMENT", "answer_id 与 answer 必须是非空字符串。"), 5
+
+    updated = copy.deepcopy(state)
+    target = next(
+        (
+            item for item in updated["answers"]
+            if item.get("answer_id") == payload["answer_id"] and item.get("status") == "active"
+        ),
+        None,
+    )
+    if target is None:
+        return one_error("ANSWER_NOT_ACTIVE", "只能修订一个现存且 active 的答案。"), 5
+    source = next(
+        (item for item in updated["evidence_log"] if item.get("source_id") == target["source_id"]),
+        None,
+    )
+    if source is None:
+        return one_error("STATE_INVALID", "答案来源不存在。"), 4
+
+    amendment_source_id = f"amendment:{payload['amendment_id']}"
+    target["status"] = "superseded"
+    target["superseded_by"] = amendment_source_id
+    source["status"] = "superseded"
+    source["superseded_by"] = amendment_source_id
+    updated["answers"].append(
+        {
+            "answer": payload["answer"],
+            "answer_id": amendment_source_id,
+            "question_id": target["question_id"],
+            "round": target["round"],
+            "source_id": amendment_source_id,
+            "status": "active",
+            "superseded_by": None,
+        }
+    )
+    updated["evidence_log"].append(
+        {
+            "kind": "amendment",
+            "sha256": sha256_text(payload["answer"]),
+            "source_id": amendment_source_id,
+            "status": "active",
+            "superseded_by": None,
+            "text": payload["answer"],
+        }
+    )
+    updated["phase"] = (
+        "awaiting_answers" if updated["pending_questions"] else "needs_reassessment"
+    )
+    updated["validation_status"] = "needs_model_update"
+    updated["usage"]["answers_recorded"] += 1
+    updated["usage"]["amendments"] += 1
+    updated["revision"] += 1
+    updated["events"].append(
+        _event(payload["amendment_id"], "amendment", payload, updated["revision"])
+    )
+    return _write_updated_state(path, updated)
+
+
+def amend_state(path: Path, payload: dict[str, Any]) -> tuple[dict[str, Any], int]:
+    return _locked_state_mutation(path, _amend_state_locked, payload)
+
+
+def _decide_state_locked(path: Path, payload: dict[str, Any]) -> tuple[dict[str, Any], int]:
+    state, error = _read_state(path)
+    if error is not None:
+        return error, 4
+    assert state is not None
+    _, early = _validate_mutation(
+        state,
+        payload,
+        required={"decision_id", "actor", "tradeoff_id", "selection", "expected_revision"},
+        event_id_field="decision_id",
+        event_type="decision",
+        optional={"source", "user_input"},
+    )
+    if early is not None:
+        return early
+    if state.get("phase") != "awaiting_user_decision":
+        return one_error("USER_DECISION_NOT_PENDING", "当前状态没有等待用户价值决定。"), 5
+    if payload.get("actor") != "user":
+        return one_error("USER_DECISION_REQUIRED", "价值取舍只能由 actor=user 的显式事件记录。"), 5
+    if not isinstance(payload.get("selection"), str) or not payload["selection"].strip():
+        return one_error("INVALID_DECISION", "selection 必须是用户提供的非空字符串。"), 5
+    tradeoffs = state["spec"].get("value_tradeoffs", [])
+    valid_ids = {f"t{index + 1}" for index in range(len(tradeoffs))}
+    if payload.get("tradeoff_id") not in valid_ids:
+        return one_error("UNKNOWN_TRADEOFF", "tradeoff_id 不存在。"), 5
+    decided_tradeoff_ids = {
+        decision.get("tradeoff_id")
+        for decision in state.get("user_decisions", [])
+        if isinstance(decision, dict)
+    }
+    if payload["tradeoff_id"] in decided_tradeoff_ids:
+        return one_error(
+            "TRADEOFF_ALREADY_DECIDED",
+            "同一 tradeoff_id 只能记录一次用户决定；请对尚未覆盖的取舍提交新的 fresh decision。",
+        ), 5
+    source = payload.get("source")
+    user_input = payload.get("user_input")
+    if not isinstance(source, dict) or "source_id" not in source:
+        return one_error(
+            "USER_DECISION_EVIDENCE_REQUIRED",
+            "actor=user 只是声明；必须同时保留本轮 user_input 和其中 selection 的精确 span。",
+        ), 5
+    expected_source_id = f"decision_input:{payload['decision_id']}"
+    if source.get("source_id") != expected_source_id:
+        return one_error(
+            "USER_DECISION_CURRENT_INPUT_REQUIRED",
+            "最终选择必须来自进入 awaiting_user_decision 之后的新 user_input，不能复用问题定义阶段的答案。",
+        ), 5
+    if not isinstance(user_input, str) or not user_input.strip():
+        return one_error(
+            "USER_DECISION_EVIDENCE_REQUIRED",
+            "actor=user 只是声明；必须同时保留本轮 user_input 和其中 selection 的精确 span。",
+        ), 5
+    source_errors: list[dict[str, str]] = []
+    _validate_source_shape(source, "$.source", source_errors)
+    source_id = source.get("source_id")
+    start = source.get("start")
+    end = source.get("end")
+    quote = source.get("quote")
+    valid_decision_source = (
+        source_id == expected_source_id
+        and _is_int(start)
+        and _is_int(end)
+        and isinstance(quote, str)
+        and 0 <= start <= end <= len(user_input)
+        and user_input[start:end] == quote
+        and payload["selection"] == quote
+    )
+    if source_errors or not valid_decision_source:
+        return one_error(
+            "USER_DECISION_EVIDENCE_MISMATCH",
+            "selection 必须等于本轮 user_input 中的精确 quote。",
+        ), 5
+    if not _is_committed_user_decision(payload["selection"]):
+        if _contains_decision_language(payload["selection"]):
+            return one_error(
+                "USER_DECISION_NOT_COMMITTED",
+                "selection 含有决定词但没有形成正向承诺；否定、无法或尚未决定、疑问和反问都不能结束高风险 loop。",
+            ), 5
+        return one_error(
+            "USER_DECISION_NOT_EXPLICIT",
+            "selection 本身必须明确表达“我选择、我决定、我接受或我拒绝”，不能引用同一 user_input 中的背景事实。",
+        ), 5
+
+    updated = copy.deepcopy(state)
+    updated["evidence_log"].append(
+        {
+            "kind": "decision_input",
+            "sha256": sha256_text(user_input),
+            "source_id": expected_source_id,
+            "status": "active",
+            "superseded_by": None,
+            "text": user_input,
+        }
+    )
+    updated["user_decisions"].append(
+        {
+            "actor": "user",
+            "decision_id": payload["decision_id"],
+            "selection": payload["selection"],
+            "source": copy.deepcopy(source),
+            "tradeoff_id": payload["tradeoff_id"],
+            "user_input": user_input,
+        }
+    )
+    covered_tradeoff_ids = decided_tradeoff_ids | {payload["tradeoff_id"]}
+    if covered_tradeoff_ids == valid_ids:
+        updated["phase"] = "user_decision_recorded"
+        updated["stop_reason"] = "user_decision_recorded"
+    else:
+        updated["phase"] = "awaiting_user_decision"
+        updated["stop_reason"] = "value_tradeoff_requires_user"
+    updated["usage"]["user_decisions"] += 1
+    updated["revision"] += 1
+    updated["events"].append(
+        _event(payload["decision_id"], "decision", payload, updated["revision"])
+    )
+    return _write_updated_state(path, updated)
+
+
+def decide_state(path: Path, payload: dict[str, Any]) -> tuple[dict[str, Any], int]:
+    return _locked_state_mutation(path, _decide_state_locked, payload)
+
+
+def _locked_state_mutation(path: Path, operation: Any, payload: dict[str, Any]) -> tuple[dict[str, Any], int]:
+    if not path.is_file():
+        return one_error("STATE_NOT_FOUND", f"状态文件不存在：{path}。"), 4
+    lock_path = path.with_name(f".{path.name}.lock")
+    try:
+        with lock_path.open("a+", encoding="utf-8") as lock_handle:
+            fcntl.flock(lock_handle.fileno(), fcntl.LOCK_EX)
+            return operation(path, payload)
+    except FileNotFoundError:
+        return one_error("STATE_NOT_FOUND", f"状态文件不存在：{path}。"), 4
+    except OSError:
+        return one_error("STATE_LOCK_FAILED", "状态文件无法取得排他锁。"), 10
+
+
+def state_status(path: Path) -> tuple[dict[str, Any], int]:
+    state, error = _read_state(path)
+    if error is not None:
+        return error, 4
+    assert state is not None
+    has_active_answers = any(
+        isinstance(item, dict) and item.get("status") == "active"
+        for item in state.get("answers", [])
+    )
+    if state["phase"] == "awaiting_answers":
+        actions = ["resume"] + (["amend"] if has_active_answers else [])
+    elif state["phase"] == "needs_reassessment":
+        actions = (
+            ["resume"] if state["pending_questions"] else ["advance"]
+        ) + (["amend"] if has_active_answers else [])
+    else:
+        actions = {
+            "awaiting_user_decision": ["decide"],
+            "ready_for_answer": [],
+            "budget_exhausted": [],
+            "user_decision_recorded": [],
+        }[state["phase"]]
+    return {
+        "allowed_actions": actions,
+        "convergence": copy.deepcopy(state["convergence"]),
+        "pending_questions": copy.deepcopy(state["pending_questions"]),
+        "phase": state["phase"],
+        "remaining_rounds": max(0, state["budget"]["max_rounds"] - state["round"]),
+        "revision": state["revision"],
+        "round": state["round"],
+        "state_digest": sha256_text(canonical_json(state)),
+        "stop_reason": state["stop_reason"],
+    }, 0
+
+
+def doctor() -> tuple[dict[str, Any], int]:
+    checks: list[dict[str, Any]] = []
+
+    executable = Path(__file__).is_file() and os.access(__file__, os.X_OK)
+    checks.append({"name": "script_executable", "ok": executable, "path": "scripts/dpbp"})
+
+    json_assets = (
+        ROUTES_PATH,
+        SKILL_ROOT / "schemas" / "request-envelope.schema.json",
+        SPEC_SCHEMA_PATH,
+        STATE_SCHEMA_PATH,
+    )
+    text_asset_relatives = {
+        "SKILL.md",
+        "agents/openai.yaml",
+        "references/field-semantics.md",
+        "references/runtime-loop.md",
+    }
+    try:
+        routes = json.loads(ROUTES_PATH.read_text(encoding="utf-8"))
+
+        def collect_route_resources(value: Any) -> None:
+            if isinstance(value, str):
+                text_asset_relatives.add(value)
+            elif isinstance(value, list):
+                for item in value:
+                    collect_route_resources(item)
+            elif isinstance(value, dict):
+                for item in value.values():
+                    collect_route_resources(item)
+
+        collect_route_resources(routes.get("resources"))
+    except (OSError, json.JSONDecodeError, UnicodeDecodeError):
+        pass
+    text_assets = tuple(SKILL_ROOT / relative for relative in sorted(text_asset_relatives))
+
+    for path in json_assets:
+        ok = False
+        try:
+            parsed = json.loads(path.read_text(encoding="utf-8"))
+            ok = isinstance(parsed, dict)
+        except (OSError, json.JSONDecodeError, UnicodeDecodeError):
+            pass
+        checks.append({"name": "json_readable", "ok": ok, "path": str(path.relative_to(SKILL_ROOT))})
+
+    for path in text_assets:
+        ok = False
+        try:
+            ok = bool(path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError):
+            pass
+        checks.append({"name": "text_readable", "ok": ok, "path": str(path.relative_to(SKILL_ROOT))})
+
+    try:
+        version = VERSION_PATH.read_text(encoding="utf-8").strip()
+    except (OSError, UnicodeDecodeError):
+        version = ""
+    checks.append({"name": "version_readable", "ok": bool(version), "path": "VERSION"})
+    ok = all(check["ok"] for check in checks)
+    return {"checks": checks, "ok": ok, "version": version}, 0 if ok else 5
+
+
+def parse_args(argv: list[str]) -> tuple[str | None, dict[str, Any] | None, int | None]:
+    if not argv:
+        return None, None, emit(one_error("USAGE", "需要一个 dpbp 子命令。"), 2)
+    command = argv[0]
+    state_commands = {"start", "resume", "advance", "amend", "decide", "status"}
+    if command not in {"gate", "init", "validate", "render", *state_commands}:
+        return None, None, emit(one_error("UNKNOWN_COMMAND", f"未知子命令：{command}。"), 2)
+
+    options: dict[str, Any] = {}
+    index = 1
+    while index < len(argv):
+        token = argv[index]
+        if token == "--offline" and command == "gate":
+            options["offline"] = True
+            index += 1
+        elif token == "--state" and command in state_commands:
+            if index + 1 >= len(argv):
+                return None, None, emit(one_error("USAGE", "--state 需要文件路径。"), 2)
+            options["state"] = argv[index + 1]
+            index += 2
+        elif token == "--max-rounds" and command == "start":
+            if index + 1 >= len(argv):
+                return None, None, emit(one_error("USAGE", "--max-rounds 需要 1 到 10 的整数。"), 2)
+            try:
+                max_rounds = int(argv[index + 1])
+            except ValueError:
+                max_rounds = 0
+            if not 1 <= max_rounds <= 10:
+                return None, None, emit(one_error("USAGE", "--max-rounds 需要 1 到 10 的整数。"), 2)
+            options["max_rounds"] = max_rounds
+            index += 2
+        else:
+            return None, None, emit(one_error("USAGE", f"不支持参数：{token}。"), 2)
+
+    if command in state_commands and "state" not in options:
+        return None, None, emit(one_error("USAGE", f"{command} 需要 --state。"), 2)
+    if command == "start":
+        options.setdefault("max_rounds", 3)
+    return command, options, None
+
+
+def main(argv: list[str]) -> int:
+    if argv in (["--help"], ["help"]):
+        sys.stdout.write(USAGE)
+        return 0
+    if argv == ["version"]:
+        try:
+            sys.stdout.write(VERSION_PATH.read_text(encoding="utf-8"))
+            return 0
+        except (OSError, UnicodeDecodeError):
+            return emit(one_error("VERSION_UNREADABLE", "VERSION 文件无法读取。"), 4)
+    if argv == ["doctor"]:
+        report, exit_code = doctor()
+        return emit(report, exit_code)
+
+    command, options, argument_error = parse_args(argv)
+    if argument_error is not None:
+        return argument_error
+    assert command is not None and options is not None
+
+    if command == "status":
+        report, exit_code = state_status(Path(options["state"]))
+        return emit(report, exit_code)
+
+    payload, input_error = read_stdin_json()
+    if input_error is not None:
+        return input_error
+    assert isinstance(payload, dict)
+
+    if command in {"gate", "init", "validate", "render", "start"}:
+        version_error = check_version(payload)
+        if version_error is not None:
+            return version_error
+
+    if command in {"gate", "init"}:
+        envelope_errors = validate_envelope(payload)
+        if envelope_errors:
+            return emit({"errors": envelope_errors, "valid": False}, 5)
+        route = gate(payload)
+        if command == "gate":
+            return emit(route)
+        if route["mode"] == "execute":
+            return emit(
+                one_error(
+                    "CLEAR_TASK_HAS_NO_SPEC",
+                    "定义充分的任务应直接执行，不生成 Problem Spec。",
+                ),
+                5,
+            )
+        return emit(initialize_spec(payload, route))
+
+    if command in {"validate", "render", "start"}:
+        errors = validate_spec(payload)
+        if errors:
+            return emit({"errors": errors, "valid": False}, 5)
+        if command == "validate":
+            return emit({"errors": [], "valid": True})
+        if command == "render":
+            sys.stdout.write(render_spec(payload))
+            return 0
+        state, exit_code = start_state(
+            Path(options["state"]),
+            payload,
+            max_rounds=options["max_rounds"],
+        )
+        return emit(state, exit_code)
+
+    operations = {
+        "resume": resume_state,
+        "advance": advance_state,
+        "amend": amend_state,
+        "decide": decide_state,
+    }
+    state, exit_code = operations[command](Path(options["state"]), payload)
+    return emit(state, exit_code)
+
+
+if __name__ == "__main__":
+    try:
+        raise SystemExit(main(sys.argv[1:]))
+    except BrokenPipeError:
+        raise SystemExit(0)
+    except Exception:
+        raise SystemExit(emit(one_error("INTERNAL_ERROR", "runtime 内部错误。"), 10))

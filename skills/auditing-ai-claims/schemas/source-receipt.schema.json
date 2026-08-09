@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/auditing-ai-claims/source-receipt.schema.json",
+  "title": "Source retrieval receipt",
+  "type": "object",
+  "required": [
+    "receipt_version",
+    "runtime_version",
+    "source_id",
+    "requested_url",
+    "requested_url_query_sha256",
+    "final_url",
+    "final_url_query_sha256",
+    "resolved_ip",
+    "accessed_at",
+    "http_status",
+    "content_type",
+    "content_encoding",
+    "bytes_read",
+    "content_sha256",
+    "headers_sha256",
+    "redirect_chain",
+    "origin_id",
+    "retrieval_complete",
+    "support_eligible",
+    "ineligibility_reason",
+    "acquisition_type",
+    "transport_attestation",
+    "artifact",
+    "parsed_text",
+    "parsed_text_sha256",
+    "parser_name",
+    "parser_version",
+    "receipt_sha256"
+  ],
+  "properties": {
+    "receipt_version": {"const": "1.0"},
+    "runtime_version": {"type": "string"},
+    "source_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+    },
+    "requested_url": {"type": "string", "format": "uri"},
+    "requested_url_query_sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+    "final_url": {"type": "string", "format": "uri"},
+    "final_url_query_sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+    "resolved_ip": {"type": ["string", "null"]},
+    "accessed_at": {"type": "string", "format": "date-time"},
+    "http_status": {"type": ["integer", "null"], "minimum": 100, "maximum": 599},
+    "content_type": {"type": ["string", "null"]},
+    "content_encoding": {"type": ["string", "null"]},
+    "bytes_read": {"type": "integer", "minimum": 0},
+    "content_sha256": {"$ref": "#/$defs/sha256"},
+    "headers_sha256": {"$ref": "#/$defs/sha256"},
+    "redirect_chain": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "from",
+          "from_query_sha256",
+          "to",
+          "to_query_sha256",
+          "http_status",
+          "from_resolved_ip",
+          "to_resolved_ip"
+        ],
+        "properties": {
+          "from": {"type": "string", "format": "uri"},
+          "from_query_sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+          "to": {"type": "string", "format": "uri"},
+          "to_query_sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+          "http_status": {"enum": [301, 302, 303, 307, 308]},
+          "from_resolved_ip": {"type": "string"},
+          "to_resolved_ip": {"type": "string"}
+        }
+      }
+    },
+    "origin_id": {"type": "string", "minLength": 1},
+    "retrieval_complete": {"type": "boolean"},
+    "support_eligible": {"type": "boolean"},
+    "ineligibility_reason": {"type": ["string", "null"]},
+    "acquisition_type": {
+      "enum": ["runtime_fetch", "browser_export", "trusted_local_copy", "user_supplied", "search_snippet"]
+    },
+    "transport_attestation": {"type": "string"},
+    "artifact": {"type": ["string", "null"]},
+    "parsed_text": {"type": ["string", "null"]},
+    "parsed_text_sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+    "decoder": {"type": ["string", "null"]},
+    "parser_name": {"type": ["string", "null"]},
+    "parser_version": {"type": ["string", "null"]},
+    "parser_error": {"type": ["string", "null"]},
+    "fetch_error": {"type": "string"},
+    "receipt_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "allOf": [
+    {
+      "if": {
+        "required": ["retrieval_complete"],
+        "properties": {"retrieval_complete": {"const": true}}
+      },
+      "then": {"required": ["parser_error"]}
+    },
+    {
+      "if": {
+        "required": ["content_type", "retrieval_complete"],
+        "properties": {
+          "content_type": {"type": "string", "pattern": "^application/pdf(?:;|$)"},
+          "retrieval_complete": {"const": true}
+        }
+      },
+      "then": {
+        "required": ["parser_error"],
+        "properties": {
+          "parser_name": {"const": "pdftotext"},
+          "parser_version": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    {
+      "if": {
+        "required": ["content_type", "support_eligible"],
+        "properties": {
+          "content_type": {"type": "string", "pattern": "^application/pdf(?:;|$)"},
+          "support_eligible": {"const": true}
+        }
+      },
+      "then": {
+        "properties": {
+          "parser_name": {"const": "pdftotext"},
+          "parser_version": {
+            "type": "string",
+            "pattern": "^[0-9][A-Za-z0-9._+~-]{0,63}$"
+          },
+          "parser_error": {"const": null},
+          "parsed_text": {"type": "string", "minLength": 1},
+          "parsed_text_sha256": {"$ref": "#/$defs/sha256"}
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+  }
+}

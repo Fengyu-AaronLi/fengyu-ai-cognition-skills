@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fengyu.local/schemas/breaking-identity-labels/evolution-command-receipt.schema.json",
+  "title": "Evolution command execution receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "candidate_id",
+    "workflow_sha256",
+    "step_id",
+    "kind",
+    "argv",
+    "script_path",
+    "script_sha256",
+    "input_snapshot",
+    "exit_code",
+    "assertion",
+    "assertion_passed",
+    "stdout_path",
+    "stdout_sha256",
+    "stderr_path",
+    "stderr_sha256",
+    "recorded_at"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "run_id": {"type": "string", "minLength": 1},
+    "candidate_id": {"type": "string", "minLength": 1},
+    "workflow_sha256": {"$ref": "#/$defs/sha256"},
+    "step_id": {"type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$"},
+    "kind": {"const": "command"},
+    "argv": {
+      "type": "array",
+      "minItems": 2,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "script_path": {"type": "string", "pattern": "^[A-Za-z0-9._/-]+\\.py$"},
+    "script_sha256": {"$ref": "#/$defs/sha256"},
+    "input_snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cwd", "environment", "files"],
+      "properties": {
+        "cwd": {"const": "."},
+        "environment": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["PYTHONHASHSEED"],
+          "properties": {"PYTHONHASHSEED": {"const": "0"}}
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path", "sha256"],
+            "properties": {
+              "path": {"type": "string", "minLength": 1},
+              "sha256": {"$ref": "#/$defs/sha256"}
+            }
+          }
+        }
+      }
+    },
+    "exit_code": {"type": "integer"},
+    "assertion": {"enum": ["red", "exit_zero"]},
+    "assertion_passed": {"type": "boolean"},
+    "stdout_path": {"type": "string", "minLength": 1},
+    "stdout_sha256": {"$ref": "#/$defs/sha256"},
+    "stderr_path": {"type": "string", "minLength": 1},
+    "stderr_sha256": {"$ref": "#/$defs/sha256"},
+    "recorded_at": {"type": "string", "format": "date-time"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

@@ -1,0 +1,41 @@
+V3 attestation and canonical-report RED round
+Date: 2026-08-06
+Runtime under test: scripts/claim_audit.py 3.0.0
+
+Reproduction command:
+
+python3 -m unittest discover -s tests -p 'test_attestation_redteam_v3.py' -v
+
+Observed result:
+
+test_offline_forged_runtime_receipt_requires_unforgeable_provenance (test_attestation_redteam_v3.AttestationRedTeamV3Tests.test_offline_forged_runtime_receipt_requires_unforgeable_provenance)
+A self-consistent, caller-authored receipt must not impersonate runtime fetch. ... FAIL
+test_replay_rejects_report_rehash_that_is_not_canonical_runtime_output (test_attestation_redteam_v3.AttestationRedTeamV3Tests.test_replay_rejects_report_rehash_that_is_not_canonical_runtime_output)
+Rehashing a tampered report in state.json must not make replay pass. ... FAIL
+
+======================================================================
+FAIL: test_offline_forged_runtime_receipt_requires_unforgeable_provenance (test_attestation_redteam_v3.AttestationRedTeamV3Tests.test_offline_forged_runtime_receipt_requires_unforgeable_provenance)
+A self-consistent, caller-authored receipt must not impersonate runtime fetch.
+----------------------------------------------------------------------
+AssertionError: False is not true : a fully offline, caller-authored runtime_fetch receipt passed the CLI gate; returncode=0, verdict=PASS, codes=[]
+
+======================================================================
+FAIL: test_replay_rejects_report_rehash_that_is_not_canonical_runtime_output (test_attestation_redteam_v3.AttestationRedTeamV3Tests.test_replay_rejects_report_rehash_that_is_not_canonical_runtime_output)
+Rehashing a tampered report in state.json must not make replay pass.
+----------------------------------------------------------------------
+AssertionError: False is not true : replay trusted a tampered report after the attacker synchronized state.report_sha256; returncode=0, historical_integrity=PASS, report_integrity=PASS, codes=[]
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.232s
+
+FAILED (failures=2)
+
+RED interpretation:
+
+1. A caller can currently handcraft a complete runtime_fetch receipt, raw artifact, parsed artifact, receipt hash, and exact selectors entirely offline. The CLI check returns PASS because no non-caller-forgeable receipt provenance is required.
+2. A caller can currently alter a finished report and replace state.report_sha256 with the new digest. Replay returns historical_integrity=PASS and report_integrity=PASS because it does not compare the file with a fresh canonical render of the bound ledger and receipts.
+
+Required GREEN signals:
+
+1. check returns nonzero and includes RECEIPT_PROVENANCE_UNATTESTED for the offline-forged runtime receipt.
+2. replay returns nonzero and includes REPORT_CANONICAL_MISMATCH after a report is changed and its state hash is synchronized.

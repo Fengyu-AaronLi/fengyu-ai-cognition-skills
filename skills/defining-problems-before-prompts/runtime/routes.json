@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "priority": [
+    "high_risk_value_decision",
+    "decisive_unknowns",
+    "clear_execution",
+    "default_define"
+  ],
+  "rules": {
+    "high_risk_value_decision": {
+      "mode": "defer_to_user",
+      "execution_allowed": false
+    },
+    "decisive_unknowns": {
+      "mode": "define",
+      "execution_allowed": false
+    },
+    "clear_execution": {
+      "requires_all": [
+        "deliverable_clear",
+        "inputs_sufficient",
+        "success_criteria_clear"
+      ],
+      "mode": "execute",
+      "execution_allowed": true
+    },
+    "default_define": {
+      "mode": "define",
+      "execution_allowed": false
+    }
+  },
+  "resources": {
+    "execute": [],
+    "define": {
+      "default": ["references/core.md"],
+      "ai_efficiency": [
+        "references/core.md",
+        "references/playbooks/ai-efficiency.md"
+      ],
+      "ai_product": [
+        "references/core.md",
+        "references/playbooks/ai-product.md"
+      ]
+    },
+    "defer_to_user": {
+      "default": [
+        "references/core.md",
+        "references/high-risk.md"
+      ],
+      "career": [
+        "references/core.md",
+        "references/high-risk.md",
+        "references/playbooks/career-exit.md"
+      ]
+    }
+  }
+}

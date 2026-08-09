@@ -1,0 +1,22 @@
+{
+  "evidence": [
+    {
+      "path": "evals/raw/v38-red/file-backed-audit-receipts.md",
+      "sha256": "9c09872ad02013d19eb6526d095bc0e15a5a6808c9ae3e9bdee9bca3bdadcb3a"
+    }
+  ],
+  "from_sha256": "daecf2de7ba913ea9e2750ef49b139b5e8b514e65a34132aa38a7b6061d297c5",
+  "reason": "Passing release fixtures may no longer use invented hashes; every audit claim now points to a dedicated preregistration, environment, stdout, stderr, and raw-output file.",
+  "receipt_id": "v38-v11-file-backed-audit-fixtures",
+  "replacement_tests": [
+    {
+      "path": "tests/test_v38_file_backed_audit_receipts.py",
+      "sha256": "60bc5e69e582227bc417741732c324ef947b0cb8181c1acaacca184dd7fc8f1e"
+    }
+  ],
+  "reviewed_at": "2026-08-06T12:10:00Z",
+  "reviewed_by": "independent-release-evidence-audit-v38",
+  "schema_version": "1.0",
+  "test_path": "tests/test_v11_evolution_controller.py",
+  "to_sha256": "c74a1c1fc298a8e87e572f3d69cb4e4420b8526a4da0ca3a7ebdd6073b87339a"
+}

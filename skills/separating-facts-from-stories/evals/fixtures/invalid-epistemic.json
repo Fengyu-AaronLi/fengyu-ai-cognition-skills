@@ -1,0 +1,51 @@
+{
+  "schema_version": "2.0.0",
+  "skill_version": "2.0.0",
+  "case_id": "invalid-epistemic",
+  "revision": 1,
+  "previous_case_sha256": null,
+  "mode": "standard",
+  "current_input_id": "I1",
+  "input_sha256": "3f2a5ecb10fb03e645da6b532ca17084874634b551350ca53130192f061e13b3",
+  "inputs": [
+    {
+      "id": "I1",
+      "text": "老板连续两次没让我参加会议。同事说老板可能对我不满意。",
+      "sha256": "3f2a5ecb10fb03e645da6b532ca17084874634b551350ca53130192f061e13b3"
+    }
+  ],
+  "claims": [
+    {
+      "id": "C1",
+      "kind": "observable_fact",
+      "text": "老板已经决定开除我",
+      "input_id": "I1",
+      "source_ref": "S1",
+      "source_type": "direct_quote",
+      "exact_quote": "老板亲口说要开除我",
+      "epistemic_status": "verified",
+      "diagnostic_boundary": false
+    }
+  ],
+  "evidence": [],
+  "evidence_links": [],
+  "unknowns": [],
+  "hypotheses": [],
+  "discriminator": null,
+  "actions": [
+    {
+      "id": "A1",
+      "text": "立即辞职并公开指责老板",
+      "timing": "next",
+      "risk": "low",
+      "reversible": true,
+      "motive_independent": false,
+      "produces_new_evidence": false
+    }
+  ],
+  "user_decisions": ["是否辞职"],
+  "safety": {
+    "risk_signals": []
+  },
+  "change_log": []
+}

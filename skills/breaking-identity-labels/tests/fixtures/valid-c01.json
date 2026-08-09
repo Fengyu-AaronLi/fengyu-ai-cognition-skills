@@ -1,0 +1,146 @@
+{
+  "schema_version": "2.0",
+  "case_id": "fixture-c01",
+  "revision": 1,
+  "status": "planned",
+  "language": "zh-CN",
+  "created_at": "2026-08-05T00:00:00Z",
+  "updated_at": "2026-08-05T00:01:00Z",
+  "evidence": [
+    {
+      "id": "E000",
+      "kind": "user_input",
+      "text": "我是典型 I 人，所以我不适合带团队，也不可能做好公开表达。",
+      "recorded_at": "2026-08-05T00:00:00Z"
+    }
+  ],
+  "route": {
+    "mode": "deconstruct",
+    "trigger": true,
+    "reason_codes": [
+      "identity_to_capability"
+    ]
+  },
+  "risk_flags": {
+    "clinical": false,
+    "safety": false,
+    "medical_change_request": false,
+    "high_cost_decision": false,
+    "functional_impairment": false
+  },
+  "analysis": {
+    "labels": [
+      {
+        "text": "I 人",
+        "source_type": "user_self_description",
+        "evidence_status": "reported_unverified",
+        "source": {
+          "evidence_id": "E000",
+          "quote": "I 人",
+          "start": 5,
+          "end": 8
+        },
+        "attribution": {
+          "speaker": {"role": "self", "text": "我", "span": {"start": 0, "end": 1}},
+          "source": {"type": "user_self_description", "evidence_status": "reported_unverified"},
+          "predicate": {"kind": "self_identifies", "polarity": "affirmed", "text": "是", "span": {"start": 1, "end": 2}},
+          "target": {"role": "current_user", "text": "我", "resolution": "explicit", "span": {"start": 0, "end": 1}},
+          "label": {"start": 5, "end": 8},
+          "discourse_context": {"kind": "personal", "span": {"start": 0, "end": 29}}
+        }
+      }
+    ],
+    "context_claims": [],
+    "judgments": [
+      {
+        "text": "我不适合带团队",
+        "kind": "capability_verdict",
+        "source": {
+          "evidence_id": "E000",
+          "quote": "我不适合带团队",
+          "start": 11,
+          "end": 18
+        }
+      },
+      {
+        "text": "不可能做好公开表达",
+        "kind": "future_verdict",
+        "source": {
+          "evidence_id": "E000",
+          "quote": "不可能做好公开表达",
+          "start": 20,
+          "end": 29
+        }
+      }
+    ],
+    "observations": [],
+    "counterexamples": [],
+    "candidate_variables": [
+      {
+        "name": "准备时间",
+        "status": "hypothesis",
+        "reason": "可在相同表达任务中单独调整"
+      }
+    ],
+    "unknowns": [
+      "标签之外的具体行为记录",
+      "行为出现的情境、频率与时间",
+      "已知反例",
+      "过去公开表达的实际完成记录",
+      "带团队表现是否跨情境稳定",
+      "已有反例"
+    ],
+    "minimal_question": {
+      "text": "过去三个月，你完成过哪些公开表达或协调任务，当时的准备时间和直接结果是什么？",
+      "status": "proposed"
+    },
+    "experiment": {
+      "status": "planned",
+      "target_claim": "在有十五分钟准备时，我无法完成三分钟团队更新",
+      "target_judgment_ids": [
+        "J-E000-11-18"
+      ],
+      "primary_variable": "准备时间",
+      "duration": {
+        "value": 7,
+        "unit": "days"
+      },
+      "action": "完成一次三分钟团队更新",
+      "kept_constant": [
+        "表达主题",
+        "听众范围"
+      ],
+      "measures": [
+        "是否完成",
+        "听众能否复述主要信息",
+        "完成后的恢复时间"
+      ],
+      "support_if": [
+        "在固定十五分钟准备后仍未完成团队更新"
+      ],
+      "weaken_if": [
+        "按时完成更新且听众能够复述主要信息"
+      ],
+      "reversible": true,
+      "reversibility_note": "实验结束后恢复原沟通安排"
+    },
+    "reserved_judgments": [
+      {
+        "topic": "人格身份",
+        "owner": "user",
+        "reason": "有限对话与单次实验不能定义跨情境人格"
+      },
+      {
+        "topic": "人格身份",
+        "owner": "user",
+        "reason": "一次实验不能定义跨情境人格"
+      },
+      {
+        "topic": "职业能力",
+        "owner": "user",
+        "reason": "需要结合长期结果、反馈和个人价值取向"
+      }
+    ]
+  },
+  "review": null
+}

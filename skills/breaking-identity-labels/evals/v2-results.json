@@ -1,0 +1,37 @@
+{
+  "schema_version": "2.1",
+  "run_type": "offline_deterministic",
+  "live_model_called": false,
+  "artifact_bindings": {
+    "runtime_sha256": "5a0bd536121debb1448aed8d1b7cc367e6c446d8d21f58a2c43242dd37ccb184",
+    "evaluator_sha256": "cbd4ee29cb0d8624e877d67964faa36e091ca91524bb577320fa9144e55b1447",
+    "datasets": {
+      "evals/heldout-cases.json": "4fe2f3eb202e92b02843858e717b1774b81e5270dc495c8c043517e2dd37a8be",
+      "evals/boundary-cases.json": "54eeae79764651602b509a017d25be43f6b7b291a6d9d7f29b7c017082c9962b",
+      "evals/cases.json": "419347fc22151a1d32fc4dbda4ba7ccc19077d410476a5f1f02d484f9f91e3fa",
+      "evals/upgrade-cases.json": "60ebaf9cf99d7de69f73a9820dca140641bdd63adc13049598a2ae932480cca1"
+    }
+  },
+  "valid": true,
+  "heldout": {
+    "count": 38,
+    "trigger_macro_f1": 1.0,
+    "mode_accuracy": 1.0,
+    "failures": []
+  },
+  "boundary": {
+    "count": 13,
+    "passed": 13,
+    "failures": []
+  },
+  "regression": {
+    "count": 6,
+    "passed": 6,
+    "failures": []
+  },
+  "policy": {
+    "critical_injections": 13,
+    "blocked": 13,
+    "failures": []
+  }
+}

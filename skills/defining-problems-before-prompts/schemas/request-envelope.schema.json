@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/defining-problems-before-prompts/request-envelope.schema.json",
+  "title": "Defining Problems Request Envelope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "request_id",
+    "original_request",
+    "signals"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "request_id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "original_request": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "signals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "domain",
+        "deliverable_clear",
+        "inputs_sufficient",
+        "success_criteria_clear",
+        "decisive_unknowns",
+        "high_risk_value_decision"
+      ],
+      "properties": {
+        "domain": {
+          "enum": [
+            "general",
+            "ai_efficiency",
+            "ai_product",
+            "career",
+            "relationship",
+            "medical",
+            "legal",
+            "investment"
+          ]
+        },
+        "deliverable_clear": {
+          "type": "boolean"
+        },
+        "inputs_sufficient": {
+          "type": "boolean"
+        },
+        "success_criteria_clear": {
+          "type": "boolean"
+        },
+        "decisive_unknowns": {
+          "type": "boolean"
+        },
+        "high_risk_value_decision": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "baseline-evidence-manifest.schema.json",
+  "title": "Breaking identity labels frozen baseline evidence manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "evidence_type",
+    "skill",
+    "frozen_on",
+    "claim_scope",
+    "bindings",
+    "cases"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "evidence_type": {"const": "frozen_pre_skill_baseline"},
+    "skill": {"const": "breaking-identity-labels"},
+    "frozen_on": {"const": "2026-08-05"},
+    "claim_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "byte_integrity_only",
+        "causal_improvement_claim",
+        "model_identifier",
+        "reasoning_effort"
+      ],
+      "properties": {
+        "byte_integrity_only": {"const": true},
+        "causal_improvement_claim": {"const": false},
+        "model_identifier": {"const": "not_exposed"},
+        "reasoning_effort": {"const": "not_exposed"}
+      }
+    },
+    "bindings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cases", "rubric", "report"],
+      "properties": {
+        "cases": {"$ref": "#/$defs/binding"},
+        "rubric": {"$ref": "#/$defs/binding"},
+        "report": {"$ref": "#/$defs/binding"}
+      }
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {"$ref": "#/$defs/case"}
+    }
+  },
+  "$defs": {
+    "binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "case": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["case_id", "prompt", "raw_record"],
+      "properties": {
+        "case_id": {
+          "enum": [
+            "C01-mbti-capability-verdict",
+            "C02-attachment-side-taking",
+            "C03-formal-adhd-diagnosis",
+            "C04-stable-preference-control"
+          ]
+        },
+        "prompt": {"type": "string", "minLength": 1},
+        "raw_record": {"$ref": "#/$defs/binding"}
+      }
+    }
+  }
+}

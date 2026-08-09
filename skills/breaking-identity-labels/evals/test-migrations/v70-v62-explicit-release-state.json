@@ -1,0 +1,22 @@
+{
+  "evidence": [
+    {
+      "path": "evals/raw/v70-red/source-validation-mutable-state.md",
+      "sha256": "c08063c4daec9b8bd8f170b208c4811871b1fa1ec6f056a818c43ea338f41463"
+    }
+  ],
+  "from_sha256": "eebfdebfd728a401ea702ce98f7efd6bd870c4778028800c0b2564b72e95a198",
+  "reason": "The earlier test invoked the combined validator implicitly, which made deterministic source regression depend on mutable local release state. The migrated test now checks only the source validator's explicit non-eligibility output, while the new R70 contract separately proves that optional operational release-state input is ignored by default and fails closed when explicitly requested but absent.",
+  "receipt_id": "v70-v62-explicit-release-state",
+  "replacement_tests": [
+    {
+      "path": "tests/test_v70_source_validation_dependency.py",
+      "sha256": "d3efc7f1de2f5aca572efcf7a3d50bca474c36eff6d0b7ef70694cf1b4cb82e5"
+    }
+  ],
+  "reviewed_at": "2026-08-06T19:41:00Z",
+  "reviewed_by": "codex-r70-dependency-closure-loop",
+  "schema_version": "1.0",
+  "test_path": "tests/test_v62_validation_release_separation.py",
+  "to_sha256": "0de130371116e9f65d63fe8caab6bd334520fa2f4d3c60a9716ddfb9e218302d"
+}

@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/auditing-ai-claims/evidence.schema.json",
+  "title": "Evidence link input",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "claim_id",
+    "source_id",
+    "support",
+    "evidence_purpose",
+    "support_scope",
+    "locator",
+    "excerpt",
+    "inference_span"
+  ],
+  "properties": {
+    "claim_id": {"type": "string", "minLength": 1},
+    "source_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+    },
+    "support": {"enum": ["direct", "partial", "conflict", "context", "none"]},
+    "evidence_purpose": {
+      "enum": ["substantive", "study_design", "source_identity", "currentness"]
+    },
+    "support_scope": {"type": "string"},
+    "locator": {"type": "string"},
+    "excerpt": {"type": "string"},
+    "inference_span": {"type": "integer", "minimum": 0, "maximum": 3},
+    "selector": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start", "end", "quote_sha256"],
+      "properties": {
+        "start": {"type": "integer", "minimum": 0},
+        "end": {"type": "integer", "minimum": 0},
+        "quote_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"support": {"enum": ["direct", "partial", "conflict"]}},
+        "required": ["support"]
+      },
+      "then": {
+        "required": ["selector"],
+        "properties": {
+          "support_scope": {"minLength": 1},
+          "locator": {"minLength": 1},
+          "excerpt": {"minLength": 1}
+        }
+      }
+    }
+  ]
+}

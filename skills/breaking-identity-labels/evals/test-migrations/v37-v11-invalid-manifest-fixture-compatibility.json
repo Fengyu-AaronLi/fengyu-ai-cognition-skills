@@ -1,0 +1,22 @@
+{
+  "evidence": [
+    {
+      "path": "evals/raw/v37-red/release-completed-run-binding.md",
+      "sha256": "d306a42d8d260fa90f2691819e1812b9abc86369f62c3aded3f1d4533bdf2f54"
+    }
+  ],
+  "from_sha256": "56970c68bee3342904192548ba87403998988044e6071be5551424accbaed725",
+  "reason": "The shared fixture must still construct an intentionally invalid manifest state for the preserved V12 rejection test while retaining a genuine completed-run binding.",
+  "receipt_id": "v37-v11-invalid-manifest-fixture-compatibility",
+  "replacement_tests": [
+    {
+      "path": "tests/test_v37_release_completed_run_binding.py",
+      "sha256": "e0bdb633d16f6198617b4387761709b7b6435179320a1de8f370e8a6bbf81cec"
+    }
+  ],
+  "reviewed_at": "2026-08-06T12:05:00Z",
+  "reviewed_by": "independent-state-integrity-audit-v37",
+  "schema_version": "1.0",
+  "test_path": "tests/test_v11_evolution_controller.py",
+  "to_sha256": "daecf2de7ba913ea9e2750ef49b139b5e8b514e65a34132aa38a7b6061d297c5"
+}

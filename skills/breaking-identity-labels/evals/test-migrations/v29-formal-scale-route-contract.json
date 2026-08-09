@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "receipt_id": "v29-formal-scale-route-contract",
+  "test_path": "tests/test_v12_attribution_material_regressions.py",
+  "from_sha256": "357985009f111819bb50519c2f5bf6f34521029174987b32de292d5e000c01d5",
+  "to_sha256": "25faccf78b5d827c608086f804bbb624462a2c944cbfd5d86877e127f6bfdb01",
+  "reason": "A reported formal BAI scale result without an identity verdict belongs in clinical_report_only while remaining explicitly non-diagnostic; V29 independently preserves formal, informal, current-user and third-party provenance boundaries.",
+  "replacement_tests": [
+    {
+      "path": "tests/test_v29_clinical_attribution_matrix.py",
+      "sha256": "878716bc982422ac374f6a5aa7bc96ec7d9df4d26367bc50c96c9b59fbb23e80"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "evals/raw/v2-forward/v29-red/formal-scale-route-migration.md",
+      "sha256": "cdd8dcae20f6aaa7aa892fd023bd0dd0e87cad77368de6c07fe2b97456a255ea"
+    }
+  ],
+  "reviewed_by": "root-evolution-controller",
+  "reviewed_at": "2026-08-06T15:30:00Z"
+}

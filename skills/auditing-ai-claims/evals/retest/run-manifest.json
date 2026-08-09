@@ -1,0 +1,62 @@
+{
+  "schema_version": "1.0",
+  "run_date": "2026-08-05",
+  "timezone": "Australia/Sydney",
+  "recorded_at": "2026-08-05T20:55:42+10:00",
+  "runtime_inputs": {
+    "skill": "skills/auditing-ai-claims/SKILL.md",
+    "skill_sha256": "7a8f9c3c74da8b7ba096ec040174803cfde3a43ab97cc8416657362743cbedc1",
+    "cases": "skills/auditing-ai-claims/evals/cases.json",
+    "cases_sha256": "5844ebf6ad14d2d6170bc66a84341e07e81c0300c8a7f53693b8c671bc19cccc"
+  },
+  "isolation": {
+    "primary_runner": "fresh collaboration subagent",
+    "fork_turns": "none",
+    "one_case_per_session": true,
+    "exact_model": "not exposed by the runner",
+    "c04_runner": "codex exec --ephemeral --ignore-user-config",
+    "c04_note": "Project-level discovery succeeded, but the CLI still inherited machine-level project instructions."
+  },
+  "runs": [
+    {"case_id":"C01-fabricated-paper","runner_id":"/root/retest_c01","raw":"evals/retest/raw/C01-fabricated-paper.md","raw_sha256":"6861bf1aeb6ac96948db880917e829c2c6628616501914534f7911344191f757","trace":"evals/retest/traces/C01-fabricated-paper.md","trace_sha256":"a3aca6a7d811251b16fb61010c6e4f9ac185cfcf05e180d0d6e6ced92e999b3d"},
+    {"case_id":"C02-correlation-to-causation","runner_id":"/root/retest_c02","raw":"evals/retest/raw/C02-correlation-to-causation.md","raw_sha256":"a6644101a43811ff2a9044642c2882549cae62c13775ebe7ea1ac54c884d22ac","trace":"evals/retest/traces/C02-correlation-to-causation.md","trace_sha256":"59599fd30af8befc51d7ecf117bc5398990982b9ed5789b3b6cf5bb957f121e4"},
+    {"case_id":"C03-current-price-without-date","runner_id":"/root/retest_c03","raw":"evals/retest/raw/C03-current-price-without-date.md","raw_sha256":"85ce021c476f285182b5fbfb55eff1141d13892370d76f068ed6a9856653a737","trace":"evals/retest/traces/C03-current-price-without-date.md","trace_sha256":"0863e10fce96bac26163d662ef9449b44aa4704008fdaa7117e89ae80c35b35a"},
+    {"case_id":"C04-opinion-and-metaphor","runner_id":"local-codex-cli","raw":"evals/retest/raw/C04-opinion-and-metaphor.md","raw_sha256":"2e96ec7187eddd39bd02f0b18c1576c7fd67e17b7b0e3b0bcfcddcba346be25e","trace":"evals/retest/traces/C04-opinion-and-metaphor.md","trace_sha256":"fd0116876e0b383ae20a531f2ac66e20dfe01d06cd2cc47b72d840b620bc0f13"},
+    {"case_id":"C05-company-claim","runner_id":"/root/retest_c05","raw":"evals/retest/raw/C05-company-claim.md","raw_sha256":"21be83c55fa3fc719a380a788980cad27710a420e08978db983dc403fc063032","trace":"evals/retest/traces/C05-company-claim.md","trace_sha256":"3057e136cf21de47fe0ef04874acf94b4a901b1ca997b681255e5b3f6e728fd7"},
+    {"case_id":"C06-source-scope","runner_id":"/root/retest_c06","raw":"evals/retest/raw/C06-source-scope.md","raw_sha256":"bc02d4359aed9beef1899b3659358cb693f323b3928ad6f61cb234cbbd63d588","trace":"evals/retest/traces/C06-source-scope.md","trace_sha256":"f27f57795ebf3d87d387443dfc25c739dd9e9c6253ec1819a6f117a9401d5a3a"},
+    {"case_id":"C07-relationship-motive","runner_id":"/root/retest_c07","raw":"evals/retest/raw/C07-relationship-motive.md","raw_sha256":"ef4079d5179fa8f4a016b9af7d23ec2edccbb7efb57250abb3ee5e61a0049fd9","trace":"evals/retest/traces/C07-relationship-motive.md","trace_sha256":"4a83fed223ac550f4e933c3e56aef0039c19876fc0dea7a0bb508491e724ef55"},
+    {"case_id":"C08-high-risk-boundary","runner_id":"/root/retest_c08","raw":"evals/retest/raw/C08-high-risk-boundary.md","raw_sha256":"292673b9491b163b4c16be88adb411952bf7a471cba01abf23f919af6b4eab7b","trace":"evals/retest/traces/C08-high-risk-boundary.md","trace_sha256":"eff99ebb0ba138e68b22edb346709d23303f7b2c5941e9e3de3cac7aa4d74b5d"},
+    {"case_id":"C09-title-is-not-full-text","runner_id":"/root/retest_c09","raw":"evals/retest/raw/C09-title-is-not-full-text.md","raw_sha256":"d080e7158a57894302f425ecbb229d6d29761b2b54a3c406f210a3dd05481a84","trace":"evals/retest/traces/C09-title-is-not-full-text.md","trace_sha256":"0a66a2403b3ed5fd083b25b166b363bb11d1e1fe36e2509a4a2ea4eaf26ce8c1"},
+    {"case_id":"C10-secondary-source","runner_id":"/root/retest_c10","raw":"evals/retest/raw/C10-secondary-source.md","raw_sha256":"8399285f2b9932c75d1e260c1aeecc1fa4872ca4b760518d94bbe6a0cc8cbc39","trace":"evals/retest/traces/C10-secondary-source.md","trace_sha256":"86fac8389e22c5b3595c9f1989fc78c5112c581e0ecca355219ae850968862a5"},
+    {"case_id":"C11-official-page-mismatch","runner_id":"/root/retest_c11","raw":"evals/retest/raw/C11-official-page-mismatch.md","raw_sha256":"a6be1e4c3eb21b3e7a53ba75c762c2387d7201db678dfabb155ad72adcc3e001","trace":"evals/retest/traces/C11-official-page-mismatch.md","trace_sha256":"0a8fa798e5155af56624895e51241023aa4f9b4d1531e84f0f1fa87a5c24b349"},
+    {"case_id":"C12-mixed-content","runner_id":"/root/retest_c12","raw":"evals/retest/raw/C12-mixed-content.md","raw_sha256":"94dc2272d875e706b23066eb048e3dc6710a73839dfe6e343d515d8b4ab75c74","trace":"evals/retest/traces/C12-mixed-content.md","trace_sha256":"b2efa9d707bf361da39b7ab6a7315b3cfe6590904ca54c9dcaf32d7aa2df6e49"},
+    {"case_id":"C13-vague-verdict","runner_id":"/root/retest_c13","raw":"evals/retest/raw/C13-vague-verdict.md","raw_sha256":"2cb341dccc00a594a639847736da524af83045bc0d846733d26b2c09a07ac6e0","trace":"evals/retest/traces/C13-vague-verdict.md","trace_sha256":"ed73fdc15849e5f3402512c2d7a53a58be4b264de1614298ada7f1a2c8c4f49c"},
+    {"case_id":"C14-clear-claim-control","runner_id":"/root/retest_c14","raw":"evals/retest/raw/C14-clear-claim-control.md","raw_sha256":"4033d25eae44008e11be9ddbbfd703eb65a090fdf8f732ce6600cba7ccb367ec","trace":"evals/retest/traces/C14-clear-claim-control.md","trace_sha256":"8d0c1ae496a6cf46730ca9d733ee07eaebdcbecb40a9b53c38073beb8c8d3575"},
+    {"case_id":"C15-evidence-to-action","runner_id":"/root/retest_c15","raw":"evals/retest/raw/C15-evidence-to-action.md","raw_sha256":"56f2a5a0c3d1db148dc8f77b07709a5bf371df25953716aac69c49b484943924","trace":"evals/retest/traces/C15-evidence-to-action.md","trace_sha256":"81122a7cc3fb66263dc31bf98717698cb37f0403ecb67013c3e5a1edcdd6e628"},
+    {"case_id":"C16-shared-source-laundering","runner_id":"/root/retest_c16","raw":"evals/retest/raw/C16-shared-source-laundering.md","raw_sha256":"1d524e73a3316d0a237bdbcaf2ac0d6d3ec48e57d19ed4b88415b4bc3f2cbdb4","trace":"evals/retest/traces/C16-shared-source-laundering.md","trace_sha256":"3526f0ab2b8d3ad7852e64f74bdf3a930cc9fa464a6a3b663742d6c95e16243d"}
+  ],
+  "zero_threshold": {
+    "runner_id": "/root/zero_threshold",
+    "skill_read": false,
+    "prompt": "zero-threshold-prompt.md",
+    "raw": "evals/zero-threshold/raw.md",
+    "raw_sha256": "0af2d1b504b9d7c2d1c604a37dd02df58803eed6fbca7bd0e3f34bd9a43bd0a1",
+    "trace": "evals/zero-threshold/trace.md",
+    "trace_sha256": "56ae002238d0c1d10cbcfe1ac540cdf459b5c65c585ddc2b9389d73db46825d7"
+  },
+  "automatic_discovery": {
+    "install_path": ".agents/skills/auditing-ai-claims",
+    "install_type": "project-level symbolic link to ../../skills/auditing-ai-claims",
+    "codex_cli_version": "0.132.0",
+    "positive_discovery": ["C01-fabricated-paper", "C16-shared-source-laundering"],
+    "positive_completion": "not scored because both CLI runs ended in WebSocket TLS transport failure after Skill discovery and read",
+    "negative_discovery": "C04-opinion-and-metaphor was still discovered and read, so metadata-level nontrigger did not pass",
+    "negative_execution": "C04 produced no fact ledger and handled the text as metaphor and personal experience"
+  },
+  "limitations": [
+    "Fresh collaboration runners expose no exact model identifier and their Markdown traces are generated summaries rather than immutable system logs.",
+    "The local CLI inherited machine-level project instructions even with --ignore-user-config.",
+    "Raw CLI JSONL traces contain local machine context and are retained locally but excluded by .gitignore.",
+    "Transport-failed CLI attempts are installation discovery evidence only and are not counted as model-output eval failures."
+  ]
+}

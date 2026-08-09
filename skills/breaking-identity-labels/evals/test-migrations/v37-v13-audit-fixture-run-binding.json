@@ -1,0 +1,22 @@
+{
+  "evidence": [
+    {
+      "path": "evals/raw/v37-red/release-completed-run-binding.md",
+      "sha256": "d306a42d8d260fa90f2691819e1812b9abc86369f62c3aded3f1d4533bdf2f54"
+    }
+  ],
+  "from_sha256": "8a4b1845e936c9a3024afbe001820a2337f43c669ab8381cf22f10a9378ff19d",
+  "reason": "Audit-receipt tests now freeze the same completed candidate they audit so receipt integrity cannot be evaluated against an unexecuted release state.",
+  "receipt_id": "v37-v13-audit-fixture-run-binding",
+  "replacement_tests": [
+    {
+      "path": "tests/test_v37_release_completed_run_binding.py",
+      "sha256": "e0bdb633d16f6198617b4387761709b7b6435179320a1de8f370e8a6bbf81cec"
+    }
+  ],
+  "reviewed_at": "2026-08-06T12:00:00Z",
+  "reviewed_by": "independent-state-integrity-audit-v37",
+  "schema_version": "1.0",
+  "test_path": "tests/test_v13_architecture_integrity_regressions.py",
+  "to_sha256": "0f2e85f9dba5a29ef5c441099cc8f9023e6e22741cca543532e1d1748f96638b"
+}

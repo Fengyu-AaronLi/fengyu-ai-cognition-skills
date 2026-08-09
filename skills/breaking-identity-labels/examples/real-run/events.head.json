@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0",
+  "case_id": "demo-ai-label",
+  "event_count": 5,
+  "latest_revision": 4,
+  "latest_event_sha256": "5cb248bc2b5c455a030508a132d91c584c57e339281539010899e33d16460b69",
+  "latest_snapshot_sha256": "0e36cf3506b5481203ed46bc7a98f127ef4decc6d1b3d651ced8ce19e4f27b1f",
+  "updated_at": "2026-08-20T10:03:00Z"
+}

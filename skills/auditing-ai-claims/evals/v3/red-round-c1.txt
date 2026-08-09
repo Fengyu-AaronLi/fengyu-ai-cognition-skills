@@ -1,0 +1,16 @@
+Round C1 baseline, 2026-08-06 Australia/Sydney
+
+Command:
+PYTHONPATH=skills/auditing-ai-claims/tests python3 -m unittest skills/auditing-ai-claims/tests/test_semantic_gates_v3.py -v
+
+Observed result before implementation:
+Ran 4 tests in 0.446s
+FAILED (failures=3, errors=1)
+
+Exposed failures:
+1. Candidates were not bound to original input spans or hashes.
+2. A candidate absent from the input was accepted.
+3. One compound claim could consume multiple unrelated candidates.
+4. One compound input sentence could not be deliberately kept open while it was split into multiple atomic claims.
+
+This file records the red state before candidate-binding implementation.

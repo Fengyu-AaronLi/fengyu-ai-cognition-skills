@@ -1,0 +1,22 @@
+{
+  "evidence": [
+    {
+      "path": "evals/raw/v71-red/regression-dependency-closed-world.md",
+      "sha256": "8eb54f9df2ff0a7092c49bf943a25b242cee3d1498d0efb8e87a0670b3a86216"
+    }
+  ],
+  "from_sha256": "0e3842bbb20796f2768096233a5aa35054c98c09e624cae389a2802f3a5c8679",
+  "reason": "The package wiring assertion required the mutable checkout release-state file to exist during deterministic regression even though release state is intentionally outside the stable dependency inventory. The migrated assertion keeps the controller, schema, test manifest and strict-gate wiring contract without reading live operational state.",
+  "receipt_id": "v71-v11-no-live-release-state-dependency",
+  "replacement_tests": [
+    {
+      "path": "tests/test_v71_regression_dependency_closed_world.py",
+      "sha256": "aeea94f7d4e1e428d83879b28cf93a7f7dca529896691ce53e8e289a1d4f80da"
+    }
+  ],
+  "reviewed_at": "2026-08-06T19:50:34Z",
+  "reviewed_by": "codex-r71-dependency-closure-loop",
+  "schema_version": "1.0",
+  "test_path": "tests/test_v11_evolution_controller.py",
+  "to_sha256": "02a68218131876777d22c86952af571e88958586d33d2a3f74d1e285d7fe9c75"
+}

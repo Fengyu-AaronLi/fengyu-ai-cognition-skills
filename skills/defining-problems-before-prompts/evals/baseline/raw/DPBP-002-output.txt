@@ -1,0 +1,78 @@
+**CEO 汇报版**
+
+结论：不要做“全员学 AI”。一个月内要追 30%，应选 3 条高频流程做端到端改造：会议到任务、销售/客户响应、内部知识检索与文档产出。已购的 ChatGPT Business、Notion AI、Zapier 足够，不需要先买新工具。
+
+备注：ChatGPT Team 已更名为 ChatGPT Business；当前能力包括 Projects、Company Knowledge、ChatGPT Agent、Deep Research、Codex 等。OpenAI 也在 2026 年 7 月推出 ChatGPT Work，用于更长任务和跨应用工作。Zapier 侧，2026 年 7 月已把 Agents 迁移到 AI by Zapier，适合把 AI 推进自动化流程里。Notion AI 支持 Agent、AI Meeting Notes、Enterprise Search 和 Custom Agents。
+
+| 优先级 | 工具 | 用法 | 一个月目标 |
+|---|---|---|---|
+| P0 | ChatGPT Projects | 每个核心项目建一个 Project，沉淀背景、目标、周报、决策 | 减少重复解释 20% |
+| P0 | Notion Enterprise Search | 让员工直接问公司知识库、制度、项目资料 | 内部查资料时间减半 |
+| P0 | Zapier Workflows | 把表单、邮件、Slack、Notion、CRM 串起来 | 消灭 5 个重复录入流程 |
+| P0 | AI by Zapier | 在 Zap 中做分类、摘要、判断、派单 | 自动处理 30% 标准请求 |
+| P1 | ChatGPT Deep Research | 用于市场、竞品、客户、技术方案调研 | 调研初稿从 1 天压到 2 小时 |
+| P1 | Notion AI Meeting Notes | 会议自动纪要、行动项、责任人、截止日期 | 会后整理时间减少 80% |
+| P1 | ChatGPT Custom GPTs | 建 3 个内部助手：销售、客服、产品/研发 | 输出风格和流程标准化 |
+| P1 | Zapier Tables | 做轻量业务数据中台，承接线索、工单、任务状态 | 降低跨表追踪成本 |
+| P2 | ChatGPT Codex | 处理代码解释、脚本、内部工具、自动化小功能 | 工程小任务提速 20% 到 40% |
+| P2 | Notion Custom Agents | 做周期性项目巡检、周报草稿、知识库维护 | 管理层周报自动化 |
+
+**30% 提效口径**
+
+不要承诺“全公司所有人效率提高 30%”。CEO 可汇报口径建议改成：
+
+> 30 天内，在 3 条试点流程上实现平均处理时长降低 30%，并把可复制模板推广到全员。
+
+三条试点流程：
+
+| 流程 | 当前问题 | AI 改造 | 目标 |
+|---|---|---|---|
+| 会议到执行 | 会后纪要慢、任务丢失 | Notion AI Meeting Notes → Zapier 自动建任务 → ChatGPT 生成周报 | 每次会议节省 30 到 45 分钟 |
+| 客户/销售响应 | 重复查资料、重复写邮件 | Notion 知识库 + ChatGPT 销售 GPT + Zapier 线索分流 | 响应时间降低 30% |
+| 内部调研/方案 | 资料分散、初稿慢 | ChatGPT Deep Research + Projects + Notion 文档库 | 初稿产出时间降低 50% |
+
+**一个月执行计划**
+
+第 1 周：选流程、定基线、建权限
+
+1. 选 3 个高频流程，每个流程找 5 个真实样本。
+2. 记录当前耗时、返工次数、交付质量评分。
+3. 配置 ChatGPT Business 工作区、Notion 权限、Zapier 连接。
+4. 建立 AI 使用边界：客户隐私、财务、人事、代码权限必须分级。
+
+第 2 周：搭建最小可用自动化
+
+1. 建 3 个 ChatGPT Projects：销售、客户支持、产品研发。
+2. 建 3 个 Custom GPT：销售邮件助手、客服回复助手、方案初稿助手。
+3. 建 5 条 Zapier 自动化：会议纪要入库、行动项派发、线索分流、客户邮件摘要、周报生成。
+4. Notion 建统一知识库入口，所有 AI 回答必须引用知识源。
+
+第 3 周：试点团队强制使用
+
+1. 选择 10 到 20 人试点，不做全员铺开。
+2. 每天收集失败案例：答非所问、资料找不到、流程断点、权限问题。
+3. 每两天修一次 Prompt、知识库结构和 Zapier 流程。
+4. 把可复用流程做成模板，而不是让每个人自由发挥。
+
+第 4 周：量化复盘并扩展
+
+1. 对比试点前后处理时长。
+2. 统计每条自动化节省次数和人工介入次数。
+3. 淘汰低价值玩法，只保留能稳定节省时间的流程。
+4. 输出第二个月推广清单：优先扩到销售、客服、运营、产品经理。
+
+**CEO 可以直接讲的目标**
+
+30 天内交付 4 个结果：
+
+1. 3 条核心流程完成 AI 改造。
+2. 10 个工具/能力纳入统一工作流。
+3. 至少 5 条 Zapier 自动化上线。
+4. 试点流程平均处理时长降低 30%。
+
+**关键原则**
+
+不要把 AI 当聊天工具推广，要把它嵌入流程。ChatGPT 负责推理和产出，Notion 负责知识和协作，Zapier 负责自动化和系统连接。30% 提效不是靠员工“多用 AI”，而是靠把重复查找、整理、转写、分发、初稿这些环节系统性拿掉。
+
+来源：OpenAI ChatGPT Business 说明与发布记录、Notion AI 官方说明、Zapier AI by Zapier 与 Agents 迁移说明。
+[OpenAI ChatGPT Business](https://help.openai.com/en/articles/8792828-what-is-chatgpt-team/)；[OpenAI ChatGPT Work 发布记录](https://help.openai.com/en/articles/6825453-chatgpt-browsing)；[Notion AI](https://www.notion.com/help/notion-ai-faqs)；[Zapier AI by Zapier](https://help.zapier.com/hc/en-us/articles/47402591569805-Migrating-from-Agents-to-AI-by-Zapier)

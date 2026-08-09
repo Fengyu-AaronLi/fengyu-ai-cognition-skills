@@ -1,0 +1,138 @@
+{
+  "distribution_status": "local_candidate",
+  "excluded": [
+    "evals",
+    "examples",
+    "launch",
+    "tests",
+    "workflows"
+  ],
+  "files": [
+    {
+      "bytes": 1013,
+      "path": "LICENSE",
+      "sha256": "6c3fdeb0303f0e938fcf7bad74eb469e9d5b0ce079591f1c7e622c7ab2158200"
+    },
+    {
+      "bytes": 1266,
+      "path": "NOTICE.md",
+      "sha256": "4d7661ca1f373dd215329eddcbc7fcc4c5d4d82f1719b26d236ba63ec0f180bc"
+    },
+    {
+      "bytes": 16685,
+      "path": "PROVENANCE.md",
+      "sha256": "f76a870f4a97506d81394c820e55614a2dab087f2c634f94e8f6dcbe81d63c8b"
+    },
+    {
+      "bytes": 17464,
+      "path": "README.md",
+      "sha256": "28d0d511376312275ce6dab8fc78a4b1f3bcb659b9b31b74b8a74e7c01284bb5"
+    },
+    {
+      "bytes": 11804,
+      "path": "SKILL.md",
+      "sha256": "88c6e9e76027b83a7bf1b2f19cecc4ab66e2472555975aa6eb9ef3e00964ab0d"
+    },
+    {
+      "bytes": 8916,
+      "path": "SOURCE_OF_TRUTH.md",
+      "sha256": "338009fce0051f8c5812a942328c123119f2355fb066d3016cdbcdc807bce964"
+    },
+    {
+      "bytes": 14,
+      "path": "VERSION",
+      "sha256": "59e4ebceb5e635f09df2f228ae52c6b8df9a89debbec74af931a9a051012c32d"
+    },
+    {
+      "bytes": 318,
+      "path": "agents/openai.yaml",
+      "sha256": "84fe44f3111b8b2edbd85b7b2a3c30e126cf814a6586975de80d7db2d42c8662"
+    },
+    {
+      "bytes": 16018,
+      "path": "docs/acceptance.md",
+      "sha256": "20338c2af7e10ee3b61cff7b1cca2751129dcc13f4a851fc3aebf9e2ce54fa63"
+    },
+    {
+      "bytes": 11334,
+      "path": "docs/evolution.md",
+      "sha256": "b2453a950978a6d828920cad825b0d0e29cb811cc298a9f30cc53f12ddc6c25c"
+    },
+    {
+      "bytes": 13434,
+      "path": "docs/quickstart.md",
+      "sha256": "d9900637c48f3094a3b4668357efd5d58814cae7d0fbd0c0b319e92ca3220353"
+    },
+    {
+      "bytes": 16718,
+      "path": "problem-spec.md",
+      "sha256": "6b1c69badff638debedc4a1e9c4d04544d103afeb322ceb1f9f37aed03dc5a9a"
+    },
+    {
+      "bytes": 2159,
+      "path": "references/evidence-classes.md",
+      "sha256": "7a1be883864f4d7b1ef05479de6c02cefc6a8efbbfdda5576611529d656ca5f8"
+    },
+    {
+      "bytes": 3343,
+      "path": "references/policy-rules.md",
+      "sha256": "ba4358ae4cdd115c72d48480d3ca15eba621606068384ac0226ef0da32b4d9f3"
+    },
+    {
+      "bytes": 4441,
+      "path": "references/safety-boundaries.md",
+      "sha256": "b5f69fe3b453a188bbb3c032d242326b6be17c8b7d41f33cac312ab8445181b3"
+    },
+    {
+      "bytes": 13360,
+      "path": "schemas/analysis.schema.json",
+      "sha256": "194f076a6404b6c172f66b634116e91a8b6c1c40c171f0410e52c157edbe61d9"
+    },
+    {
+      "bytes": 3090,
+      "path": "schemas/case.schema.json",
+      "sha256": "e6f0bf9289d0ddb1582a996b8192c6cbbb3119edd3a064868751f0aed001f65a"
+    },
+    {
+      "bytes": 879,
+      "path": "schemas/event-head.schema.json",
+      "sha256": "dda374818948312030eaf6a2481a920581489a4a9de47831dab6e08a606b95a9"
+    },
+    {
+      "bytes": 1813,
+      "path": "schemas/event.schema.json",
+      "sha256": "68199d5d8a3b3a25a7a12ba72535f12d7fda856dc357ce89eafc42a49a5411c7"
+    },
+    {
+      "bytes": 1340,
+      "path": "schemas/workflow-next.schema.json",
+      "sha256": "42ef49085791b8a742121e9cb52e80cb9e4b14a4cd13563db2232a8d211cb71a"
+    },
+    {
+      "bytes": 32024,
+      "path": "scripts/build_package.py",
+      "sha256": "e5d903b65c9a6c29e8673c8704c55a73a86d58931cbe3e839014846c9c4e81d3"
+    },
+    {
+      "bytes": 383108,
+      "path": "scripts/identity_label_case.py",
+      "sha256": "5a0bd536121debb1448aed8d1b7cc367e6c446d8d21f58a2c43242dd37ccb184"
+    },
+    {
+      "bytes": 613,
+      "path": "templates/analysis.json",
+      "sha256": "c5d45c2a97446b098da97eec4f773cc5662cb9ac2290b627ea83cb8c65d33294"
+    },
+    {
+      "bytes": 3486,
+      "path": "zero-threshold-prompt.md",
+      "sha256": "c69184cd74ddf9f3886291be4a4178fb6e59a131c3fc6e6ae2ebd9f339952b0b"
+    }
+  ],
+  "license": "CC BY-NC 4.0",
+  "package_name": "breaking-identity-labels",
+  "package_version": "2.0.0-alpha.7",
+  "schema_version": "1.0",
+  "scope": "runtime_allowlist",
+  "tree_sha256": "9063a87c68cda0e80acc2c388ea06b734ce56c2be661145cc77fa1022ccf1e88"
+}

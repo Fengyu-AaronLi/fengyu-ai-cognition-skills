@@ -1,0 +1,36 @@
+{
+  "fixture_id": "round83-fresh-blind-real-failures",
+  "recorded_on": "2026-08-07",
+  "timezone": "Australia/Sydney",
+  "command": "python3 -m unittest skills/separating-facts-from-stories/tests/test_round83_fresh_blind_failures_red.py",
+  "exit_code": 1,
+  "tests_run": 55,
+  "fixture_integrity_tests": 3,
+  "dynamic_case_tests": 52,
+  "failures": 105,
+  "errors": 0,
+  "failure_breakdown": {
+    "casefile_expected_route_assertions": 52,
+    "workflow_expected_route_assertions": 50,
+    "entry_consistency_assertions": 3
+  },
+  "source_artifact_sha256": {
+    "manifest": "c28c8498843ff03a6c42c17f7d4c69c8272a973d08d052765be0c2504eff2b04",
+    "report": "5c960b94d051abfa5ef94993505d40caf9d1cf666331332824a68474a4c7640d",
+    "failures": "f08e75cb82f65a82396a1482fa9877c3d52436e45996e0d1bae341ac7fe6b2d7"
+  },
+  "repository_artifact_sha256": {
+    "fixture": "b7b9fab393492ae0bcf0f667836f2614a39d5f80d4a0ed52cbb6ca15f1836117",
+    "test_module": "2a0e52291f9a16d0010f4249873ac79b3f091598ebb5d18f34b35663a1304ddc"
+  },
+  "raw_output": {
+    "stdout_path": "/tmp/round83-fresh-blind-red.stdout",
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_path": "/tmp/round83-fresh-blind-red.stderr",
+    "stderr_sha256": "56f9477e23e9b0b87384946b5ec5bc554ab85ff547ce30a4918407ef779a7fd6"
+  },
+  "production_sha256_after_red": {
+    "casefile.py": "d281b0c72ce331db2a03e3c12be36400016410a2daf7c73239d3fb9bbc5d2fa0",
+    "workflow.py": "2141eb714a6173a9ae90a8e819794ed589eb148215bad31736e95ddacc936db7"
+  }
+}

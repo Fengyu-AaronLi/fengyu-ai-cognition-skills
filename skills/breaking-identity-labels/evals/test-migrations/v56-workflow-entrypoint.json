@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "receipt_id": "v56-workflow-entrypoint",
+  "test_path": "tests/test_release_loop_contract.py",
+  "from_sha256": "5f1cf5567bcc697be59c591cd921a29861f809cf5c86a4e965afa88eda5e8cfe",
+  "to_sha256": "1f679a835efd94f5610c2fb0ca60876491230c5b8a42e8dfe0efaae7487ed852",
+  "reason": "The workflow target is now the executable evolution controller entrypoint rather than a Make dependency aggregator. The migrated assertion preserves full-test coverage by requiring the current DAG to invoke the exact manifest-bound regression runner.",
+  "replacement_tests": [
+    {
+      "path": "tests/test_v54_release_evidence_closure.py",
+      "sha256": "0c5e098c073c5f5604e81f208c86522a7cb8bf55c3f386b4184837111b82e3aa"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "evals/raw/v56-red/workflow-entrypoint-migration.md",
+      "sha256": "9e1c9aae37bf996d5375ea8d0504a41f75143ce8953502ec116cf5239deeb033"
+    }
+  ],
+  "reviewed_by": "manifest-bound-full-regression-audit",
+  "reviewed_at": "2026-08-06T10:00:00Z"
+}

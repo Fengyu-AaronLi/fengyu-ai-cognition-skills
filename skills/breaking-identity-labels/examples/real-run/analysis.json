@@ -1,0 +1,160 @@
+{
+  "labels": [
+    {
+      "text": "回避冲突、低能量的内向型",
+      "source_type": "ai_inference",
+      "evidence_status": "unverified_inference",
+      "source": {
+        "evidence_id": "E000",
+        "quote": "回避冲突、低能量的内向型",
+        "start": 23,
+        "end": 35
+      },
+      "attribution": {
+        "speaker": {
+          "role": "ai",
+          "text": "另一个 AI",
+          "span": {
+            "start": 0,
+            "end": 6
+          }
+        },
+        "source": {
+          "type": "ai_inference",
+          "evidence_status": "unverified_inference"
+        },
+        "predicate": {
+          "kind": "labels",
+          "polarity": "affirmed",
+          "text": "说我是",
+          "span": {
+            "start": 19,
+            "end": 22
+          }
+        },
+        "target": {
+          "role": "current_user",
+          "text": "我",
+          "resolution": "explicit",
+          "span": {
+            "start": 20,
+            "end": 21
+          }
+        },
+        "label": {
+          "start": 23,
+          "end": 35
+        },
+        "discourse_context": {
+          "kind": "personal",
+          "span": {
+            "start": 0,
+            "end": 58
+          }
+        }
+      }
+    }
+  ],
+  "context_claims": [],
+  "judgments": [
+    {
+      "text": "我不适合管理岗",
+      "kind": "capability_verdict",
+      "source": {
+        "evidence_id": "E000",
+        "quote": "我不适合管理岗",
+        "start": 39,
+        "end": 46
+      }
+    },
+    {
+      "text": "在亲密关系里也容易逃避",
+      "kind": "personality_generalization",
+      "source": {
+        "evidence_id": "E000",
+        "quote": "在亲密关系里也容易逃避",
+        "start": 47,
+        "end": 58
+      }
+    },
+    {
+      "text": "我是不是应该按这个结论规划职业",
+      "kind": "high_cost_decision_request",
+      "source": {
+        "evidence_id": "E000",
+        "quote": "我是不是应该按这个结论规划职业",
+        "start": 59,
+        "end": 74
+      }
+    }
+  ],
+  "observations": [],
+  "counterexamples": [],
+  "candidate_variables": [
+    {
+      "name": "准备时间",
+      "status": "hypothesis",
+      "reason": "可在相同的分工说明任务中单独调整"
+    }
+  ],
+  "unknowns": [
+    "标签之外的具体行为记录",
+    "行为出现的情境、频率与时间",
+    "已知反例",
+    "原始对话中实际发生的行为",
+    "过去管理或协调任务的完成记录",
+    "该判断是否存在跨情境反例",
+    "职业选择所需的项目结果、反馈与现实约束"
+  ],
+  "minimal_question": {
+    "text": "过去三个月，你在哪些具体任务中负责过分工或协调，当时做了什么、结果如何？",
+    "status": "proposed"
+  },
+  "experiment": {
+    "status": "planned",
+    "target_claim": "在有十五分钟准备时，我仍无法完成一次管理岗分工初版",
+    "target_judgment_ids": [
+      "J-E000-39-46"
+    ],
+    "primary_variable": "准备时间",
+    "duration": {
+      "value": 14,
+      "unit": "days"
+    },
+    "action": "下一次出现分工任务时，用十五分钟整理后提出一份可修改的分工初版",
+    "kept_constant": [
+      "任务范围",
+      "原有沟通渠道"
+    ],
+    "measures": [
+      "是否在当天提出初版",
+      "对方能否理解分工",
+      "后续返工次数"
+    ],
+    "support_if": [
+      "在固定准备时间下仍未提出分工初版且没有后续跟进"
+    ],
+    "weaken_if": [
+      "在当天提出初版并获得可执行反馈"
+    ],
+    "reversible": true,
+    "reversibility_note": "实验结束后恢复原有分工沟通安排"
+  },
+  "reserved_judgments": [
+    {
+      "topic": "人格身份",
+      "owner": "user",
+      "reason": "有限对话与单次实验不能定义跨情境人格"
+    },
+    {
+      "topic": "人格身份",
+      "owner": "user",
+      "reason": "一段对话和一次实验不能定义跨情境人格"
+    },
+    {
+      "topic": "职业选择",
+      "owner": "user",
+      "reason": "需要结合长期项目结果、外部反馈、现实成本和个人价值取向"
+    }
+  ]
+}

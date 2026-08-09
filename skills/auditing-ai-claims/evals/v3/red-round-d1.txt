@@ -1,0 +1,12 @@
+Round D1 baseline, 2026-08-06 Australia/Sydney
+
+Command:
+PYTHONPATH=skills/auditing-ai-claims/tests python3 -m unittest test_claim_audit.RuntimeContractTests.test_report_has_clickable_sources_and_progressive_disclosure -v
+
+Observed result before implementation:
+Ran 1 test in 0.013s
+FAILED (failures=1)
+
+The report exposed a 15-column internal ledger as its first table and escaped the source link to `[S1](&lt;https://example.com/source&gt;)`. The requested six-column decision view and technical appendix did not exist.
+
+This file records the red state before report rendering was changed.

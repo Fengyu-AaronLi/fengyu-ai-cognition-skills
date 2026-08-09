@@ -1,0 +1,361 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/defining-problems-before-prompts/problem-spec.schema.json",
+  "title": "Defining Problems Problem Spec",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "request_id",
+    "request_sha256",
+    "request_envelope",
+    "gate_receipt",
+    "mode",
+    "domain",
+    "status",
+    "original_request",
+    "original_question",
+    "desired_outcome",
+    "proxy_problem",
+    "hidden_assumptions",
+    "known_facts",
+    "decisive_unknowns",
+    "hard_constraints",
+    "value_tradeoffs",
+    "success_evidence",
+    "failure_conditions",
+    "change_evidence",
+    "rewritten_problem",
+    "next_test",
+    "questions",
+    "decision_owner",
+    "execution_allowed"
+  ],
+  "$defs": {
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start", "end", "quote"],
+      "properties": {
+        "source_id": {"type": "string", "minLength": 1, "pattern": "\\S"},
+        "start": {"type": "integer", "minimum": 0},
+        "end": {"type": "integer", "minimum": 1},
+        "quote": {"type": "string", "minLength": 1, "pattern": "\\S"}
+      }
+    },
+    "claim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "value", "sources"],
+      "properties": {
+        "status": {"enum": ["stated", "unknown", "hypothesis"]},
+        "value": {"type": "string", "minLength": 1, "pattern": "\\S"},
+        "sources": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/source"},
+          "uniqueItems": true
+        }
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"status": {"const": "unknown"}}},
+          "then": {
+            "properties": {
+              "value": {"const": "当前未知"},
+              "sources": {"maxItems": 0}
+            }
+          }
+        },
+        {
+          "if": {"properties": {"status": {"enum": ["stated", "hypothesis"]}}},
+          "then": {"properties": {"sources": {"minItems": 1}}}
+        }
+      ]
+    },
+    "successCriterion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "sources"],
+      "properties": {
+        "value": {"type": "string", "minLength": 1, "pattern": "\\S"},
+        "sources": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/source"},
+          "uniqueItems": true
+        }
+      }
+    }
+  },
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "request_id": {"type": "string", "minLength": 1, "pattern": "\\S"},
+    "request_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "request_envelope": {"$ref": "request-envelope.schema.json"},
+    "gate_receipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "request_id",
+        "request_sha256",
+        "domain",
+        "mode",
+        "execution_allowed",
+        "resources",
+        "trace"
+      ],
+      "properties": {
+        "schema_version": {"const": "1.0"},
+        "request_id": {"type": "string", "minLength": 1, "pattern": "\\S"},
+        "request_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "domain": {
+          "enum": [
+            "general",
+            "ai_efficiency",
+            "ai_product",
+            "career",
+            "relationship",
+            "medical",
+            "legal",
+            "investment"
+          ]
+        },
+        "mode": {"enum": ["execute", "define", "defer_to_user"]},
+        "execution_allowed": {"type": "boolean"},
+        "resources": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1, "pattern": "^references/\\S+"}
+        },
+        "trace": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["priority_index", "rule", "source"],
+          "properties": {
+            "priority_index": {"type": "integer", "minimum": 0},
+            "rule": {
+              "enum": [
+                "high_risk_value_decision",
+                "decisive_unknowns",
+                "clear_execution",
+                "default_define"
+              ]
+            },
+            "source": {"const": "runtime/routes.json"}
+          }
+        }
+      }
+    },
+    "mode": {"enum": ["define", "defer_to_user"]},
+    "domain": {
+      "enum": [
+        "general",
+        "ai_efficiency",
+        "ai_product",
+        "career",
+        "relationship",
+        "medical",
+        "legal",
+        "investment"
+      ]
+    },
+    "status": {"enum": ["provisional", "confirmed"]},
+    "original_request": {"type": "string", "minLength": 1, "pattern": "\\S"},
+    "original_question": {"type": "string", "minLength": 1, "pattern": "\\S"},
+    "desired_outcome": {"$ref": "#/$defs/claim"},
+    "proxy_problem": {"$ref": "#/$defs/claim"},
+    "hidden_assumptions": {
+      "type": "array",
+      "items": {
+        "allOf": [
+          {"$ref": "#/$defs/claim"},
+          {"properties": {"status": {"const": "hypothesis"}}}
+        ]
+      },
+      "uniqueItems": true
+    },
+    "known_facts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["value", "source"],
+        "properties": {
+          "value": {"type": "string", "minLength": 1, "pattern": "\\S"},
+          "source": {"$ref": "#/$defs/source"}
+        }
+      },
+      "uniqueItems": true
+    },
+    "decisive_unknowns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "category", "value", "changes"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^u[1-9][0-9]*$"},
+          "category": {
+            "enum": [
+              "desired_outcome",
+              "current_bottleneck",
+              "measurement_source",
+              "target_user",
+              "recurring_pain",
+              "payment_evidence",
+              "resources",
+              "success_criteria",
+              "financial_capacity",
+              "alternatives",
+              "health_status",
+              "risk_tolerance",
+              "decision_target",
+              "other"
+            ]
+          },
+          "value": {"type": "string", "minLength": 1, "pattern": "\\S"},
+          "changes": {"type": "string", "minLength": 1, "pattern": "\\S"}
+        }
+      },
+      "uniqueItems": true
+    },
+    "hard_constraints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["value", "constraint_type", "source"],
+        "properties": {
+          "value": {"type": "string", "minLength": 1, "pattern": "\\S"},
+          "constraint_type": {
+            "enum": [
+              "deadline",
+              "budget",
+              "safety",
+              "legal",
+              "ethical",
+              "scope",
+              "resource",
+              "health",
+              "non_negotiable_preference"
+            ]
+          },
+          "source": {"$ref": "#/$defs/source"}
+        }
+      },
+      "uniqueItems": true
+    },
+    "value_tradeoffs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["value", "decision_owner"],
+        "properties": {
+          "value": {"type": "string", "minLength": 1, "pattern": "\\S"},
+          "decision_owner": {"const": "user"}
+        }
+      },
+      "uniqueItems": true
+    },
+    "success_evidence": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {"type": "string", "minLength": 1, "pattern": "\\S"},
+          {"$ref": "#/$defs/successCriterion"}
+        ]
+      },
+      "uniqueItems": true
+    },
+    "failure_conditions": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1, "pattern": "\\S"},
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "change_evidence": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1, "pattern": "\\S"},
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "rewritten_problem": {"type": "string", "minLength": 1, "pattern": "\\S"},
+    "next_test": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "action",
+        "evidence_sought",
+        "reversible",
+        "low_cost",
+        "stops_before_solution",
+        "action_type",
+        "evidence_only",
+        "solution_commitment"
+      ],
+      "properties": {
+        "action": {"type": "string", "minLength": 1, "pattern": "\\S"},
+        "evidence_sought": {"type": "string", "minLength": 1, "pattern": "\\S"},
+        "reversible": {"const": true},
+        "low_cost": {"const": true},
+        "stops_before_solution": {"const": true},
+        "action_type": {
+          "enum": [
+            "evidence_collection",
+            "solution_design",
+            "implementation",
+            "decision",
+            "communication"
+          ],
+          "const": "evidence_collection"
+        },
+        "evidence_only": {"const": true},
+        "solution_commitment": {
+          "enum": ["none", "proposed", "selected", "committed"],
+          "const": "none"
+        }
+      }
+    },
+    "questions": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "question", "changes", "addresses"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^q[1-3]$"},
+          "question": {"type": "string", "minLength": 1, "pattern": "\\S"},
+          "changes": {"type": "string", "minLength": 1, "pattern": "\\S"},
+          "addresses": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"type": "string", "pattern": "^u[1-9][0-9]*$"}
+          }
+        }
+      }
+    },
+    "decision_owner": {"const": "user"},
+    "execution_allowed": {"const": false}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"mode": {"const": "defer_to_user"}}},
+      "then": {"properties": {"value_tradeoffs": {"minItems": 1}}}
+    },
+    {
+      "if": {"properties": {"status": {"const": "confirmed"}}},
+      "then": {
+        "properties": {
+          "success_evidence": {
+            "minItems": 1,
+            "items": {"$ref": "#/$defs/successCriterion"}
+          }
+        }
+      }
+    }
+  ]
+}

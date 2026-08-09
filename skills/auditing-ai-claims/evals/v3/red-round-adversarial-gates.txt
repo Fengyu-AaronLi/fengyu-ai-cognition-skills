@@ -1,0 +1,33 @@
+Command:
+python3 -m unittest discover -s tests -p 'test_adversarial_gates_v3.py' -v
+
+Observed before implementation:
+
+test_ambiguous_declared_candidate_requires_unique_context ... FAIL
+test_not_triggered_scope_cannot_render_an_audit_report ... FAIL
+test_claim_text_cannot_substitute_unrelated_candidate ... FAIL
+test_partial_declared_span_does_not_suppress_uncovered_remainder ... FAIL
+test_render_escapes_untrusted_markdown_images_and_obsidian_embeds ... FAIL
+test_arbitrary_origin_labels_do_not_establish_independence ... FAIL
+test_causal_positive_control_keeps_purposes_separate ... ok
+test_causal_refutation_requires_eligible_design_evidence ... FAIL
+test_decisive_evidence_requires_nonempty_support_scope ... FAIL
+
+Failure summary:
+
+1. Repeated declared text did not require a unique input context.
+2. A caller could mark factual input not-triggered and render a PASS report.
+3. A claim unrelated to its frozen candidate passed.
+4. Declaring a substring suppressed the uncovered factual remainder of the same sentence.
+5. Untrusted Markdown image and Obsidian embed syntax remained active.
+6. Arbitrary caller-supplied origin labels established independence.
+7. Cross-sectional evidence could refute a causal claim without eligible design evidence.
+8. Decisive evidence accepted an empty support scope.
+9. Positive control passed: separate identity, randomized-design and substantive excerpts can support a narrowly scoped causal claim.
+
+Ran 8 tests in 0.160s
+FAILED (failures=7)
+
+Additional isolated red:
+
+`test_not_triggered_scope_cannot_render_an_audit_report` failed because `finish` returned 0 and created `report.md` after factual input was caller-labeled not-triggered.

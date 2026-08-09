@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "receipt_id": "v46-v11-audit-run-binding",
+  "test_path": "tests/test_v11_evolution_controller.py",
+  "from_sha256": "c74a1c1fc298a8e87e572f3d69cb4e4420b8526a4da0ca3a7ebdd6073b87339a",
+  "to_sha256": "e5c0689381a6c2e455d1a41be694f8e3bd4354ab1c861884845aa28172471eaa",
+  "reason": "Migrate the synthetic audit fixture to receipt schema 1.1 so every accepted audit binds the exact completed evolution run.",
+  "replacement_tests": [
+    {
+      "path": "tests/test_v46_audit_completed_run_binding.py",
+      "sha256": "c18323aba356d2569f4fea21bf40ded25712809c7786aab8f84e9f4d11f85ca8"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "evals/raw/v46-red/audit-completed-run-binding.md",
+      "sha256": "e08c903d39efaae0e6c9933d00cb47d8f1966e8e1cb829bdb7ef0b8525775703"
+    }
+  ],
+  "reviewed_by": "codex-v46-contract-review",
+  "reviewed_at": "2026-08-06T14:00:00+10:00"
+}

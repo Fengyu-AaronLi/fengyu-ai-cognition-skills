@@ -1,0 +1,165 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fengyu.local/schemas/breaking-identity-labels/audit-receipt.schema.json",
+  "title": "Internal isolated audit receipt with legacy audit identifiers",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "receipt_id",
+    "audit_id",
+    "candidate",
+    "preregistration",
+    "environment",
+    "commands",
+    "raw_output_path",
+    "raw_output_sha256",
+    "manual_findings",
+    "blockers",
+    "status"
+  ],
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "schema_version": {"const": "1.0"},
+        "completed_run": {"type": "null"}
+      }
+    },
+    {
+      "type": "object",
+      "required": ["completed_run"],
+      "properties": {
+        "schema_version": {"const": "1.1"}
+      }
+    },
+    {
+      "type": "object",
+      "required": ["completed_run"],
+      "properties": {
+        "schema_version": {"const": "1.2"},
+        "commands": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["script_path", "script_sha256", "input_snapshot"]
+          }
+        }
+      }
+    }
+  ],
+  "properties": {
+    "schema_version": {"enum": ["1.0", "1.1", "1.2"]},
+    "receipt_id": {"type": "string", "minLength": 1},
+    "audit_id": {
+      "enum": [
+        "independent_attribution_audit",
+        "independent_clinical_safety_audit",
+        "independent_state_integrity_audit",
+        "release_package_audit"
+      ]
+    },
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidate_id", "artifacts", "test_manifest_sha256"],
+      "properties": {
+        "candidate_id": {"type": "string", "minLength": 1},
+        "artifacts": {"$ref": "release-gate.schema.json#/$defs/artifactHashes"},
+        "test_manifest_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "completed_run": {
+      "$ref": "release-gate.schema.json#/$defs/completedRun"
+    },
+    "preregistration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "case_set_sha256"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "case_set_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "commands": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "argv",
+          "exit_code",
+          "stdout_path",
+          "stdout_sha256",
+          "stderr_path",
+          "stderr_sha256"
+        ],
+        "properties": {
+          "argv": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+          "script_path": {"type": "string", "minLength": 1},
+          "script_sha256": {"$ref": "#/$defs/sha256"},
+          "input_snapshot": {"$ref": "#/$defs/inputSnapshot"},
+          "exit_code": {"type": "integer"},
+          "stdout_path": {"type": "string", "minLength": 1},
+          "stdout_sha256": {"$ref": "#/$defs/sha256"},
+          "stderr_path": {"type": "string", "minLength": 1},
+          "stderr_sha256": {"$ref": "#/$defs/sha256"}
+        }
+      }
+    },
+    "raw_output_path": {"type": "string", "minLength": 1},
+    "raw_output_sha256": {"$ref": "#/$defs/sha256"},
+    "manual_findings": {"type": "array", "items": {"type": "object"}},
+    "blockers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "severity"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "severity": {"enum": ["P0", "P1", "P2"]}
+        }
+      }
+    },
+    "status": {"enum": ["passed", "blocked"]}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "inputSnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cwd", "environment", "files"],
+      "properties": {
+        "cwd": {"const": "."},
+        "environment": {
+          "type": "object",
+          "additionalProperties": {"type": "string"}
+        },
+        "files": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path", "sha256"],
+            "properties": {
+              "path": {"type": "string", "minLength": 1},
+              "sha256": {"$ref": "#/$defs/sha256"}
+            }
+          }
+        }
+      }
+    }
+  }
+}

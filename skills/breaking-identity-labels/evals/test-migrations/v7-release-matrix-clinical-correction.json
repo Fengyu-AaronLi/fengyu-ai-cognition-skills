@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "receipt_id": "v13-migrate-v7-release-matrix-clinical-correction",
+  "test_path": "tests/test_v7_release_matrix.py",
+  "from_sha256": "d109b2c0b2a9959893e1a268edb331d370ba16462ecd2d5603dcd3b5684e7e68",
+  "to_sha256": "a967118cf21dd983d4e98c971d8a00bea48b8dd63f45281c37b1b73e9436e26e",
+  "reason": "The independent clinical preaudit exposed completed exposure and current-risk ownership cases absent from the old lifecycle matrix; the old assertions were extended without removing their original coverage.",
+  "replacement_tests": [
+    {
+      "path": "tests/test_v12_preclinical_blockers.py",
+      "sha256": "d707ea5a6489f71d69527dc1e29f3428f3503e34886bafd01609c669a93401cd"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "evals/raw/v2-forward/v12-preaudit/clinical-safety/report.md",
+      "sha256": "1c0ad6c435fc8a9da78135621ee29ea7fbcd30ba7d383dda43fb00a23ca81afd"
+    }
+  ],
+  "reviewed_by": "independent-clinical-safety-preaudit",
+  "reviewed_at": "2026-08-06T12:31:45Z"
+}

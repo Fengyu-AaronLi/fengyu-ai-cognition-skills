@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fengyu.local/schemas/breaking-identity-labels/evolution-workflow.schema.json",
+  "title": "Executable evolution workflow",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "workflow_id", "steps"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "workflow_id": {"type": "string", "pattern": "^[a-z][a-z0-9_-]{0,95}$"},
+    "description": {"type": "string"},
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "oneOf": [
+          {"$ref": "#/$defs/command"},
+          {"$ref": "#/$defs/external"}
+        ]
+      }
+    }
+  },
+  "$defs": {
+    "base": {
+      "type": "object",
+      "required": ["id", "kind", "depends_on"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$"},
+        "kind": {"enum": ["command", "external"]},
+        "depends_on": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "description": {"type": "string"}
+      }
+    },
+    "command": {
+      "allOf": [
+        {"$ref": "#/$defs/base"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "kind", "depends_on", "argv", "expected"],
+          "properties": {
+            "id": {"type": "string"},
+            "kind": {"const": "command"},
+            "depends_on": {"type": "array"},
+            "description": {"type": "string"},
+            "argv": {"type": "array", "minItems": 2, "items": {"type": "string", "minLength": 1}},
+            "input_files": {
+              "type": "array",
+              "items": {"type": "string", "minLength": 1}
+            },
+            "expected": {"enum": ["red", "exit_zero"]}
+          }
+        }
+      ]
+    },
+    "external": {
+      "allOf": [
+        {"$ref": "#/$defs/base"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "kind", "depends_on"],
+          "properties": {
+            "id": {"type": "string"},
+            "kind": {"const": "external"},
+            "depends_on": {"type": "array"},
+            "description": {"type": "string"}
+          }
+        }
+      ]
+    }
+  }
+}

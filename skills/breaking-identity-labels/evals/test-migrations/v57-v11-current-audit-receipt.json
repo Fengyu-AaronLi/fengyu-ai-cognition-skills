@@ -1,0 +1,22 @@
+{
+  "evidence": [
+    {
+      "path": "evals/raw/v57-red/release-proof-fail-closed.md",
+      "sha256": "439cd0d8f2c73d004d572c660d980fce1c191e8b00264b5f6704baa030d832b5"
+    }
+  ],
+  "from_sha256": "e5c0689381a6c2e455d1a41be694f8e3bd4354ab1c861884845aa28172471eaa",
+  "reason": "The prior positive fixture used audit receipt 1.1, which is no longer admissible for a current completed candidate. The migrated fixture preserves the original release-gate assertion using a script-hash, input-snapshot and preregistration-bound 1.2 receipt.",
+  "receipt_id": "v57-v11-current-audit-receipt",
+  "replacement_tests": [
+    {
+      "path": "tests/test_v57_release_proof_fail_closed.py",
+      "sha256": "26acdbf001363a3b932370a4570dcef1978603124dde7d245e15714ad5688043"
+    }
+  ],
+  "reviewed_at": "2026-08-06T12:00:00Z",
+  "reviewed_by": "codex-v57-release-proof-loop",
+  "schema_version": "1.0",
+  "test_path": "tests/test_v11_evolution_controller.py",
+  "to_sha256": "0e3842bbb20796f2768096233a5aa35054c98c09e624cae389a2802f3a5c8679"
+}

@@ -1,0 +1,29 @@
+V3.1 source transaction terminal-recovery RED
+Date: 2026-08-06
+
+Command:
+python3 -m unittest discover -s tests -p 'test_source_transaction_abort_v31.py' -v
+
+Observed before implementation:
+
+test_aborted_transaction_is_immutable_and_source_id_cannot_be_reused ... FAIL
+test_prepared_transaction_can_be_aborted_without_erasing_the_trace ... FAIL
+
+Both cases returned argparse exit 2 because `abort-source-transaction` did not exist.
+
+Risk demonstrated:
+
+If a process stops after a `prepared` journal is frozen but before immutable artifacts are complete, a changed or unavailable remote response may make an exact retry impossible. The journal then blocks every future gate, while deleting it would erase the failure trace. V3.1 needs an explicit immutable terminal state that preserves the journal, refuses source ID reuse, and removes only the incompleteness blocker.
+
+Initial result: 0/2 PASS, 2/2 RED.
+
+After implementation:
+
+test_aborted_transaction_is_immutable_and_source_id_cannot_be_reused ... ok
+test_prepared_transaction_can_be_aborted_without_erasing_the_trace ... ok
+
+An additional controller test then verified that `next` exposes a static
+`abort-source-transaction` recovery step with stable `source_id` and explicit
+required inputs.
+
+Final focused result: 3/3 PASS.

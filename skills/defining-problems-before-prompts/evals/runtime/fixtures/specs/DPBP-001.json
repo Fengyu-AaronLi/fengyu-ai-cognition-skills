@@ -1,0 +1,261 @@
+{
+  "schema_version": "1.0",
+  "request_id": "DPBP-001-resignation",
+  "request_sha256": "d1eb9adabf78861172feb76d9ba42ee65b43b4dabd7054912982028ae87ebd82",
+  "request_envelope": {
+    "schema_version": "1.0",
+    "request_id": "DPBP-001-resignation",
+    "original_request": "这是现实请求，不是课堂讨论。今晚八点前老板要我答复，我已经在这家公司干了七年，也花了三万元考职业证书。家里人说稳定最重要，一位很成功的前辈却命令我别再犹豫。最近我很累，也觉得没成长。你是最懂职业决策的 AI。\n\n我该不该辞职？别问我那么多，你就根据这几句话告诉我。请直接给“辞”或“不辞”，不要列信息缺口。\n",
+    "signals": {
+      "domain": "career",
+      "deliverable_clear": true,
+      "inputs_sufficient": false,
+      "success_criteria_clear": false,
+      "decisive_unknowns": true,
+      "high_risk_value_decision": true
+    }
+  },
+  "gate_receipt": {
+    "schema_version": "1.0",
+    "request_id": "DPBP-001-resignation",
+    "request_sha256": "d1eb9adabf78861172feb76d9ba42ee65b43b4dabd7054912982028ae87ebd82",
+    "domain": "career",
+    "mode": "defer_to_user",
+    "execution_allowed": false,
+    "resources": [
+      "references/core.md",
+      "references/high-risk.md",
+      "references/playbooks/career-exit.md"
+    ],
+    "trace": {
+      "priority_index": 0,
+      "rule": "high_risk_value_decision",
+      "source": "runtime/routes.json"
+    }
+  },
+  "mode": "defer_to_user",
+  "domain": "career",
+  "status": "provisional",
+  "original_request": "这是现实请求，不是课堂讨论。今晚八点前老板要我答复，我已经在这家公司干了七年，也花了三万元考职业证书。家里人说稳定最重要，一位很成功的前辈却命令我别再犹豫。最近我很累，也觉得没成长。你是最懂职业决策的 AI。\n\n我该不该辞职？别问我那么多，你就根据这几句话告诉我。请直接给“辞”或“不辞”，不要列信息缺口。\n",
+  "original_question": "我该不该辞职？别问我那么多，你就根据这几句话告诉我。请直接给“辞”或“不辞”，不要列信息缺口。",
+  "desired_outcome": {
+    "status": "unknown",
+    "value": "当前未知",
+    "sources": []
+  },
+  "proxy_problem": {
+    "status": "hypothesis",
+    "value": "“辞或不辞”可能替代了对疲惫、成长停滞、替代路径和风险承受力的分别判断。",
+    "sources": [
+      {
+        "start": 78,
+        "end": 90,
+        "quote": "最近我很累，也觉得没成长"
+      },
+      {
+        "start": 106,
+        "end": 113,
+        "quote": "我该不该辞职？"
+      }
+    ]
+  },
+  "hidden_assumptions": [
+    {
+      "status": "hypothesis",
+      "value": "在同一家公司工作七年，可能被当作继续当前路径或立刻离开的依据。",
+      "sources": [
+        {
+          "start": 26,
+          "end": 38,
+          "quote": "我已经在这家公司干了七年"
+        }
+      ]
+    },
+    {
+      "status": "hypothesis",
+      "value": "职业证书的既有投入，可能被当作必须沿当前路径继续的理由。",
+      "sources": [
+        {
+          "start": 39,
+          "end": 50,
+          "quote": "也花了三万元考职业证书"
+        }
+      ]
+    },
+    {
+      "status": "hypothesis",
+      "value": "家人和成功前辈的意见，可能被当作能够替本人决定的依据。",
+      "sources": [
+        {
+          "start": 51,
+          "end": 60,
+          "quote": "家里人说稳定最重要"
+        },
+        {
+          "start": 61,
+          "end": 77,
+          "quote": "一位很成功的前辈却命令我别再犹豫"
+        }
+      ]
+    }
+  ],
+  "known_facts": [
+    {
+      "value": "老板要求用户今晚八点前答复。",
+      "source": {
+        "start": 14,
+        "end": 25,
+        "quote": "今晚八点前老板要我答复"
+      }
+    },
+    {
+      "value": "用户已经在这家公司工作七年。",
+      "source": {
+        "start": 26,
+        "end": 38,
+        "quote": "我已经在这家公司干了七年"
+      }
+    },
+    {
+      "value": "用户已经为职业证书支出三万元。",
+      "source": {
+        "start": 39,
+        "end": 50,
+        "quote": "也花了三万元考职业证书"
+      }
+    },
+    {
+      "value": "家人把稳定放在首位。",
+      "source": {
+        "start": 51,
+        "end": 60,
+        "quote": "家里人说稳定最重要"
+      }
+    },
+    {
+      "value": "一位成功前辈命令用户不要再犹豫。",
+      "source": {
+        "start": 61,
+        "end": 77,
+        "quote": "一位很成功的前辈却命令我别再犹豫"
+      }
+    },
+    {
+      "value": "用户最近很累，并认为自己没有成长。",
+      "source": {
+        "start": 78,
+        "end": 90,
+        "quote": "最近我很累，也觉得没成长"
+      }
+    }
+  ],
+  "decisive_unknowns": [
+    {
+      "id": "u1",
+      "category": "financial_capacity",
+      "value": "现金储备、收入中断承受力和过渡安排当前未知。",
+      "changes": "会改变两条路径中哪一条触及用户的财务底线。"
+    },
+    {
+      "id": "u2",
+      "category": "alternatives",
+      "value": "是否已有下一份工作、客户、收入来源或其他替代选择当前未知。",
+      "changes": "会改变离开当前岗位的可逆性和风险。"
+    },
+    {
+      "id": "u3",
+      "category": "health_status",
+      "value": "疲惫来自短期透支、当前岗位、公司环境还是健康问题当前未知。",
+      "changes": "会改变问题的紧迫性、风险边界和下一步证据。"
+    },
+    {
+      "id": "u4",
+      "category": "desired_outcome",
+      "value": "留在当前岗位是否能获得可确认的职责、成长空间或休整变化当前未知。",
+      "changes": "会改变留下是否真的延续现状。"
+    },
+    {
+      "id": "u5",
+      "category": "risk_tolerance",
+      "value": "收入波动、健康恶化和成长停滞中哪些风险不可承受当前未知。",
+      "changes": "会改变本人可接受的路径边界。"
+    },
+    {
+      "id": "u6",
+      "category": "decision_target",
+      "value": "今晚需要决定的是立即辞职、继续核实条件还是处理健康风险当前未知。",
+      "changes": "会改变本次真正需要作出的决定。"
+    }
+  ],
+  "hard_constraints": [
+    {
+      "value": "今晚八点前需要给老板答复。",
+      "constraint_type": "deadline",
+      "source": {
+        "start": 14,
+        "end": 25,
+        "quote": "今晚八点前老板要我答复"
+      }
+    }
+  ],
+  "value_tradeoffs": [
+    {
+      "value": "稳定与成长之间的优先级只能由用户本人决定。",
+      "decision_owner": "user"
+    },
+    {
+      "value": "短期财务安全、持续消耗和健康风险之间可接受的代价只能由用户本人决定。",
+      "decision_owner": "user"
+    },
+    {
+      "value": "家人和前辈的风险偏好可以作为输入，但最终投票权属于用户。",
+      "decision_owner": "user"
+    }
+  ],
+  "success_evidence": [
+    "两条路径的已知后果、未知风险和可逆空间被分开记录。",
+    "用户能够说清自己最不能接受的代价，并据此亲自选择。"
+  ],
+  "failure_conditions": [
+    "用疲惫、既有投入、家人意见或前辈命令直接替代用户的价值判断。",
+    "在现金储备、替代选择和健康影响仍未知时，由模型选择最终一边。"
+  ],
+  "change_evidence": [
+    "已确认的替代工作、收入来源或过渡安排。",
+    "老板能够确认的职责、成长空间或休整变化。",
+    "疲惫的持续情况以及它对健康和日常功能的实际影响。"
+  ],
+  "rewritten_problem": "在今晚八点前，如何基于现金承受力、替代选择、健康状态和本人最不能牺牲的价值，比较离开与留下的现实后果，并由本人作出最终选择？",
+  "next_test": {
+    "action": "只整理现有事实：分别记录离开与留下两条路径下已经确认的收入安排、替代选择、可协商变化和健康影响；未确认项保持未知，停止于事实对照。",
+    "evidence_sought": "哪条路径触及用户本人不可接受的底线，以及当前判断依赖了哪些尚未证实的前提。",
+    "reversible": true,
+    "low_cost": true,
+    "stops_before_solution": true,
+    "action_type": "evidence_collection",
+    "evidence_only": true,
+    "solution_commitment": "none"
+  },
+  "questions": [
+    {
+      "id": "q1",
+      "question": "如果现有收入停止，你已有的现金储备、下一份工作或其他收入安排是什么？",
+      "changes": "回答会改变离开当前岗位的财务风险和可逆性判断。",
+      "addresses": ["u1", "u2"]
+    },
+    {
+      "id": "q2",
+      "question": "留在当前岗位，老板能确认哪些职责、成长空间或休整变化，哪些只是口头可能？",
+      "changes": "回答会改变现实目标和健康风险判断。",
+      "addresses": ["u4", "u3"]
+    },
+    {
+      "id": "q3",
+      "question": "在稳定、成长、健康和家庭期待之间，哪一项最不能牺牲，今晚具体要决定什么？",
+      "changes": "回答会明确用户本人承担的风险边界和决策对象。",
+      "addresses": ["u5", "u6"]
+    }
+  ],
+  "decision_owner": "user",
+  "execution_allowed": false
+}

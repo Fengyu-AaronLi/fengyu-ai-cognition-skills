@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "receipt_id": "v21-generated-output-harness-loader",
+  "test_path": "tests/test_v21_generated_output_safety_matrix.py",
+  "from_sha256": "f4745e57d7c658a833f27cb1738355e3732039bb2de573a90caa8f38e0ba7b6b",
+  "to_sha256": "799e30b578e3f67cec1350b7fe1c3e3da0c441ff003d82f6fbe20e79bee42d77",
+  "reason": "The first registered V21 run failed inside the dynamic module loader before reaching any safety assertion; this migration only registers the module in sys.modules and preserves every policy case and expected code.",
+  "replacement_tests": [
+    {
+      "path": "tests/test_v12_preclinical_blockers.py",
+      "sha256": "d707ea5a6489f71d69527dc1e29f3428f3503e34886bafd01609c669a93401cd"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "evals/raw/v2-forward/v21-red/harness-migration.md",
+      "sha256": "1cc4cfb50833cc2cfe47f37e3592bed9a5b9057a78949beb0934d838aadccef0"
+    }
+  ],
+  "reviewed_by": "root-evolution-controller",
+  "reviewed_at": "2026-08-06T13:10:00Z"
+}

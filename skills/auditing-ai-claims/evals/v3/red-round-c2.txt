@@ -1,0 +1,18 @@
+Round C2 baseline, 2026-08-06 Australia/Sydney
+
+Command:
+PYTHONPATH=skills/auditing-ai-claims/tests python3 -m unittest skills/auditing-ai-claims/tests/test_semantic_gates_v3.py -v
+
+Observed result before implementation:
+Ran 10 tests in 0.461s
+FAILED (failures=6)
+
+The four candidate-binding cases were green. Six semantic policy attacks remained red:
+1. Empty claim-level unknown, confidence reason, and next step were not hard errors.
+2. `partially_supported` could hide directly linked conflict evidence.
+3. Correlational evidence could partially support a literal causal claim.
+4. A causal design label did not require a design-method excerpt.
+5. Two `unknown:*` origin labels could manufacture independence.
+6. The runtime had no distinct objective-performance claim type or A2 self-report boundary for it.
+
+This file records the red state before semantic gate implementation.

@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fengyu.local/schemas/breaking-identity-labels/event-head.schema.json",
+  "title": "Identity label event chain head",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "case_id",
+    "event_count",
+    "latest_revision",
+    "latest_event_sha256",
+    "latest_snapshot_sha256",
+    "updated_at"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "enum": ["1.0"]},
+    "case_id": {"type": "string", "minLength": 1},
+    "event_count": {"type": "integer", "minimum": 1},
+    "latest_revision": {"type": "integer", "minimum": 0},
+    "latest_event_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "latest_snapshot_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "updated_at": {"type": "string", "minLength": 1}
+  }
+}

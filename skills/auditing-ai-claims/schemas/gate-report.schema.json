@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/auditing-ai-claims/gate-report.schema.json",
+  "title": "Audit gate report",
+  "type": "object",
+  "required": [
+    "gate_version",
+    "checked_at",
+    "verdict",
+    "errors",
+    "warnings",
+    "summary",
+    "bundle_sha256"
+  ],
+  "properties": {
+    "gate_version": {"type": "string"},
+    "checked_at": {"type": "string", "format": "date-time"},
+    "verdict": {"enum": ["PASS", "FAIL"]},
+    "errors": {"type": "array", "items": {"$ref": "#/$defs/finding"}},
+    "warnings": {"type": "array", "items": {"$ref": "#/$defs/finding"}},
+    "summary": {"type": "object"},
+    "bundle_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+  },
+  "$defs": {
+    "finding": {
+      "type": "object",
+      "required": ["code", "path", "message"],
+      "properties": {
+        "code": {"type": "string"},
+        "path": {"type": "string"},
+        "message": {"type": "string"}
+      }
+    }
+  }
+}

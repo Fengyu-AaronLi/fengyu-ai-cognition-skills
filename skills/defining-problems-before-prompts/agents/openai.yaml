@@ -1,0 +1,7 @@
+interface:
+  display_name: "提问前定义问题"
+  short_description: "在回答模糊或高风险请求前先确认现实结果与可验证成功标准"
+  default_prompt: "使用 $defining-problems-before-prompts 先定义这项请求真正要改变的现实结果，再决定是否直接回答。"
+
+policy:
+  allow_implicit_invocation: true

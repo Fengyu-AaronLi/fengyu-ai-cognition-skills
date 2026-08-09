@@ -1,0 +1,211 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fengyu.local/schemas/breaking-identity-labels/evolution-run-state.schema.json",
+  "title": "Resumable evolution run state projection",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "candidate_id",
+    "workflow_id",
+    "workflow_path",
+    "workflow_sha256",
+    "status",
+    "current_step",
+    "steps",
+    "event_count",
+    "event_head_sha256",
+    "created_at",
+    "updated_at",
+    "distribution_status",
+    "publication_actions_performed"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "run_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,95}$"},
+    "candidate_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$"},
+    "workflow_id": {"type": "string", "pattern": "^[a-z][a-z0-9_-]{0,95}$"},
+    "workflow_path": {"type": "string", "pattern": "^workflows/[A-Za-z0-9._/-]+\\.json$"},
+    "workflow_sha256": {"$ref": "#/$defs/sha256"},
+    "status": {
+      "enum": ["running", "awaiting_external_action", "failed", "complete"]
+    },
+    "current_step": {
+      "oneOf": [
+        {"type": "null"},
+        {"type": "string", "pattern": "^[a-z][a-z0-9_-]{0,63}$"}
+      ]
+    },
+    "steps": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {"$ref": "#/$defs/stepProjection"}
+    },
+    "event_count": {"type": "integer", "minimum": 1},
+    "event_head_sha256": {"$ref": "#/$defs/sha256"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "updated_at": {"type": "string", "format": "date-time"},
+    "failure_code": {"type": "string", "minLength": 1},
+    "predecessor_run_id": {"type": "string", "minLength": 1},
+    "predecessor_candidate_id": {"type": "string", "minLength": 1},
+    "predecessor_binding": {"$ref": "#/$defs/runBinding"},
+    "carry_over_blockers": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/blocker"}
+    },
+    "carry_over_blocker_bindings": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/boundBlocker"}
+    },
+    "resolved_blocker_bindings": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/resolvedBlocker"}
+    },
+    "distribution_status": {"const": "local_unpublished"},
+    "publication_actions_performed": {"const": false}
+    ,
+    "completed_artifacts": {"$ref": "#/$defs/artifactHashes"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "artifactHashes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "runtime_sha256",
+        "schema_tree_sha256",
+        "tests_tree_sha256",
+        "demo_tree_sha256",
+        "package_tree_sha256",
+        "governance_tree_sha256",
+        "workflow_sha256"
+      ],
+      "properties": {
+        "runtime_sha256": {"$ref": "#/$defs/sha256"},
+        "schema_tree_sha256": {"$ref": "#/$defs/sha256"},
+        "tests_tree_sha256": {"$ref": "#/$defs/sha256"},
+        "demo_tree_sha256": {"$ref": "#/$defs/sha256"},
+        "package_tree_sha256": {"$ref": "#/$defs/sha256"},
+        "governance_tree_sha256": {"$ref": "#/$defs/sha256"},
+        "workflow_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "stepProjection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "status", "receipt_path", "receipt_sha256"],
+      "properties": {
+        "kind": {"enum": ["command", "external"]},
+        "status": {"enum": ["pending", "waiting", "completed", "failed"]},
+        "receipt_path": {
+          "oneOf": [{"type": "null"}, {"type": "string", "minLength": 1}]
+        },
+        "receipt_sha256": {
+          "oneOf": [{"type": "null"}, {"$ref": "#/$defs/sha256"}]
+        }
+      }
+    },
+    "blocker": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "severity", "evidence"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "severity": {"enum": ["P0", "P1", "P2"]},
+        "evidence": {"type": "string", "minLength": 1}
+      }
+    },
+    "boundBlocker": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "severity", "evidence", "evidence_sha256", "status"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "severity": {"enum": ["P0", "P1", "P2"]},
+        "evidence": {"type": "string", "minLength": 1},
+        "evidence_sha256": {"$ref": "#/$defs/sha256"},
+        "status": {"const": "open"}
+      }
+    },
+    "resolvedBlocker": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "severity",
+        "source_receipt",
+        "source_receipt_sha256",
+        "audit_receipt",
+        "audit_receipt_sha256",
+        "source_blocker_sha256",
+        "source_predecessor_sha256",
+        "repaired_run_sha256",
+        "verification_step_receipts",
+        "target_run_id",
+        "target_candidate_id",
+        "target_workflow_sha256",
+        "derived_status"
+      ],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "severity": {"enum": ["P0", "P1", "P2"]},
+        "source_receipt": {"type": "string", "minLength": 1},
+        "source_receipt_sha256": {"$ref": "#/$defs/sha256"},
+        "audit_receipt": {"type": "string", "minLength": 1},
+        "audit_receipt_sha256": {"$ref": "#/$defs/sha256"},
+        "source_blocker_sha256": {"$ref": "#/$defs/sha256"},
+        "source_predecessor_sha256": {"$ref": "#/$defs/sha256"},
+        "repaired_run_sha256": {"$ref": "#/$defs/sha256"},
+        "verification_step_receipts": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["step_id", "receipt_path", "receipt_sha256"],
+            "properties": {
+              "step_id": {"type": "string", "minLength": 1},
+              "receipt_path": {"type": "string", "minLength": 1},
+              "receipt_sha256": {"$ref": "#/$defs/sha256"}
+            }
+          }
+        },
+        "target_run_id": {"type": "string", "minLength": 1},
+        "target_candidate_id": {"type": "string", "minLength": 1},
+        "target_workflow_sha256": {"$ref": "#/$defs/sha256"},
+        "derived_status": {"const": "resolved"}
+      }
+    },
+    "runBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "run_dir",
+        "run_id",
+        "candidate_id",
+        "workflow_id",
+        "workflow_path",
+        "workflow_sha256",
+        "run_state_sha256",
+        "event_count",
+        "event_head_sha256",
+        "receipt_tree_sha256",
+        "completed_artifacts"
+      ],
+      "properties": {
+        "run_dir": {"type": "string", "minLength": 1},
+        "run_id": {"type": "string", "minLength": 1},
+        "candidate_id": {"type": "string", "minLength": 1},
+        "workflow_id": {"type": "string", "minLength": 1},
+        "workflow_path": {"type": "string", "minLength": 1},
+        "workflow_sha256": {"$ref": "#/$defs/sha256"},
+        "run_state_sha256": {"$ref": "#/$defs/sha256"},
+        "event_count": {"type": "integer", "minimum": 2},
+        "event_head_sha256": {"$ref": "#/$defs/sha256"},
+        "receipt_tree_sha256": {"$ref": "#/$defs/sha256"},
+        "completed_artifacts": {"$ref": "#/$defs/artifactHashes"}
+      }
+    }
+  }
+}

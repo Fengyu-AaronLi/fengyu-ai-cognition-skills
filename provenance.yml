@@ -1,0 +1,266 @@
+version: 1
+project: fengyu-ai-cognition-skills
+status: local-candidate
+public_release: false
+copyright: "Copyright (c) 2026 Fengyu"
+license: CC-BY-NC-4.0
+distribution_label: noncommercial-local-candidate
+intended_distribution_label_after_public_release: noncommercial-source-available
+commercial_use: prohibited-without-separate-permission
+
+original_work:
+  state: repository-authored-with-attributed-conceptual-adaptations
+  scope: files governed by this manifest, with nearer per-skill provenance and license files taking precedence
+  third_party_relicense: false
+
+third_party_policy:
+  default_action: exclude-until-audited
+  requirements:
+    - record source, purpose, license status, and inclusion decision
+    - prefer factual paraphrase over copied wording
+    - keep unlicensed or incompatible material out of distributable artifacts
+    - preserve source-specific restrictions across every distributed file
+
+included_material:
+  - source: dontbesilent dbskill
+    author: dontbesilent
+    fixed_revision: 8282f010964601070334dd7350973386abff6d2b
+    known_license: CC-BY-NC-4.0
+    included: true
+    component: skills/separating-facts-from-stories
+    inclusion_scope:
+      - conceptual inspiration for evidence-status regression coverage
+      - conceptual inspiration for falsifiable working-hypothesis regression coverage
+      - conceptual inspiration for false-precision regression coverage
+    copied_examples: false
+    copied_distinctive_expressions: false
+    copied_file_structure: false
+    runtime_rule_change_required: true
+    adapted_runtime_rules:
+      - reject ungrounded motive percentages without naming candidate motives
+      - prioritize immediate safety actions before the normal eight-part structure
+      - preserve evidence status and falsifiable signals without turning hypotheses into facts
+    independently_authored_implementation:
+      - input and atomic source-span hash binding
+      - casefile schema, validator, evidence links, and finite catalogs
+      - append-only revision history and stateful repair workflow
+      - crash recovery and event-chain integrity checks
+      - frozen evaluation context and independent runtime replay
+      - allowlist packaging, manifest, and install verification
+    attribution:
+      - NOTICE.md
+      - skills/separating-facts-from-stories/NOTICE.md
+      - skills/separating-facts-from-stories/PROVENANCE.md
+  - source: dontbesilent dbskill
+    author: dontbesilent
+    fixed_revision: 8282f010964601070334dd7350973386abff6d2b
+    known_license: CC-BY-NC-4.0
+    included: true
+    component: skills/auditing-ai-claims
+    inclusion_scope:
+      - claim-verdict criteria in context
+      - observable pass and failure boundaries
+      - blocking-gap discipline and shortest sufficient output
+    copied_examples: false
+    copied_tests: false
+    copied_file_structure: false
+    adapted_runtime_rules: true
+    attribution:
+      - NOTICE.md
+      - skills/auditing-ai-claims/NOTICE.md
+      - skills/auditing-ai-claims/PROVENANCE.md
+  - source: dontbesilent dbskill
+    author: dontbesilent
+    fixed_revision: 8282f010964601070334dd7350973386abff6d2b
+    known_license: CC-BY-NC-4.0
+    included: true
+    component: skills/defining-problems-before-prompts
+    inclusion_scope:
+      - distinction between a stated question and the underlying problem
+      - observable phenomena, expectation gaps, and reality feedback
+      - semantic-work and prerequisite checks
+      - preserve unknowns and ask only blocking questions
+    copied_examples: false
+    copied_tests: false
+    copied_file_structure: false
+    copied_complete_prompt_flow: false
+    independently_authored_implementation:
+      - deterministic CLI and routing
+      - JSON schemas and versioned state
+      - validators and renderer
+      - frozen runtime regression suite
+    attribution:
+      - NOTICE.md
+      - skills/defining-problems-before-prompts/LICENSE
+      - skills/defining-problems-before-prompts/PROVENANCE.md
+  - source: dontbesilent dbskill
+    author: dontbesilent
+    fixed_revision: 8282f010964601070334dd7350973386abff6d2b
+    known_license: CC-BY-NC-4.0
+    included: true
+    component: skills/breaking-identity-labels
+    inclusion_scope:
+      - conceptual method of returning a broad label to concrete use and observable facts
+      - preserving unknowns and asking for the smallest conclusion-changing information
+      - repository-level separation of routing, executable tools, state, acceptance gates, and release controls
+    copied_examples: false
+    copied_tests: false
+    copied_distinctive_expressions: false
+    copied_file_structure: false
+    copied_complete_prompt_flow: false
+    independently_authored_implementation:
+      - evidence-span and attribution-event routing
+      - clinical-source, medical-owner, preference, impairment, and safety boundaries
+      - five runtime JSON schemas, eleven governance schemas, and cross-field policy validator
+      - append-only event state machine, monotonic head, replay, and next controller
+      - deterministic renderer, held-out evaluations, adversarial loops, and rebuildable lifecycle demo
+      - allowlist package builder, privacy scan, tree digest, non-overwriting installer, and runtime smoke
+    attribution:
+      - NOTICE.md
+      - skills/breaking-identity-labels/PROVENANCE.md
+
+excluded_material:
+  - source: third-party materials embedded or cited inside dontbesilent dbskill
+    known_license: mixed-or-unknown
+    included: false
+    reason: the dbskill root license does not establish upstream rights for every embedded source
+  - source: unaudited third-party content
+    known_license: unknown
+    included: false
+    reason: no copying before provenance and license review
+
+release_controls:
+  public_repository_confirmed: false
+  downloadable_artifact_confirmed: false
+  installation_verified: false
+  installation_verification_by_component:
+    separating-facts-from-stories:
+      status: determined-by-controller-gate
+      runtime_version: 4.3.0
+      schema_version: 3.2.0
+      validator_version: 4.3.0
+      workflow_version: 3.0.0
+      improvement_loop_schema_version: 1.1.0
+      producer_recipe_version: 2.0.0
+      source_manifest_schema_version: 1.0.0
+      stop_authority: controller_prove_stop
+      release_subject: retained_release_basis_not_live_tree
+      snapshot_trust_boundary: retained_local_snapshot_not_external_signature
+      process_family_trust_boundary: cooperative_inherited_token_not_os_sandbox
+      deterministic_tests: read-bound-unit-receipt
+      self_test: read-bound-self-test-receipt
+      packaged_markdown_link_gate: read-bound-package-receipt
+      workflow_safety_state_and_concurrency_regressions: read-bound-unit-receipt
+      current_host_model_validation: read-bound-eval-machine-report
+      current_clean_install: read-bound-controller-gate
+      trusted_legacy_root_count: 17
+      supported_legacy_version_pairs:
+        - schema_version: 3.0.0
+          validator_version: 4.0.0
+        - schema_version: 3.0.0
+          validator_version: 4.0.1
+      unsupported_legacy_versions:
+        - 4.0.2
+        - 4.1.x
+        - 4.2.0
+      publication_ready: false
+      evidence:
+        - skills/separating-facts-from-stories/evals/results.md
+        - skills/separating-facts-from-stories/evals/install-verification.md
+        - workflows/separating-facts-loop.yaml
+    auditing-ai-claims:
+      status: no-go-local-candidate
+      runtime_version: 3.1.0
+      policy_version: 3.1.0
+      runtime_test_count: 187
+      release_contract_tests: 11-of-11
+      package_contract_tests: 10-of-10
+      allowlist_install: passed
+      offline_unknown_fixture: passed
+      source_target_tree_hash_match: true
+      installed_file_count: 27
+      install_tree_sha256: af59523e87c587d39fb82d36077d2c76de88483ace48e29b08c968e2a026ab0f
+      live_primary_source_loop: passed-3-sources-7-selectors
+      positive_discovery: not-run-v31
+      negative_discovery: not-run-v31
+      semantic_behavior_cases: 0-of-16-completed
+      publication_ready: false
+      evidence:
+        - skills/auditing-ai-claims/evals/install-verification-310.md
+        - skills/auditing-ai-claims/evals/v3/live-source-310.md
+        - skills/auditing-ai-claims/evals/v3/final-regression-310.txt
+        - skills/auditing-ai-claims/evals/results.md
+    defining-problems-before-prompts:
+      status: local-release-candidate
+      runtime_contract: passed
+      runtime_version: 0.3.0-rc.4
+      runtime_test_count: 134
+      evidence_loop_tests: 21-of-21
+      evolution_loop_tests: 29-of-29
+      packaging_tests: 8-of-8
+      problem_state_schema: "2.1"
+      suite_manifest_binding: passed-default-run
+      fixture_override_status: forced-unbound-failure
+      offline_frozen_cases: 4-of-4
+      gate_repetitions_per_case: 100
+      lean_bundle_build: passed-final-source-target-hash-match
+      lean_bundle_file_count: 18
+      lean_bundle_tree_sha256: 00d1600f012375c7e32d5373b776ec6a9184f4650fec13618d24e9bf9d6c648d
+      bundled_doctor: 15-of-15
+      official_quick_validate: passed
+      privacy_clean_scope: explicit-allowlist-bundle-only
+      full_skill_source_privacy: blocked-by-historical-session-identifiers
+      whole_repository_privacy: not-cleared
+      maintainer_evolution_assurance: self-attested-actors-and-hash-declared-artifacts
+      independent_code_review: passed-agent-context-targeted-51-of-51-and-full-134-of-134
+      latest_completed_host_behavior: rc4-4-of-4-but-not-transferable-to-current
+      current_agent_context_shadow: 4-of-4-across-2-isolated-runs-not-a-target-host-score
+      rc6_host_model_validation: blocked-before-response-by-cli-usage-limit
+      current_host_model_validation: not-run
+      current_host_model_completed_trials: 0
+      cross_model_validation: not-run
+      publication_ready: false
+      evidence:
+        - skills/defining-problems-before-prompts/evals/runtime/results.json
+        - skills/defining-problems-before-prompts/evals/rc4-final-audit.md
+        - skills/defining-problems-before-prompts/evals/retest/runtime-v0.3-rc4-shadow/results.md
+        - skills/defining-problems-before-prompts/evals/install-bundle-verification-rc4.md
+        - skills/defining-problems-before-prompts/evals/retest/runtime-v0.2-rc4/results.md
+        - skills/defining-problems-before-prompts/evals/retest/runtime-v0.2-rc5/results.md
+        - skills/defining-problems-before-prompts/evals/retest/runtime-v0.2-rc6/results.md
+    breaking-identity-labels:
+      status: r78-local-candidate
+      candidate_id: determined-by-current-release-gate
+      completed_run_id: determined-by-current-release-gate
+      runtime_version: 2.0.0-alpha.7
+      runtime_sha256: 5a0bd536121debb1448aed8d1b7cc367e6c446d8d21f58a2c43242dd37ccb184
+      skill_sha256: 88c6e9e76027b83a7bf1b2f19cecc4ab66e2472555975aa6eb9ef3e00964ab0d
+      runtime_contract: determined-by-current-v78-workflow-and-release-gate
+      offline_frozen_cases: determined-by-evals-v2-results
+      lifecycle_demo: determined-by-examples-real-run-verifier
+      historical_analysis_replay: determined-by-evals-live-e2e-manifest
+      fresh_candidate_model_runtime_sample: determined-by-evals-fresh-candidate-e2e-manifest
+      package_tree_sha256: determined-by-frozen-completed-run
+      allowlist_package_tests: determined-by-current-v78-workflow
+      package_privacy_scan: determined-by-current-v78-workflow
+      current_internal_attribution_audit: determined-by-current-release-gate
+      current_internal_clinical_safety_audit: determined-by-current-release-gate
+      current_internal_state_integrity_audit: determined-by-current-release-gate
+      current_release_package_audit: determined-by-current-release-gate
+      local_release_eligible: determined-by-controller-gate
+      distribution_status: local_unpublished
+      publication_actions_performed: false
+      current_host_model_validation: single-sample-scope-determined-by-fresh-candidate-manifest
+      current_host_model_identifier: not-exposed
+      current_host_model_scope: not-a-cross-model-or-clinical-effectiveness-claim
+      public_install: not-run
+      publication_ready: false
+      evidence:
+        - skills/breaking-identity-labels/evals/evolution-log.md
+        - skills/breaking-identity-labels/evals/release-gate.json
+        - skills/breaking-identity-labels/evals/red-evidence-manifest.json
+        - skills/breaking-identity-labels/evals/baseline-evidence-manifest.json
+        - skills/breaking-identity-labels/evals/live-e2e-manifest.json
+        - skills/breaking-identity-labels/evals/fresh-candidate-e2e-manifest.json
+        - skills/breaking-identity-labels/workflows/v78-final-release.json
+  publication_claim_allowed: false

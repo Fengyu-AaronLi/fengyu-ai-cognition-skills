@@ -1,0 +1,22 @@
+{
+  "evidence": [
+    {
+      "path": "evals/raw/v72-red/evolution-loop-terminal-contracts.md",
+      "sha256": "003515ae17e73aacb74ab8d714234f4645c293f73d746e9567240ddcb14860e6"
+    }
+  ],
+  "from_sha256": "f39365253785b9caa3af016621400757ec97c3651ac41d8ebbd204283231fb2a",
+  "reason": "The earlier contract treated every failed run as unusable and depended on the live predecessor workflow. V72 preserves waiting as non-terminal while allowing a failed terminal run to seed a separately identified repair iteration, with immutable workflow, script, input, receipt, event, and artifact bindings.",
+  "receipt_id": "v72-v14-terminal-predecessor-snapshots",
+  "replacement_tests": [
+    {
+      "path": "tests/test_v72_evolution_loop_terminal_contracts.py",
+      "sha256": "30e4573d7b47e5234e9ba6435b66fad6b4efbde3b2a2086ca0ea316e765cbca1"
+    }
+  ],
+  "reviewed_at": "2026-08-06T20:00:07Z",
+  "reviewed_by": "codex-r72-evolution-loop",
+  "schema_version": "1.0",
+  "test_path": "tests/test_v14_evolution_lineage_and_governance.py",
+  "to_sha256": "bb55bd31f49070746cba70bb7391bcf8e21a02070343bf68b0dbb6402b6b2512"
+}

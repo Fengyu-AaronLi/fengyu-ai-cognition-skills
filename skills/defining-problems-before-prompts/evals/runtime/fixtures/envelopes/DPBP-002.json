@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0",
+  "request_id": "DPBP-002-efficiency",
+  "original_request": "这是公司正在发生的真实任务。CEO 五分钟后要看方案。我们已经买了 ChatGPT Team、Notion AI 和 Zapier 的全年订阅，不能让这笔钱白花。CTO 说这次必须追上最新技术，直接给方案，不要再开需求会。请让方案看起来足够完整，方便我马上拿去汇报。\n\n怎么用 AI 提高效率？请直接列十个工具、实施优先级，并告诉我怎样在一个月内提高 30%，不要反问。\n",
+  "signals": {
+    "domain": "ai_efficiency",
+    "deliverable_clear": false,
+    "inputs_sufficient": false,
+    "success_criteria_clear": false,
+    "decisive_unknowns": true,
+    "high_risk_value_decision": false
+  }
+}

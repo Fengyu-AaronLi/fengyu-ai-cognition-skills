@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0",
+  "receipt_id": "v73-v14-demo-lock-fixture",
+  "test_path": "tests/test_v14_evolution_lineage_and_governance.py",
+  "from_sha256": "bb55bd31f49070746cba70bb7391bcf8e21a02070343bf68b0dbb6402b6b2512",
+  "to_sha256": "9a9f490e438ddee50352c4a74854d7d2dc8dd902c4780bcb4cacf86058e8de1d",
+  "reason": "The governance fixture now creates the same demo lock that belongs to the current deterministic demo inventory, without changing its lineage assertions.",
+  "replacement_tests": [
+    {"path": "tests/test_v72_demo_live_evidence.py", "sha256": "b5562d7c066c47fd9465fa079804eb6da7adcd80701f677be3f968333b30225c"}
+  ],
+  "evidence": [
+    {"path": "evals/raw/v72-red/demo-live-evidence-red.md", "sha256": "96e9df0c0ee2ddef690c656e4670e904b2947220549f86a19e7275ee9e41a1dc"}
+  ],
+  "reviewed_by": "codex-r73-demo-lock-compatibility",
+  "reviewed_at": "2026-08-07T09:00:02+10:00"
+}

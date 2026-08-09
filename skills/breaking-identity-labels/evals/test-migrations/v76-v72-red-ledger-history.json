@@ -1,0 +1,22 @@
+{
+  "evidence": [
+    {
+      "path": "evals/raw/v76-red/red-ledger-migration-history.md",
+      "sha256": "8135d05b4d6062177765e89810ff4e1a123665f67bbe7722db774d4df4335115"
+    }
+  ],
+  "from_sha256": "338a678778772fba034616f975cd90df56c5491bd9a3d2c1b6b95bddbcae88ee",
+  "reason": "R72 must preserve immutable historical red-test hashes while verifying later test migrations through a continuous receipt chain.",
+  "receipt_id": "v76-v72-red-ledger-history",
+  "replacement_tests": [
+    {
+      "path": "tests/test_v76_red_ledger_migration_history.py",
+      "sha256": "472ce73a5415717f435838dc14db978991ffbf0e413d384419d36303dae17eae"
+    }
+  ],
+  "reviewed_at": "2026-08-07T07:04:01+10:00",
+  "reviewed_by": "codex-r76-red-ledger-loop",
+  "schema_version": "1.0",
+  "test_path": "tests/test_v72_red_evidence_closure.py",
+  "to_sha256": "7c57ce258837d5e10ddcfd76837525be4d97940a722665a249981af8879cffbe"
+}

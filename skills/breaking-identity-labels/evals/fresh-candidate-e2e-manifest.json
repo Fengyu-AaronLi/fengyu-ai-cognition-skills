@@ -1,0 +1,85 @@
+{
+  "schema_version": "1.0",
+  "candidate": {
+    "candidate_id": "breaking-identity-labels-r78-fresh-agent-run",
+    "skill_sha256": "88c6e9e76027b83a7bf1b2f19cecc4ab66e2472555975aa6eb9ef3e00964ab0d",
+    "runtime_sha256": "5a0bd536121debb1448aed8d1b7cc367e6c446d8d21f58a2c43242dd37ccb184"
+  },
+  "evidence_mode": "fresh_candidate_agent_run",
+  "run_type": "fresh_candidate_model_runtime_composition",
+  "run_date": "2026-08-06",
+  "evidence_level": "fresh_candidate_model_runtime_sample",
+  "bindings": {
+    "skill": {
+      "path": "SKILL.md",
+      "sha256": "88c6e9e76027b83a7bf1b2f19cecc4ab66e2472555975aa6eb9ef3e00964ab0d"
+    },
+    "runtime": {
+      "path": "scripts/identity_label_case.py",
+      "sha256": "5a0bd536121debb1448aed8d1b7cc367e6c446d8d21f58a2c43242dd37ccb184"
+    },
+    "problem_spec": {
+      "path": "problem-spec.md",
+      "sha256": "6b1c69badff638debedc4a1e9c4d04544d103afeb322ceb1f9f37aed03dc5a9a"
+    },
+    "analysis_schema": {
+      "path": "schemas/analysis.schema.json",
+      "sha256": "194f076a6404b6c172f66b634116e91a8b6c1c40c171f0410e52c157edbe61d9"
+    },
+    "case_schema": {
+      "path": "schemas/case.schema.json",
+      "sha256": "e6f0bf9289d0ddb1582a996b8192c6cbbb3119edd3a064868751f0aed001f65a"
+    },
+    "analysis_template": {
+      "path": "templates/analysis.json",
+      "sha256": "c5d45c2a97446b098da97eec4f773cc5662cb9ac2290b627ea83cb8c65d33294"
+    }
+  },
+  "model_disclosure": {
+    "model_identifier": "not_exposed",
+    "reasoning_effort": "not_exposed"
+  },
+  "cases": [
+    {
+      "case_id": "C01-mbti-capability-verdict",
+      "run": {
+        "path": "evals/raw/fresh-candidate-e2e-r76/C01-mbti-capability-verdict/run.json",
+        "sha256": "76af7cb9a558372f942c43aa410ebbe9bbad2354f545f4ae54b02debbaf5d590"
+      }
+    },
+    {
+      "case_id": "C02-attachment-side-taking",
+      "run": {
+        "path": "evals/raw/fresh-candidate-e2e-r76/C02-attachment-side-taking/run.json",
+        "sha256": "7873d29f67f83fedcc87be8fa538bbce5d2532dd2187514153b269c311f3c69a"
+      }
+    },
+    {
+      "case_id": "C03-formal-adhd-diagnosis",
+      "run": {
+        "path": "evals/raw/fresh-candidate-e2e-r76/C03-formal-adhd-diagnosis/run.json",
+        "sha256": "d096e34377a65500494b834b06128d358250a6d541df92e70fd6b5c0de026c46"
+      }
+    },
+    {
+      "case_id": "C04-stable-preference-control",
+      "run": {
+        "path": "evals/raw/fresh-candidate-e2e-r76/C04-stable-preference-control/run.json",
+        "sha256": "777b3bac0cb9dcf9c001a955af49229cf6ed9062264686897977d7bbc786cb8e"
+      }
+    }
+  ],
+  "review": {
+    "path": "evals/raw/fresh-candidate-e2e-r76/review.json",
+    "sha256": "a4f28db3a26db323070f4ab793320de8e65b1f05baf9b79ba1def42595281d4c"
+  },
+  "limitations": [
+    "one_run_per_case",
+    "model_identifier_not_exposed",
+    "skill_aware_not_blind",
+    "no_clinical_efficacy_claim",
+    "orchestrator_logs_not_authenticated",
+    "local_hashes_not_signatures"
+  ],
+  "universal_model_claim": false
+}

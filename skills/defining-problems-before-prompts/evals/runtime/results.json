@@ -1,0 +1,317 @@
+{
+  "artifacts": {
+    "cli_sha256": "4235f125e8e3d094a1a4f2c4580aaf78762446cede3be7a6d4e5cf39157bb7ad",
+    "gate_reference_sha256": {
+      "references/core.md": "aa77083b61a7de56361022f298062f878dd6153c8f7cdf7baeeb355463fb5bb1",
+      "references/high-risk.md": "cebf0e417caf8e478888051c0ddcc8482e830d0249bb809573d293c9f757e073",
+      "references/playbooks/ai-efficiency.md": "cd64b9afe78593c71d3900bb9b164375b416741d316549e3f66ddab3782b7ac4",
+      "references/playbooks/ai-product.md": "5d9b247ad97be48293c02a7d1148b28dbf89055da2d762381d2e3d595c4ac7d5",
+      "references/playbooks/career-exit.md": "ad058d0361a66bf93539dbb4f5b8af7ddfda5c691c7757b62bf1a771dfc882d3"
+    },
+    "routes_sha256": "b085bcc3d25d01a8dc5a3266435fe4419af6ee84c91f1074d6d64874b6dd416c",
+    "runner_sha256": "45bc4aa6de0cd623243d3410ca9b206bc7364ff59f89bc44d1f2e971ba30065d",
+    "schema_sha256": {
+      "problem_spec": "c43c626eca90f7a37a0d81a8b919d49ea8c4e0fdb2945ce16a6225b6fb204aa4",
+      "problem_state": "accca2f5517693ac02190ee56f045794fd4f43f57deaebcfa9d8baf9890dd8e4",
+      "request_envelope": "952f37482c74b0167b04f32a01d08af5c596ad4d3d68e420bae55a9405bd2f88"
+    },
+    "skill_sha256": "e10a47fdfc593850653605b8e85d8964ac6d355dab9d1dda002c4eaa83da8d11",
+    "version": "0.3.0-rc.4",
+    "version_sha256": "744f8c95a69677487ba96bc96f657f66b16ad540e06c37403c28ddc6f62d25e2"
+  },
+  "cases": [
+    {
+      "case_id": "DPBP-001",
+      "envelope": {
+        "fixture_sha256": "347585ae0c8cbdb1a1c733a675bc10f43576daceae191bcb968f62bd45626d47",
+        "path": "evals/runtime/fixtures/envelopes/DPBP-001.json",
+        "present": true
+      },
+      "failure_codes": [],
+      "gate": {
+        "exit_codes": {
+          "0": 100
+        },
+        "expected": {
+          "execution_allowed": false,
+          "mode": "defer_to_user",
+          "request_sha256": "d1eb9adabf78861172feb76d9ba42ee65b43b4dabd7054912982028ae87ebd82",
+          "resources": [
+            "references/core.md",
+            "references/high-risk.md",
+            "references/playbooks/career-exit.md"
+          ],
+          "rule": "high_risk_value_decision"
+        },
+        "observed": {
+          "domain": "career",
+          "execution_allowed": false,
+          "mode": "defer_to_user",
+          "request_id": "DPBP-001-resignation",
+          "request_sha256": "d1eb9adabf78861172feb76d9ba42ee65b43b4dabd7054912982028ae87ebd82",
+          "resources": [
+            "references/core.md",
+            "references/high-risk.md",
+            "references/playbooks/career-exit.md"
+          ],
+          "schema_version": "1.0",
+          "trace": {
+            "priority_index": 0,
+            "rule": "high_risk_value_decision",
+            "source": "runtime/routes.json"
+          }
+        },
+        "repetitions": 100,
+        "stderr_nonempty_runs": 0,
+        "stderr_sha256": [],
+        "stdout": {
+          "deterministic": true,
+          "stdout_bytes": 405,
+          "stdout_sha256": "4abc0dfa1388e480b3fd76de30ca9c3e6a8062c2ffa3d90eda6bb96e8d6eb540",
+          "unique_stdout_count": 1,
+          "unique_stdout_sha256": [
+            "4abc0dfa1388e480b3fd76de30ca9c3e6a8062c2ffa3d90eda6bb96e8d6eb540"
+          ]
+        }
+      },
+      "spec": {
+        "fixture_sha256": "83fbbcb5326ee61a515bebfc146946871c533e6fe6e7f0aa6a3820be8315752f",
+        "path": "evals/runtime/fixtures/specs/DPBP-001.json",
+        "present": true,
+        "render": {
+          "exit_code": 0,
+          "stderr_bytes": 0,
+          "stdout_bytes": 4225,
+          "stdout_sha256": "22f9e14aebb0efc6a0ddcc30fbce2800b97f1549c9b035716822d978e6c3e801"
+        },
+        "validate": {
+          "exit_code": 0,
+          "stderr_bytes": 0,
+          "stdout_sha256": "c690084ddad68b2763df8d5f74838f993dcf71eefaafedf934e34ccd58db08e8",
+          "valid": true
+        }
+      },
+      "status": "pass"
+    },
+    {
+      "case_id": "DPBP-002",
+      "envelope": {
+        "fixture_sha256": "dbe50e9eee3fbb7350d08a5cd98c7b789b37c2c2ebbb03b7f3ed2b742d373401",
+        "path": "evals/runtime/fixtures/envelopes/DPBP-002.json",
+        "present": true
+      },
+      "failure_codes": [],
+      "gate": {
+        "exit_codes": {
+          "0": 100
+        },
+        "expected": {
+          "execution_allowed": false,
+          "mode": "define",
+          "request_sha256": "f56f1497baf703a09102fdbeb8a53ac6529133abb0b2f88706a0b161a2408d30",
+          "resources": [
+            "references/core.md",
+            "references/playbooks/ai-efficiency.md"
+          ],
+          "rule": "decisive_unknowns"
+        },
+        "observed": {
+          "domain": "ai_efficiency",
+          "execution_allowed": false,
+          "mode": "define",
+          "request_id": "DPBP-002-efficiency",
+          "request_sha256": "f56f1497baf703a09102fdbeb8a53ac6529133abb0b2f88706a0b161a2408d30",
+          "resources": [
+            "references/core.md",
+            "references/playbooks/ai-efficiency.md"
+          ],
+          "schema_version": "1.0",
+          "trace": {
+            "priority_index": 1,
+            "rule": "decisive_unknowns",
+            "source": "runtime/routes.json"
+          }
+        },
+        "repetitions": 100,
+        "stderr_nonempty_runs": 0,
+        "stderr_sha256": [],
+        "stdout": {
+          "deterministic": true,
+          "stdout_bytes": 373,
+          "stdout_sha256": "9d857ad6949394a44e7cabee1c69c3882df32cf7db5259b040265f98c7f327c6",
+          "unique_stdout_count": 1,
+          "unique_stdout_sha256": [
+            "9d857ad6949394a44e7cabee1c69c3882df32cf7db5259b040265f98c7f327c6"
+          ]
+        }
+      },
+      "spec": {
+        "fixture_sha256": "d894454aa85484050538147b3bdb69d897344e8a0d0404f13ae9d13d8dc2836b",
+        "path": "evals/runtime/fixtures/specs/DPBP-002.json",
+        "present": true,
+        "render": {
+          "exit_code": 0,
+          "stderr_bytes": 0,
+          "stdout_bytes": 3482,
+          "stdout_sha256": "5ce13922b55352d541d43f7dd23c3e0a13c87f56c6662e2e3bfccefec33439ce"
+        },
+        "validate": {
+          "exit_code": 0,
+          "stderr_bytes": 0,
+          "stdout_sha256": "c690084ddad68b2763df8d5f74838f993dcf71eefaafedf934e34ccd58db08e8",
+          "valid": true
+        }
+      },
+      "status": "pass"
+    },
+    {
+      "case_id": "DPBP-003",
+      "envelope": {
+        "fixture_sha256": "9ad915a0c7fbc79504e48af10d1fab3be4be901723e26de2e99598b670949ce5",
+        "path": "evals/runtime/fixtures/envelopes/DPBP-003.json",
+        "present": true
+      },
+      "failure_codes": [],
+      "gate": {
+        "exit_codes": {
+          "0": 100
+        },
+        "expected": {
+          "execution_allowed": false,
+          "mode": "define",
+          "request_sha256": "c03a596925f0683d98fc93f0a4ae0118af2c2ce8f95bbc88d700eb12d0ef9b5d",
+          "resources": [
+            "references/core.md",
+            "references/playbooks/ai-product.md"
+          ],
+          "rule": "decisive_unknowns"
+        },
+        "observed": {
+          "domain": "ai_product",
+          "execution_allowed": false,
+          "mode": "define",
+          "request_id": "DPBP-003-ai-app",
+          "request_sha256": "c03a596925f0683d98fc93f0a4ae0118af2c2ce8f95bbc88d700eb12d0ef9b5d",
+          "resources": [
+            "references/core.md",
+            "references/playbooks/ai-product.md"
+          ],
+          "schema_version": "1.0",
+          "trace": {
+            "priority_index": 1,
+            "rule": "decisive_unknowns",
+            "source": "runtime/routes.json"
+          }
+        },
+        "repetitions": 100,
+        "stderr_nonempty_runs": 0,
+        "stderr_sha256": [],
+        "stdout": {
+          "deterministic": true,
+          "stdout_bytes": 363,
+          "stdout_sha256": "00c44a860dc9be9602c8f12c974616e699f8bf0c2fffe6da2b7edd6c8bd71acc",
+          "unique_stdout_count": 1,
+          "unique_stdout_sha256": [
+            "00c44a860dc9be9602c8f12c974616e699f8bf0c2fffe6da2b7edd6c8bd71acc"
+          ]
+        }
+      },
+      "spec": {
+        "fixture_sha256": "ccde262f520a485e5e28694654a547efdd2c309740ed322a4691c1c412dcf7c0",
+        "path": "evals/runtime/fixtures/specs/DPBP-003.json",
+        "present": true,
+        "render": {
+          "exit_code": 0,
+          "stderr_bytes": 0,
+          "stdout_bytes": 4061,
+          "stdout_sha256": "9f538dffd2375f7dcd0c0dee81882554129c649902afd05fecca4e5e1ffb5bae"
+        },
+        "validate": {
+          "exit_code": 0,
+          "stderr_bytes": 0,
+          "stdout_sha256": "c690084ddad68b2763df8d5f74838f993dcf71eefaafedf934e34ccd58db08e8",
+          "valid": true
+        }
+      },
+      "status": "pass"
+    },
+    {
+      "case_id": "DPBP-004",
+      "envelope": {
+        "fixture_sha256": "ccf574a392a2d7fdf670a632ea6827d0e9bb00ca10e73bc225b7b2a8e173bd8c",
+        "path": "evals/runtime/fixtures/envelopes/DPBP-004.json",
+        "present": true
+      },
+      "failure_codes": [],
+      "gate": {
+        "exit_codes": {
+          "0": 100
+        },
+        "expected": {
+          "execution_allowed": true,
+          "mode": "execute",
+          "request_sha256": "e097d400878157b0624267548b14ebf00ca5e146a20d71d1966d19f7a3c50cf2",
+          "resources": [],
+          "rule": "clear_execution"
+        },
+        "observed": {
+          "domain": "general",
+          "execution_allowed": true,
+          "mode": "execute",
+          "request_id": "DPBP-004-translation-pass-through",
+          "request_sha256": "e097d400878157b0624267548b14ebf00ca5e146a20d71d1966d19f7a3c50cf2",
+          "resources": [],
+          "schema_version": "1.0",
+          "trace": {
+            "priority_index": 2,
+            "rule": "clear_execution",
+            "source": "runtime/routes.json"
+          }
+        },
+        "repetitions": 100,
+        "stderr_nonempty_runs": 0,
+        "stderr_sha256": [],
+        "stdout": {
+          "deterministic": true,
+          "stdout_bytes": 319,
+          "stdout_sha256": "4428e1845086457d447c4b23212f3e6755cbdefdcd4f839de01d9ed2a6f3d4ff",
+          "unique_stdout_count": 1,
+          "unique_stdout_sha256": [
+            "4428e1845086457d447c4b23212f3e6755cbdefdcd4f839de01d9ed2a6f3d4ff"
+          ]
+        }
+      },
+      "spec": {
+        "path": "evals/runtime/fixtures/specs/DPBP-004.json",
+        "present": false
+      },
+      "status": "pass"
+    }
+  ],
+  "environment": {
+    "gate_repetitions": 100,
+    "machine": "arm64",
+    "model_api_used": false,
+    "network_used": false,
+    "offline": true,
+    "os": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "python_implementation": "CPython",
+    "python_version": "3.14.4"
+  },
+  "failure_codes": [],
+  "report_type": "offline-runtime-eval",
+  "schema_version": "1.0",
+  "status": "pass",
+  "suite": {
+    "binding_status": "manifest_bound",
+    "declared_manifest_sha256": "ee6e10a1fdfc495a8795d0a3495cc9335553f47678ca6f1ee90275b6cb7bffc1",
+    "manifest_sha256": "ee6e10a1fdfc495a8795d0a3495cc9335553f47678ca6f1ee90275b6cb7bffc1",
+    "suite_id": "defining-problems-before-prompts-runtime",
+    "suite_version": "0.3.0-rc.4"
+  },
+  "summary": {
+    "case_count": 4,
+    "failed": 0,
+    "passed": 4
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "receipt_id": "v53-v10-uncertain-label-context",
+  "test_path": "tests/test_v10_attribution_blind_regressions.py",
+  "from_sha256": "66a0605a35afc8d4169f0b103c6fd968bfe88755e4069723d57a8da88eedd566",
+  "to_sha256": "bc16a41ef48db52226684b515ce5e0909c1f493405e880083b41aec9c153c1f2",
+  "reason": "V42 separated an uncertain identity proposition from an affirmed identity label. The frozen input still requires the exact term and source, but it may satisfy them through the context-claim ledger while a separate future verdict still triggers deconstruction.",
+  "replacement_tests": [
+    {
+      "path": "tests/test_v42_proposition_boundary_hardening.py",
+      "sha256": "913a2b7217fc6b45ccac0a9c9755e13dfd2cffeec46f08d58a6f6e257f52e931"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "evals/raw/v53-red/uncertain-label-context-migration.md",
+      "sha256": "6be4d47656cb29d647db45f4b537a1eec11a51b8e62bcaf7e1d918c0214a9910"
+    }
+  ],
+  "reviewed_by": "full-regression-proposition-boundary-audit",
+  "reviewed_at": "2026-08-06T10:00:00Z"
+}

@@ -1,0 +1,181 @@
+Command:
+python3 -m unittest discover -s tests -p 'test_redteam_deadline_transaction_v3.py' -v
+
+Observed: 2026-08-06 Australia/Sydney
+Runtime under test: scripts/claim_audit.py 3.0.0
+Exit code: 1
+
+test_cli_cannot_raise_the_frozen_response_byte_ceiling (test_redteam_deadline_transaction_v3.DeadlineSizeAndSourceTransactionRedTests.test_cli_cannot_raise_the_frozen_response_byte_ceiling)
+The CLI flag may lower a limit, but must not raise the runtime ceiling. ... FAIL
+test_fetch_timeout_is_a_total_deadline_not_a_per_read_idle_timeout (test_redteam_deadline_transaction_v3.DeadlineSizeAndSourceTransactionRedTests.test_fetch_timeout_is_a_total_deadline_not_a_per_read_idle_timeout)
+Bytes arriving just under the idle timeout must not extend fetch forever. ... FAIL
+test_receipt_then_ledger_crash_can_retry_the_same_source_id (test_redteam_deadline_transaction_v3.DeadlineSizeAndSourceTransactionRedTests.test_receipt_then_ledger_crash_can_retry_the_same_source_id)
+A crash in the commit gap must not leave a permanently orphaned source ID. ... ERROR
+
+======================================================================
+ERROR: test_receipt_then_ledger_crash_can_retry_the_same_source_id (test_redteam_deadline_transaction_v3.DeadlineSizeAndSourceTransactionRedTests.test_receipt_then_ledger_crash_can_retry_the_same_source_id)
+A crash in the commit gap must not leave a permanently orphaned source ID.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/scripts/claim_audit.py", line 3055, in _write_new_private_bytes
+    os.link(temporary_path, path, follow_symlinks=False)
+FileExistsError: [Errno 17] File exists: '<temporary-receipt>' -> '<workspace>/receipts/S1.json'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_redteam_deadline_transaction_v3.py", line 214, in test_receipt_then_ledger_crash_can_retry_the_same_source_id
+    runtime._register_source(
+  File "<REPO_ROOT>/skills/auditing-ai-claims/scripts/claim_audit.py", line 4061, in _register_source
+    _write_new_json(safe_workspace_path(workspace, receipt_rel), receipt)
+  File "<REPO_ROOT>/skills/auditing-ai-claims/scripts/claim_audit.py", line 3078, in _write_new_json
+    _write_new_private_bytes(
+  File "<REPO_ROOT>/skills/auditing-ai-claims/scripts/claim_audit.py", line 3057, in _write_new_private_bytes
+    raise AuditError(f"source artifact already exists: {path.name}") from exc
+claim_audit.AuditError: source artifact already exists: S1.json
+
+======================================================================
+FAIL: test_cli_cannot_raise_the_frozen_response_byte_ceiling (test_redteam_deadline_transaction_v3.DeadlineSizeAndSourceTransactionRedTests.test_cli_cannot_raise_the_frozen_response_byte_ceiling)
+The CLI flag may lower a limit, but must not raise the runtime ceiling.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_redteam_deadline_transaction_v3.py", line 154, in test_cli_cannot_raise_the_frozen_response_byte_ceiling
+    self.assertEqual(
+AssertionError: Lists differ: [{'source_id': 'S1', 'active': True, 'rece[201 chars]ce'}] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+{'source_id': 'S1', 'active': True, 'receipt': 'receipts/S1.json', 'source_tier': 'A1', 'evidence_role': 'original_record', 'publication_date': '2026-08-06', 'freshness_status': 'unknown', 'freshness_rationale': '', 'origin_id': 'example:source'}
+
++ []
+- [{'active': True,
+-   'evidence_role': 'original_record',
+-   'freshness_rationale': '',
+-   'freshness_status': 'unknown',
+-   'origin_id': 'example:source',
+-   'publication_date': '2026-08-06',
+-   'receipt': 'receipts/S1.json',
+-   'source_id': 'S1',
+-   'source_tier': 'A1'}] : an over-ceiling CLI value was accepted and source registration began
+
+======================================================================
+FAIL: test_fetch_timeout_is_a_total_deadline_not_a_per_read_idle_timeout (test_redteam_deadline_transaction_v3.DeadlineSizeAndSourceTransactionRedTests.test_fetch_timeout_is_a_total_deadline_not_a_per_read_idle_timeout)
+Bytes arriving just under the idle timeout must not extend fetch forever.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_redteam_deadline_transaction_v3.py", line 90, in test_fetch_timeout_is_a_total_deadline_not_a_per_read_idle_timeout
+    with self.assertRaises(
+AssertionError: AuditError not raised : fetch_public_url accepted a slow-drip body whose individual reads arrived before the socket timeout but whose total duration exceeded it
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.412s
+
+FAILED (failures=2, errors=1)
+
+Failure meaning:
+1. The socket timeout is currently an idle timeout only. A peer can keep the fetch alive indefinitely by sending one byte before each per-read timeout.
+2. `--max-bytes` currently accepts an arbitrarily large value and therefore lets a caller raise the frozen response ceiling.
+3. `_register_source` writes and attests the receipt before committing the ledger. A crash in that gap leaves `S1.json`; retrying the same source ID is rejected as a collision, so the source becomes a permanent orphan without a recovery transaction.
+
+Exact raw output from the command above:
+
+test_cli_cannot_raise_the_frozen_response_byte_ceiling (test_redteam_deadline_transaction_v3.DeadlineSizeAndSourceTransactionRedTests.test_cli_cannot_raise_the_frozen_response_byte_ceiling)
+The CLI flag may lower a limit, but must not raise the runtime ceiling. ... FAIL
+test_fetch_timeout_is_a_total_deadline_not_a_per_read_idle_timeout (test_redteam_deadline_transaction_v3.DeadlineSizeAndSourceTransactionRedTests.test_fetch_timeout_is_a_total_deadline_not_a_per_read_idle_timeout)
+Bytes arriving just under the idle timeout must not extend fetch forever. ... FAIL
+test_receipt_then_ledger_crash_can_retry_the_same_source_id (test_redteam_deadline_transaction_v3.DeadlineSizeAndSourceTransactionRedTests.test_receipt_then_ledger_crash_can_retry_the_same_source_id)
+A crash in the commit gap must not leave a permanently orphaned source ID. ... ERROR
+
+======================================================================
+ERROR: test_receipt_then_ledger_crash_can_retry_the_same_source_id (test_redteam_deadline_transaction_v3.DeadlineSizeAndSourceTransactionRedTests.test_receipt_then_ledger_crash_can_retry_the_same_source_id)
+A crash in the commit gap must not leave a permanently orphaned source ID.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/scripts/claim_audit.py", line 3055, in _write_new_private_bytes
+    os.link(temporary_path, path, follow_symlinks=False)
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileExistsError: [Errno 17] File exists: '/private/var/folders/2s/cq27nh7x44zd399j4_j898qr0000gn/T/tmp5k7qz_ig/audit/receipts/.S1.json.u5ruu9ip' -> '/private/var/folders/2s/cq27nh7x44zd399j4_j898qr0000gn/T/tmp5k7qz_ig/audit/receipts/S1.json'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_redteam_deadline_transaction_v3.py", line 214, in test_receipt_then_ledger_crash_can_retry_the_same_source_id
+    runtime._register_source(
+    ~~~~~~~~~~~~~~~~~~~~~~~~^
+        workspace,
+        ^^^^^^^^^^
+    ...<7 lines>...
+        freshness_rationale="same-day publisher record",
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "<REPO_ROOT>/skills/auditing-ai-claims/scripts/claim_audit.py", line 4061, in _register_source
+    _write_new_json(safe_workspace_path(workspace, receipt_rel), receipt)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<REPO_ROOT>/skills/auditing-ai-claims/scripts/claim_audit.py", line 3078, in _write_new_json
+    _write_new_private_bytes(
+    ~~~~~~~~~~~~~~~~~~~~~~~~^
+        path,
+        ^^^^^
+        (json.dumps(value, ensure_ascii=False, indent=2) + "\n").encode("utf-8"),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "<REPO_ROOT>/skills/auditing-ai-claims/scripts/claim_audit.py", line 3057, in _write_new_private_bytes
+    raise AuditError(f"source artifact already exists: {path.name}") from exc
+claim_audit.AuditError: source artifact already exists: S1.json
+
+======================================================================
+FAIL: test_cli_cannot_raise_the_frozen_response_byte_ceiling (test_redteam_deadline_transaction_v3.DeadlineSizeAndSourceTransactionRedTests.test_cli_cannot_raise_the_frozen_response_byte_ceiling)
+The CLI flag may lower a limit, but must not raise the runtime ceiling.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_redteam_deadline_transaction_v3.py", line 154, in test_cli_cannot_raise_the_frozen_response_byte_ceiling
+    self.assertEqual(
+    ~~~~~~~~~~~~~~~~^
+        ledger["sources"],
+        ^^^^^^^^^^^^^^^^^^
+        [],
+        ^^^
+        "an over-ceiling CLI value was accepted and source registration began",
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+AssertionError: Lists differ: [{'source_id': 'S1', 'active': True, 'rece[201 chars]ce'}] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+{'source_id': 'S1', 'active': True, 'receipt': 'receipts/S1.json', 'source_tier': 'A1', 'evidence_role': 'original_record', 'publication_date': '2026-08-06', 'freshness_status': 'unknown', 'freshness_rationale': '', 'origin_id': 'example:source'}
+
++ []
+- [{'active': True,
+-   'evidence_role': 'original_record',
+-   'freshness_rationale': '',
+-   'freshness_status': 'unknown',
+-   'origin_id': 'example:source',
+-   'publication_date': '2026-08-06',
+-   'receipt': 'receipts/S1.json',
+-   'source_id': 'S1',
+-   'source_tier': 'A1'}] : an over-ceiling CLI value was accepted and source registration began
+
+======================================================================
+FAIL: test_fetch_timeout_is_a_total_deadline_not_a_per_read_idle_timeout (test_redteam_deadline_transaction_v3.DeadlineSizeAndSourceTransactionRedTests.test_fetch_timeout_is_a_total_deadline_not_a_per_read_idle_timeout)
+Bytes arriving just under the idle timeout must not extend fetch forever.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_redteam_deadline_transaction_v3.py", line 90, in test_fetch_timeout_is_a_total_deadline_not_a_per_read_idle_timeout
+    with self.assertRaises(
+         ~~~~~~~~~~~~~~~~~^
+        runtime.AuditError,
+        ^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+        ),
+        ^^
+    ):
+    ^
+AssertionError: AuditError not raised : fetch_public_url accepted a slow-drip body whose individual reads arrived before the socket timeout but whose total duration exceeded it
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.412s
+
+FAILED (failures=2, errors=1)

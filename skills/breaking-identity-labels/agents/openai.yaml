@@ -1,0 +1,4 @@
+interface:
+  display_name: "身份标签拆解"
+  short_description: "用结构化证据链和可回放实验拆解身份标签判决"
+  default_prompt: "使用 $breaking-identity-labels 运行本地审计器，把身份标签判决编译成带来源的行为证据与可验证实验，并用 next 驱动每一步。"

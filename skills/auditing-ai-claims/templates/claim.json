@@ -1,0 +1,24 @@
+{
+  "claim_id": "C1",
+  "text": "把这里替换为候选中的一条原子主张。",
+  "claim_type": "existence_identity",
+  "temporal_sensitivity": "low",
+  "as_of": "YYYY-MM-DD",
+  "criteria": {
+    "defined": true,
+    "conditions": ["写明什么证据和条件足以支持这条主张。"],
+    "failure_condition": "写明什么观察结果会推翻这条主张。"
+  },
+  "requires_independent_evidence": false,
+  "risk_domain": "none",
+  "causal_basis": "not_applicable",
+  "evidence": [],
+  "source_identity_gate": "unknown",
+  "content_support_gate": "unknown",
+  "action_applicability_gate": "not_applicable",
+  "conflicts": [],
+  "status": "unverifiable",
+  "confidence_reason": "尚未连接可用于判断的已打开来源。",
+  "next_step": "打开信息增益最高的一手来源。",
+  "input_candidates": ["把这里替换为候选中的一条原子主张。"]
+}

@@ -1,0 +1,104 @@
+Countercheck adversarial RED round
+Run date: 2026-08-06 Australia/Sydney
+Command: python3 -m unittest discover -s tests -p 'test_countercheck_adversarial_red_v3.py' -v
+
+test_conflict_found_requires_bound_conflict_evidence (test_countercheck_adversarial_red_v3.CountercheckAdversarialRedTests.test_conflict_found_requires_bound_conflict_evidence) ... FAIL
+test_countercheck_text_fields_are_size_bounded (test_countercheck_adversarial_red_v3.CountercheckAdversarialRedTests.test_countercheck_text_fields_are_size_bounded) ... FAIL
+test_decisive_status_cannot_close_countercheck_with_empty_source_list (test_countercheck_adversarial_red_v3.CountercheckAdversarialRedTests.test_decisive_status_cannot_close_countercheck_with_empty_source_list) ... FAIL
+test_failed_fetch_cannot_support_no_conflict_found (test_countercheck_adversarial_red_v3.CountercheckAdversarialRedTests.test_failed_fetch_cannot_support_no_conflict_found) ... FAIL
+test_future_runtime_owned_checked_at_fails_validation (test_countercheck_adversarial_red_v3.CountercheckAdversarialRedTests.test_future_runtime_owned_checked_at_fails_validation) ... FAIL
+test_rendered_report_discloses_countercheck_record (test_countercheck_adversarial_red_v3.CountercheckAdversarialRedTests.test_rendered_report_discloses_countercheck_record) ... FAIL
+test_retired_checked_source_makes_countercheck_stale (test_countercheck_adversarial_red_v3.CountercheckAdversarialRedTests.test_retired_checked_source_makes_countercheck_stale) ... FAIL
+test_scope_narrowed_requires_reassessment_before_summary (test_countercheck_adversarial_red_v3.CountercheckAdversarialRedTests.test_scope_narrowed_requires_reassessment_before_summary) ... FAIL
+
+======================================================================
+FAIL: test_conflict_found_requires_bound_conflict_evidence (test_countercheck_adversarial_red_v3.CountercheckAdversarialRedTests.test_conflict_found_requires_bound_conflict_evidence)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_countercheck_adversarial_red_v3.py", line 276, in test_conflict_found_requires_bound_conflict_evidence
+    self.assertTrue(
+AssertionError: set() is not true
+
+======================================================================
+FAIL: test_countercheck_text_fields_are_size_bounded (test_countercheck_adversarial_red_v3.CountercheckAdversarialRedTests.test_countercheck_text_fields_are_size_bounded)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_countercheck_adversarial_red_v3.py", line 318, in test_countercheck_text_fields_are_size_bounded
+    self.assertNotEqual(checked.returncode, 0)
+AssertionError: 0 == 0
+
+======================================================================
+FAIL: test_decisive_status_cannot_close_countercheck_with_empty_source_list (test_countercheck_adversarial_red_v3.CountercheckAdversarialRedTests.test_decisive_status_cannot_close_countercheck_with_empty_source_list)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_countercheck_adversarial_red_v3.py", line 187, in test_decisive_status_cannot_close_countercheck_with_empty_source_list
+    self.assertNotEqual(checked.returncode, 0)
+AssertionError: 0 == 0
+
+======================================================================
+FAIL: test_failed_fetch_cannot_support_no_conflict_found (test_countercheck_adversarial_red_v3.CountercheckAdversarialRedTests.test_failed_fetch_cannot_support_no_conflict_found)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_countercheck_adversarial_red_v3.py", line 225, in test_failed_fetch_cannot_support_no_conflict_found
+    self.assertNotEqual(checked.returncode, 0)
+AssertionError: 0 == 0
+
+======================================================================
+FAIL: test_future_runtime_owned_checked_at_fails_validation (test_countercheck_adversarial_red_v3.CountercheckAdversarialRedTests.test_future_runtime_owned_checked_at_fails_validation)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_countercheck_adversarial_red_v3.py", line 256, in test_future_runtime_owned_checked_at_fails_validation
+    self.assertTrue(
+AssertionError: set() is not true
+
+======================================================================
+FAIL: test_rendered_report_discloses_countercheck_record (test_countercheck_adversarial_red_v3.CountercheckAdversarialRedTests.test_rendered_report_discloses_countercheck_record)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_countercheck_adversarial_red_v3.py", line 338, in test_rendered_report_discloses_countercheck_record
+    self.assertIn("## 反证检查", report)
+AssertionError: '## 反证检查' not found in rendered report
+
+======================================================================
+FAIL: test_retired_checked_source_makes_countercheck_stale (test_countercheck_adversarial_red_v3.CountercheckAdversarialRedTests.test_retired_checked_source_makes_countercheck_stale)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_countercheck_adversarial_red_v3.py", line 238, in test_retired_checked_source_makes_countercheck_stale
+    self.assertTrue(
+AssertionError: set() is not true
+
+======================================================================
+FAIL: test_scope_narrowed_requires_reassessment_before_summary (test_countercheck_adversarial_red_v3.CountercheckAdversarialRedTests.test_scope_narrowed_requires_reassessment_before_summary)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_countercheck_adversarial_red_v3.py", line 296, in test_scope_narrowed_requires_reassessment_before_summary
+    self.assertTrue(
+AssertionError: set() is not true
+
+----------------------------------------------------------------------
+Ran 8 tests in 1.115s
+
+FAILED (failures=8)
+
+Control probes not promoted to RED
+
+Command: inline Python probe against the same runtime
+
+wrong_basis_codes= ['COUNTERCHECK_STALE']
+duplicate_ids_rc= 1
+duplicate_ids_stderr= ERROR: countercheck checked_source_ids must be a unique list of source IDs
+countercheck_rc= 0
+summarize_rc= 0
+finish_rc= 0
+replay_before_rc= 0
+replay_after_rc= 1
+replay_after_codes= ['GATE_STALE', 'REPORT_HASH_MISMATCH']
+
+Boundary classification
+
+1. A wrong basis_hash is already rejected. No RED was added for it.
+2. Duplicate checked_source_ids are already rejected. No RED was added for them.
+3. An ordinary post-render ledger edit is already caught by replay through stale gate and report binding. No RED was added for that path.
+4. A hostile process with the same workspace write permission can rewrite ledger, receipts, gate, state, and read the local attestation key. Cryptographic resistance to that actor is outside this local same-permission trust boundary, so no RED demands an impossible authenticity guarantee.
+5. The RED cases are limited to objective policy or lifecycle invariants the runtime can enforce: decisive empty-source closure, failed-source result laundering, retirement invalidation, timestamp validity, conflict binding, reassessment after scope narrowing, bounded input, and report disclosure.
+6. Raw receipt tampering without synchronizing its receipt hash or runtime attestation is already caught by existing integrity gates. Receipt re-signing by a same-permission actor was not promoted to RED.

@@ -1,0 +1,177 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fengyu.local/schemas/live-e2e-run.schema.json",
+  "title": "One replayable live model/runtime case run",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "candidate_id",
+    "evidence_mode",
+    "case_id",
+    "run_date",
+    "route_mode",
+    "clocks",
+    "orchestration_task_id",
+    "model_identifier",
+    "reasoning_effort",
+    "stage_inventory",
+    "artifacts"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "candidate_id": {"type": "string", "minLength": 1},
+    "evidence_mode": {
+      "enum": ["historical_analysis_replay", "fresh_candidate_agent_run"]
+    },
+    "case_id": {
+      "enum": [
+        "C01-mbti-capability-verdict",
+        "C02-attachment-side-taking",
+        "C03-formal-adhd-diagnosis",
+        "C04-stable-preference-control"
+      ]
+    },
+    "run_date": {"type": "string", "format": "date"},
+    "route_mode": {"enum": ["deconstruct", "preference_acknowledgement"]},
+    "clocks": {"type": "object"},
+    "orchestration_task_id": {"type": "string", "pattern": "^/root/\\S+$"},
+    "model_identifier": {"const": "not_exposed"},
+    "reasoning_effort": {"const": "not_exposed"},
+    "stage_inventory": {"type": "array"},
+    "artifacts": {"type": "object"},
+    "analysis_provenance": {"$ref": "#/$defs/analysis_provenance"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"route_mode": {"const": "deconstruct"}}},
+      "then": {
+        "properties": {
+          "clocks": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["scaffold", "compile"],
+            "properties": {
+              "scaffold": {"type": "string", "format": "date-time"},
+              "compile": {"type": "string", "format": "date-time"}
+            }
+          },
+          "stage_inventory": {
+            "type": "array",
+            "prefixItems": [
+              {"const": "input"},
+              {"const": "scaffold"},
+              {"const": "model_analysis"},
+              {"const": "case"},
+              {"const": "validate"},
+              {"const": "report"},
+              {"const": "delivered_output"}
+            ],
+            "items": false,
+            "minItems": 7,
+            "maxItems": 7
+          },
+          "artifacts": {"$ref": "#/$defs/deconstruct_artifacts"}
+        }
+      },
+      "else": {
+        "properties": {
+          "clocks": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["scaffold"],
+            "properties": {
+              "scaffold": {"type": "string", "format": "date-time"}
+            }
+          },
+          "stage_inventory": {
+            "type": "array",
+            "prefixItems": [
+              {"const": "input"},
+              {"const": "scaffold"},
+              {"const": "validate"},
+              {"const": "report"},
+              {"const": "delivered_output"}
+            ],
+            "items": false,
+            "minItems": 5,
+            "maxItems": 5
+          },
+          "artifacts": {"$ref": "#/$defs/preference_artifacts"}
+        }
+      }
+    },
+    {
+      "if": {
+        "required": ["evidence_mode"],
+        "properties": {"evidence_mode": {"const": "fresh_candidate_agent_run"}}
+      },
+      "then": {
+        "properties": {
+          "artifacts": {
+            "required": ["agent_request", "agent_response"]
+          }
+        }
+      },
+      "else": {
+        "if": {
+          "required": ["route_mode"],
+          "properties": {"route_mode": {"const": "deconstruct"}}
+        },
+        "then": {"required": ["analysis_provenance"]}
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "artifact_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {"type": "string"},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "analysis_provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "source_candidate_id", "source_analysis_sha256"],
+      "properties": {
+        "mode": {"const": "historical_analysis_replay"},
+        "source_candidate_id": {"type": "string", "minLength": 1},
+        "source_analysis_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "deconstruct_artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["input", "scaffold", "model_analysis", "case", "validate", "report", "delivered_output"],
+      "properties": {
+        "agent_request": {"allOf": [{"$ref": "#/$defs/artifact_binding"}, {"properties": {"path": {"const": "agent-request.json"}}}]},
+        "agent_response": {"allOf": [{"$ref": "#/$defs/artifact_binding"}, {"properties": {"path": {"const": "agent-response.json"}}}]},
+        "input": {"allOf": [{"$ref": "#/$defs/artifact_binding"}, {"properties": {"path": {"const": "input.txt"}}}]},
+        "scaffold": {"allOf": [{"$ref": "#/$defs/artifact_binding"}, {"properties": {"path": {"const": "scaffold.json"}}}]},
+        "model_analysis": {"allOf": [{"$ref": "#/$defs/artifact_binding"}, {"properties": {"path": {"const": "model-analysis.raw.json"}}}]},
+        "case": {"allOf": [{"$ref": "#/$defs/artifact_binding"}, {"properties": {"path": {"const": "case.json"}}}]},
+        "validate": {"allOf": [{"$ref": "#/$defs/artifact_binding"}, {"properties": {"path": {"const": "validate.json"}}}]},
+        "report": {"allOf": [{"$ref": "#/$defs/artifact_binding"}, {"properties": {"path": {"const": "report.md"}}}]},
+        "delivered_output": {"allOf": [{"$ref": "#/$defs/artifact_binding"}, {"properties": {"path": {"const": "delivered-output.md"}}}]}
+      }
+    },
+    "preference_artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["input", "scaffold", "validate", "report", "delivered_output"],
+      "properties": {
+        "agent_request": {"allOf": [{"$ref": "#/$defs/artifact_binding"}, {"properties": {"path": {"const": "agent-request.json"}}}]},
+        "agent_response": {"allOf": [{"$ref": "#/$defs/artifact_binding"}, {"properties": {"path": {"const": "agent-response.json"}}}]},
+        "input": {"allOf": [{"$ref": "#/$defs/artifact_binding"}, {"properties": {"path": {"const": "input.txt"}}}]},
+        "scaffold": {"allOf": [{"$ref": "#/$defs/artifact_binding"}, {"properties": {"path": {"const": "scaffold.json"}}}]},
+        "validate": {"allOf": [{"$ref": "#/$defs/artifact_binding"}, {"properties": {"path": {"const": "validate.json"}}}]},
+        "report": {"allOf": [{"$ref": "#/$defs/artifact_binding"}, {"properties": {"path": {"const": "report.md"}}}]},
+        "delivered_output": {"allOf": [{"$ref": "#/$defs/artifact_binding"}, {"properties": {"path": {"const": "delivered-output.md"}}}]}
+      }
+    }
+  }
+}

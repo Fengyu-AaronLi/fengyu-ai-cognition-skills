@@ -1,0 +1,127 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fengyu.local/schemas/live-e2e-manifest.schema.json",
+  "title": "Replayable live model/runtime evidence manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "candidate",
+    "evidence_mode",
+    "run_type",
+    "run_date",
+    "evidence_level",
+    "bindings",
+    "model_disclosure",
+    "cases",
+    "review",
+    "limitations",
+    "universal_model_claim"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidate_id", "skill_sha256", "runtime_sha256"],
+      "properties": {
+        "candidate_id": {"type": "string", "minLength": 1},
+        "skill_sha256": {"$ref": "#/$defs/sha256"},
+        "runtime_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "evidence_mode": {
+      "enum": ["historical_analysis_replay", "fresh_candidate_agent_run"]
+    },
+    "run_type": {
+      "enum": [
+        "historical_analysis_runtime_replay",
+        "fresh_candidate_model_runtime_composition"
+      ]
+    },
+    "run_date": {"type": "string", "format": "date"},
+    "evidence_level": {
+      "enum": [
+        "historical_analysis_replay_sample",
+        "fresh_candidate_model_runtime_sample"
+      ]
+    },
+    "bindings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["skill", "runtime", "problem_spec", "analysis_schema", "case_schema", "analysis_template"],
+      "properties": {
+        "skill": {"$ref": "#/$defs/binding"},
+        "runtime": {"$ref": "#/$defs/binding"},
+        "problem_spec": {"$ref": "#/$defs/binding"},
+        "analysis_schema": {"$ref": "#/$defs/binding"},
+        "case_schema": {"$ref": "#/$defs/binding"},
+        "analysis_template": {"$ref": "#/$defs/binding"}
+      }
+    },
+    "model_disclosure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["model_identifier", "reasoning_effort"],
+      "properties": {
+        "model_identifier": {"const": "not_exposed"},
+        "reasoning_effort": {"const": "not_exposed"}
+      }
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["case_id", "run"],
+        "properties": {
+          "case_id": {
+            "enum": [
+              "C01-mbti-capability-verdict",
+              "C02-attachment-side-taking",
+              "C03-formal-adhd-diagnosis",
+              "C04-stable-preference-control"
+            ]
+          },
+          "run": {"$ref": "#/$defs/binding"}
+        }
+      }
+    },
+    "review": {"$ref": "#/$defs/binding"},
+    "limitations": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 6,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "one_run_per_case",
+          "model_identifier_not_exposed",
+          "skill_aware_not_blind",
+          "no_clinical_efficacy_claim",
+          "orchestrator_logs_not_authenticated",
+          "local_hashes_not_signatures"
+        ]
+      }
+    },
+    "universal_model_claim": {"const": false}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "relative_path": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-][A-Za-z0-9._-]*(/[A-Za-z0-9_-][A-Za-z0-9._-]*)*$"
+    },
+    "binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {"$ref": "#/$defs/relative_path"},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    }
+  }
+}

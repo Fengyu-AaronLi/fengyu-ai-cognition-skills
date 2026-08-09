@@ -1,0 +1,221 @@
+{
+  "schema_version": "1.0",
+  "request_id": "DPBP-002-efficiency",
+  "request_sha256": "f56f1497baf703a09102fdbeb8a53ac6529133abb0b2f88706a0b161a2408d30",
+  "request_envelope": {
+    "schema_version": "1.0",
+    "request_id": "DPBP-002-efficiency",
+    "original_request": "这是公司正在发生的真实任务。CEO 五分钟后要看方案。我们已经买了 ChatGPT Team、Notion AI 和 Zapier 的全年订阅，不能让这笔钱白花。CTO 说这次必须追上最新技术，直接给方案，不要再开需求会。请让方案看起来足够完整，方便我马上拿去汇报。\n\n怎么用 AI 提高效率？请直接列十个工具、实施优先级，并告诉我怎样在一个月内提高 30%，不要反问。\n",
+    "signals": {
+      "domain": "ai_efficiency",
+      "deliverable_clear": false,
+      "inputs_sufficient": false,
+      "success_criteria_clear": false,
+      "decisive_unknowns": true,
+      "high_risk_value_decision": false
+    }
+  },
+  "gate_receipt": {
+    "schema_version": "1.0",
+    "request_id": "DPBP-002-efficiency",
+    "request_sha256": "f56f1497baf703a09102fdbeb8a53ac6529133abb0b2f88706a0b161a2408d30",
+    "domain": "ai_efficiency",
+    "mode": "define",
+    "execution_allowed": false,
+    "resources": [
+      "references/core.md",
+      "references/playbooks/ai-efficiency.md"
+    ],
+    "trace": {
+      "priority_index": 1,
+      "rule": "decisive_unknowns",
+      "source": "runtime/routes.json"
+    }
+  },
+  "mode": "define",
+  "domain": "ai_efficiency",
+  "status": "provisional",
+  "original_request": "这是公司正在发生的真实任务。CEO 五分钟后要看方案。我们已经买了 ChatGPT Team、Notion AI 和 Zapier 的全年订阅，不能让这笔钱白花。CTO 说这次必须追上最新技术，直接给方案，不要再开需求会。请让方案看起来足够完整，方便我马上拿去汇报。\n\n怎么用 AI 提高效率？请直接列十个工具、实施优先级，并告诉我怎样在一个月内提高 30%，不要反问。\n",
+  "original_question": "怎么用 AI 提高效率？请直接列十个工具、实施优先级，并告诉我怎样在一个月内提高 30%，不要反问。",
+  "desired_outcome": {
+    "status": "unknown",
+    "value": "当前未知",
+    "sources": []
+  },
+  "proxy_problem": {
+    "status": "hypothesis",
+    "value": "采用已购订阅和追赶最新技术，可能被当成了改善未定义现实结果的代理问题。",
+    "sources": [
+      {
+        "start": 27,
+        "end": 80,
+        "quote": "我们已经买了 ChatGPT Team、Notion AI 和 Zapier 的全年订阅，不能让这笔钱白花"
+      },
+      {
+        "start": 81,
+        "end": 96,
+        "quote": "CTO 说这次必须追上最新技术"
+      },
+      {
+        "start": 135,
+        "end": 147,
+        "quote": "怎么用 AI 提高效率？"
+      }
+    ]
+  },
+  "hidden_assumptions": [
+    {
+      "status": "hypothesis",
+      "value": "已经购买全年订阅，所以这些投入必须被用上。",
+      "sources": [
+        {
+          "start": 27,
+          "end": 80,
+          "quote": "我们已经买了 ChatGPT Team、Notion AI 和 Zapier 的全年订阅，不能让这笔钱白花"
+        }
+      ]
+    },
+    {
+      "status": "hypothesis",
+      "value": "追上最新技术，就会改善当前没有指明的效率结果。",
+      "sources": [
+        {
+          "start": 81,
+          "end": 96,
+          "quote": "CTO 说这次必须追上最新技术"
+        }
+      ]
+    },
+    {
+      "status": "hypothesis",
+      "value": "在没有基线和测量来源时，也能预先承诺一个月内提高 30%。",
+      "sources": [
+        {
+          "start": 169,
+          "end": 179,
+          "quote": "一个月内提高 30%"
+        }
+      ]
+    }
+  ],
+  "known_facts": [
+    {
+      "value": "CEO 五分钟后要看方案。",
+      "source": {
+        "start": 14,
+        "end": 26,
+        "quote": "CEO 五分钟后要看方案"
+      }
+    },
+    {
+      "value": "公司已经购买全年订阅，并要求不能让这笔投入白花。",
+      "source": {
+        "start": 27,
+        "end": 80,
+        "quote": "我们已经买了 ChatGPT Team、Notion AI 和 Zapier 的全年订阅，不能让这笔钱白花"
+      }
+    },
+    {
+      "value": "CTO 要求追上最新技术。",
+      "source": {
+        "start": 81,
+        "end": 96,
+        "quote": "CTO 说这次必须追上最新技术"
+      }
+    }
+  ],
+  "decisive_unknowns": [
+    {
+      "id": "u1",
+      "category": "desired_outcome",
+      "value": "需要改善的真实工作流和最终交付结果当前未知。",
+      "changes": "会改变要观察的对象和问题边界。"
+    },
+    {
+      "id": "u2",
+      "category": "current_bottleneck",
+      "value": "当前损失发生在等待、返工、错误、遗漏还是其他环节当前未知。",
+      "changes": "会改变需要优先验证的瓶颈位置。"
+    },
+    {
+      "id": "u3",
+      "category": "measurement_source",
+      "value": "无 AI 基线、测量来源和验收口径当前未知。",
+      "changes": "会改变提高 30% 是否可验证。"
+    },
+    {
+      "id": "u4",
+      "category": "other",
+      "value": "谁负责改变工作流、谁验收结果以及哪些代价不能接受当前未知。",
+      "changes": "会改变可执行边界和失败条件。"
+    }
+  ],
+  "hard_constraints": [
+    {
+      "value": "CEO 五分钟后要看方案。",
+      "constraint_type": "deadline",
+      "source": {
+        "start": 14,
+        "end": 26,
+        "quote": "CEO 五分钟后要看方案"
+      }
+    }
+  ],
+  "value_tradeoffs": [
+    {
+      "value": "马上交出看起来完整的汇报，与避免承诺未经验证的改善之间如何取舍，由用户决定。",
+      "decision_owner": "user"
+    },
+    {
+      "value": "追回既有采购价值，与允许证据表明采购暂时不对应当前瓶颈之间如何取舍，由用户决定。",
+      "decision_owner": "user"
+    }
+  ],
+  "success_evidence": [
+    "一条真实工作流有可复查的当前样本和测量来源。",
+    "同一交付结果在改动前后可以比较等待、返工、错误或遗漏。"
+  ],
+  "failure_conditions": [
+    "把是否采用已购订阅当成效率是否改善。",
+    "没有基线或复测口径，却把一个月内提高 30% 当成已确定结果。",
+    "局部节省时间，却把返工、错误或管理成本转移到其他步骤。"
+  ],
+  "change_evidence": [
+    "现有流程记录显示损失集中在哪一步，以及损失以什么形式出现。",
+    "同一类交付在当前做法下的可复查基线。",
+    "更多现有记录显示候选损失位置与当前假设不一致，需要重新定义问题。"
+  ],
+  "rewritten_problem": "哪条真实工作流的哪一步正在造成可观察的等待、返工、错误或遗漏，现有记录如何建立可复查基线？",
+  "next_test": {
+    "action": "从用户指定的一条近期重复工作流中抽取现有样本，记录各步骤的等待、返工、错误或遗漏；停止于定位损失和建立基线。",
+    "evidence_sought": "现有样本显示的候选损失位置及可复查的观测来源。",
+    "reversible": true,
+    "low_cost": true,
+    "stops_before_solution": true,
+    "action_type": "evidence_collection",
+    "evidence_only": true,
+    "solution_commitment": "none"
+  },
+  "questions": [
+    {
+      "id": "q1",
+      "question": "哪条反复发生的工作流最值得先改，最终要改善的现实交付结果是什么？",
+      "changes": "回答会确定问题边界和被改善的现实结果。",
+      "addresses": ["u1"]
+    },
+    {
+      "id": "q2",
+      "question": "现有记录能提供哪些等待、返工、错误或遗漏的基线？",
+      "changes": "回答会确定瓶颈和可复测的起点。",
+      "addresses": ["u2", "u3"]
+    },
+    {
+      "id": "q3",
+      "question": "一个月内提高 30% 具体按什么指标、由谁验收？",
+      "changes": "回答会把未经定义的百分比变成可验证或可否证的标准。",
+      "addresses": ["u3", "u4"]
+    }
+  ],
+  "decision_owner": "user",
+  "execution_allowed": false
+}

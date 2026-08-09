@@ -1,0 +1,127 @@
+{
+  "schema_version": "2.0",
+  "package_version": "2.0.0-alpha.7",
+  "run_type": "deterministic_runtime_demo",
+  "model": null,
+  "model_note": "No model call. Semantic analysis is a checked-in fixture; runtime routing, validation, state and rendering are replayed.",
+  "clock": "2026-08-06T10:00:00Z",
+  "clocks": {
+    "init": "2026-08-06T10:00:00Z",
+    "plan": "2026-08-06T10:01:00Z",
+    "start": "2026-08-06T10:02:00Z",
+    "record": "2026-08-07T10:02:00Z",
+    "record_retry": "2026-08-07T10:03:00Z",
+    "review": "2026-08-20T10:03:00Z"
+  },
+  "skill_sha256": "88c6e9e76027b83a7bf1b2f19cecc4ab66e2472555975aa6eb9ef3e00964ab0d",
+  "runtime_sha256": "5a0bd536121debb1448aed8d1b7cc367e6c446d8d21f58a2c43242dd37ccb184",
+  "input_sha256": "7793b802a7f0d86a342e0d447d64bf6a9db546f16c1dee37eb077518c372f3b4",
+  "analysis_sha256": "7f6eb2db95619a51814728b6806116838c1eac4349a67f4e2798f7d12bc268b4",
+  "idempotency": {
+    "operation_id": "demo-record-001",
+    "retry_returned_original": true,
+    "retry_revision": 3
+  },
+  "commands": [
+    [
+      "init",
+      "--text-file",
+      "examples/real-run/demo-input.txt",
+      "--case-dir",
+      "<demo-run>",
+      "--case-id",
+      "demo-ai-label",
+      "--clock",
+      "2026-08-06T10:00:00Z"
+    ],
+    [
+      "plan",
+      "--case-dir",
+      "<demo-run>",
+      "--analysis",
+      "examples/real-run/analysis.json",
+      "--clock",
+      "2026-08-06T10:01:00Z"
+    ],
+    [
+      "start",
+      "--case-dir",
+      "<demo-run>",
+      "--confirmation-file",
+      "<demo-run>/user-confirmation.txt",
+      "--clock",
+      "2026-08-06T10:02:00Z"
+    ],
+    [
+      "record",
+      "--case-dir",
+      "<demo-run>",
+      "--kind",
+      "experiment_result",
+      "--observation-file",
+      "<demo-run>/observation.json",
+      "--operation-id",
+      "demo-record-001",
+      "--clock",
+      "2026-08-07T10:02:00Z"
+    ],
+    [
+      "record",
+      "--case-dir",
+      "<demo-run>",
+      "--kind",
+      "experiment_result",
+      "--observation-file",
+      "<demo-run>/observation.json",
+      "--operation-id",
+      "demo-record-001",
+      "--clock",
+      "2026-08-07T10:03:00Z"
+    ],
+    [
+      "review",
+      "--case-dir",
+      "<demo-run>",
+      "--classification",
+      "weakens",
+      "--rationale-file",
+      "<demo-run>/rationale.txt",
+      "--clock",
+      "2026-08-20T10:03:00Z"
+    ],
+    [
+      "validate",
+      "<demo-run>/case.json"
+    ],
+    [
+      "replay",
+      "--case-dir",
+      "<demo-run>"
+    ],
+    [
+      "render",
+      "<demo-run>/case.json",
+      "--out",
+      "<demo-run>/report.md"
+    ]
+  ],
+  "validation": {
+    "valid": true,
+    "errors": []
+  },
+  "replay": {
+    "valid": true,
+    "event_count": 5,
+    "latest_revision": 4,
+    "latest_status": "reviewed",
+    "errors": []
+  },
+  "final_status": "reviewed",
+  "artifacts": {
+    ".case.lock": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "case.json": "8afb0dc33aff796d525ca60add3195595df25aa76d49a23f8a31ee136b87e9c2",
+    "events.jsonl": "9accde2746b6e8caec1ca41bc00670e540c6c8dca048faa87d1de9f410510cc9",
+    "events.head.json": "5e4c61d2cf4f7b03969ad932339bac90a9a990a93e3b09d79c02eb4f0229eed4",
+    "report.md": "60c1b9cd09e17a97fffc17cc4b6404ecfb2a07ab9127aaadfa5c92fb4edafa62"
+  }
+}

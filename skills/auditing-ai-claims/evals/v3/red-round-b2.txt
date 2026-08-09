@@ -1,0 +1,15 @@
+Round B2 baseline, 2026-08-06 Australia/Sydney
+
+Command:
+PYTHONPATH=skills/auditing-ai-claims/tests python3 -m unittest skills/auditing-ai-claims/tests/test_workflow_loop.py -v
+
+Observed result before implementation:
+Ran 6 tests in 1.431s
+FAILED (failures=1, errors=2)
+
+New failures after the initial `next` implementation:
+1. A second `scope` command could overwrite the frozen candidate inventory.
+2. `status` did not expose the same actionable workflow state as `next`.
+3. A runtime-rejected source had no structured recovery route and no `retire-source` lifecycle action.
+
+The original four `next` tests passed in this run. This file records only the newly exposed red state.

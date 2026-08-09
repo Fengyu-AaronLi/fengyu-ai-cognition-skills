@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "receipt_id": "v46-v13-audit-run-binding",
+  "test_path": "tests/test_v13_architecture_integrity_regressions.py",
+  "from_sha256": "6bf238ef14b10c534c97b035b46b6862fbdc596efe7a3951e10b5722d4da9f0d",
+  "to_sha256": "0ddb569bcd018b303250d9e70bf5f5d417ea8f91cd5e546203c751b67de6a721",
+  "reason": "Migrate the structured audit fixture to receipt schema 1.1 and preserve the completed-run replay boundary in CLI coverage.",
+  "replacement_tests": [
+    {
+      "path": "tests/test_v46_audit_completed_run_binding.py",
+      "sha256": "c18323aba356d2569f4fea21bf40ded25712809c7786aab8f84e9f4d11f85ca8"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "evals/raw/v46-red/audit-completed-run-binding.md",
+      "sha256": "e08c903d39efaae0e6c9933d00cb47d8f1966e8e1cb829bdb7ef0b8525775703"
+    }
+  ],
+  "reviewed_by": "codex-v46-contract-review",
+  "reviewed_at": "2026-08-06T14:00:00+10:00"
+}

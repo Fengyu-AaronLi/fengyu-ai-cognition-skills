@@ -1,0 +1,13 @@
+Command:
+python3 -m unittest discover -s tests -p 'test_concurrency_v3.py' -v
+
+Observed before implementation:
+
+test_concurrent_writers_serialize_without_lost_claims ... FAIL
+
+Failure:
+
+`hasattr(runtime, "workspace_lock")` was false. The runtime had no shared transaction boundary for concurrent CLI writers, so two successful read-modify-write commands could silently overwrite one another.
+
+Ran 1 test in 0.012s
+FAILED (failures=1)

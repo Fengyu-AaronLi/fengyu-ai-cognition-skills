@@ -1,0 +1,12 @@
+Round B baseline, 2026-08-06 Australia/Sydney
+
+Command:
+PYTHONPATH=skills/auditing-ai-claims/tests python3 -m unittest skills/auditing-ai-claims/tests/test_workflow_loop.py -v
+
+Observed result before implementation:
+Ran 4 tests in 0.732s
+FAILED (failures=3, errors=1)
+
+All four cases failed because the runtime had no `next` workflow-navigation command. The CLI returned exit code 2 and listed `next` as an invalid choice. Consequently it could not expose the blocking stage, guide honest-unknown completion, distinguish a current report from a stale report, or prove that navigation does not build shell commands from untrusted text.
+
+This file records the red state. It is not evidence that the later implementation passes.

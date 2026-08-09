@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fengyu.local/schemas/breaking-identity-labels/case.schema.json",
+  "title": "Identity label case",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "case_id",
+    "revision",
+    "status",
+    "language",
+    "created_at",
+    "updated_at",
+    "evidence",
+    "route",
+    "risk_flags",
+    "analysis",
+    "review"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "enum": ["2.0"]},
+    "case_id": {"type": "string", "minLength": 1},
+    "revision": {"type": "integer", "minimum": 0},
+    "status": {
+      "type": "string",
+      "enum": ["drafted", "planned", "observing", "reviewed", "no_intervention", "safety_redirected"]
+    },
+    "language": {"type": "string", "enum": ["zh-CN", "en", "mixed"]},
+    "created_at": {"type": "string", "minLength": 1},
+    "updated_at": {"type": "string", "minLength": 1},
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "kind", "text", "recorded_at"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^E[0-9]{3}$"},
+          "kind": {
+            "type": "string",
+            "enum": ["user_input", "user_followup", "observation", "experiment_result"]
+          },
+          "text": {"type": "string", "minLength": 1},
+          "recorded_at": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "route": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "trigger", "reason_codes"],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["deconstruct", "preference_acknowledgement", "clinical_report_only", "safety_support", "support_escalation", "needs_information"]
+        },
+        "trigger": {"type": "boolean"},
+        "reason_codes": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+      }
+    },
+    "risk_flags": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["clinical", "safety", "medical_change_request", "high_cost_decision", "functional_impairment"],
+      "properties": {
+        "clinical": {"type": "boolean"},
+        "safety": {"type": "boolean"},
+        "medical_change_request": {"type": "boolean"},
+        "high_cost_decision": {"type": "boolean"},
+        "functional_impairment": {"type": "boolean"}
+      }
+    },
+    "analysis": {"type": "object"},
+    "review": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["classification", "target_claim", "rationale", "evidence_ids"],
+      "properties": {
+        "classification": {"type": "string", "enum": ["supports", "weakens", "inconclusive", "invalid"]},
+        "target_claim": {"type": "string", "minLength": 1},
+        "rationale": {"type": "string", "minLength": 1},
+        "evidence_ids": {"type": "array", "minItems": 1, "items": {"type": "string"}, "uniqueItems": true}
+      }
+    }
+  }
+}

@@ -1,0 +1,837 @@
+#!/usr/bin/env python3
+"""Auditable failure-driven evolution loop for the DPBP Skill.
+
+This runtime never edits the Skill. It records evidence, enforces independent
+roles, protects sealed holdouts, and decides whether a candidate may be
+promoted into the regression suite.
+"""
+
+from __future__ import annotations
+
+import copy
+import fcntl
+import hashlib
+import json
+import math
+import os
+import re
+import sys
+import tempfile
+from pathlib import Path
+from typing import Any
+
+
+SCHEMA_VERSION = "1.0"
+ZERO_HASH = "0" * 64
+HEX64 = re.compile(r"^[a-f0-9]{64}$")
+COMMANDS = {"init", "record", "close-cycle", "promote", "status"}
+RESERVED_EVENT_PREFIXES = ("cycle:", "evolution:")
+
+
+class LedgerEventConflict(RuntimeError):
+    """Raised before an append would duplicate a global ledger event ID."""
+
+
+def canonical_json(value: Any) -> str:
+    return json.dumps(
+        value,
+        allow_nan=False,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+
+
+def reject_json_constant(value: str) -> None:
+    raise ValueError(f"non-standard JSON constant: {value}")
+
+
+def parse_json(value: str) -> Any:
+    return json.loads(value, parse_constant=reject_json_constant)
+
+
+def is_nonempty_string(value: Any) -> bool:
+    return isinstance(value, str) and bool(value.strip())
+
+
+def is_nonempty_string_list(value: Any) -> bool:
+    return (
+        isinstance(value, list)
+        and bool(value)
+        and all(is_nonempty_string(item) for item in value)
+    )
+
+
+def is_finite_number(value: Any) -> bool:
+    return (
+        isinstance(value, (int, float))
+        and not isinstance(value, bool)
+        and (not isinstance(value, float) or math.isfinite(value))
+    )
+
+
+def external_event_id_error(value: Any) -> str | None:
+    if not is_nonempty_string(value):
+        return "EVENT_ID_INVALID"
+    if value.startswith(RESERVED_EVENT_PREFIXES):
+        return "EVENT_ID_RESERVED"
+    return None
+
+
+def paths_alias(first: Path, second: Path) -> tuple[bool | None, str | None]:
+    try:
+        if first.resolve(strict=False) == second.resolve(strict=False):
+            return True, None
+        if first.exists() and second.exists() and os.path.samefile(first, second):
+            return True, None
+    except (OSError, RuntimeError):
+        return None, "STATE_LEDGER_PATH_UNRESOLVED"
+    return False, None
+
+
+def sha256_bytes(value: bytes) -> str:
+    return hashlib.sha256(value).hexdigest()
+
+
+def sha256_text(value: str) -> str:
+    return sha256_bytes(value.encode("utf-8"))
+
+
+def derived_state_sha256(state: dict[str, Any]) -> str:
+    """Bind derived state to a ledger checkpoint without hashing its head."""
+
+    projection = copy.deepcopy(state)
+    projection.pop("ledger_head", None)
+    return sha256_text(canonical_json(projection))
+
+
+def emit(value: Any, code: int = 0) -> int:
+    sys.stdout.write(canonical_json(value) + "\n")
+    return code
+
+
+def error(code: str, message: str, **details: Any) -> dict[str, Any]:
+    value: dict[str, Any] = {"error": {"code": code, "message": message}, "ok": False}
+    value["error"].update(details)
+    return value
+
+
+def read_json_stdin() -> tuple[dict[str, Any] | None, tuple[dict[str, Any], int] | None]:
+    try:
+        value = parse_json(sys.stdin.read())
+    except (ValueError, UnicodeDecodeError):
+        return None, (error("INVALID_JSON", "stdin 必须是 JSON 对象。"), 2)
+    if not isinstance(value, dict):
+        return None, (error("INVALID_INPUT", "stdin 必须是 JSON 对象。"), 2)
+    return value, None
+
+
+def atomic_write(path: Path, value: dict[str, Any]) -> None:
+    if not path.parent.is_dir():
+        raise FileNotFoundError(str(path.parent))
+    descriptor, temporary_name = tempfile.mkstemp(
+        prefix=f".{path.name}.", suffix=".tmp", dir=path.parent
+    )
+    temporary = Path(temporary_name)
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
+            handle.write(canonical_json(value) + "\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary, path)
+    finally:
+        if temporary.exists():
+            temporary.unlink()
+
+
+def load_object(path: Path, code: str) -> tuple[dict[str, Any] | None, tuple[dict[str, Any], int] | None]:
+    try:
+        value = parse_json(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError, UnicodeDecodeError):
+        return None, (error(code, f"无法读取 JSON：{path}。"), 4)
+    if not isinstance(value, dict):
+        return None, (error(code, f"JSON 根节点必须是对象：{path}。"), 4)
+    return value, None
+
+
+def validate_manifest(path: Path) -> tuple[dict[str, Any] | None, tuple[dict[str, Any], int] | None]:
+    manifest, failed = load_object(path, "MANIFEST_INVALID")
+    if failed is not None:
+        return None, failed
+    assert manifest is not None
+    required = {"schema_version", "suite_id", "suite_version", "partitions", "policy"}
+    if set(manifest) != required or manifest.get("schema_version") != SCHEMA_VERSION:
+        return None, (error("MANIFEST_INVALID", "suite manifest 顶层契约不匹配。"), 5)
+    if not all(isinstance(manifest.get(key), str) and manifest[key].strip() for key in ("suite_id", "suite_version")):
+        return None, (error("MANIFEST_INVALID", "suite_id 与 suite_version 必须非空。"), 5)
+    partitions = manifest.get("partitions")
+    if not isinstance(partitions, dict) or set(partitions) != {"regression", "sealed_holdout"}:
+        return None, (error("MANIFEST_INVALID", "partitions 必须包含 regression 与 sealed_holdout。"), 5)
+
+    seen: set[str] = set()
+    for partition, default_file_field, default_hash_field in (
+        ("regression", "input_file", "input_sha256"),
+        ("sealed_holdout", "sealed_file", "sealed_sha256"),
+    ):
+        cases = partitions.get(partition)
+        if not isinstance(cases, list):
+            return None, (error("MANIFEST_INVALID", f"{partition} 必须是数组。"), 5)
+        for case in cases:
+            if not isinstance(case, dict):
+                return None, (error("MANIFEST_INVALID", f"{partition} case 契约不匹配。"), 5)
+            runner_shape = partition == "regression" and set(case) == {
+                "case_id", "envelope_file", "envelope_sha256", "spec_file", "spec_sha256", "expected"
+            }
+            simple_shape = set(case) == {"case_id", default_file_field, default_hash_field}
+            if not runner_shape and not simple_shape:
+                return None, (error("MANIFEST_INVALID", f"{partition} case 契约不匹配。"), 5)
+            file_field = "envelope_file" if runner_shape else default_file_field
+            hash_field = "envelope_sha256" if runner_shape else default_hash_field
+            case_id = case.get("case_id")
+            relative = case.get(file_field)
+            expected_hash = case.get(hash_field)
+            if not isinstance(case_id, str) or not case_id.strip() or case_id in seen:
+                return None, (error("MANIFEST_INVALID", "case_id 必须非空且全 suite 唯一。"), 5)
+            if not isinstance(relative, str) or Path(relative).is_absolute() or ".." in Path(relative).parts:
+                return None, (error("MANIFEST_INVALID", "case 文件必须是 manifest 下的安全相对路径。"), 5)
+            target = path.parent / relative
+            if not target.is_file():
+                target = path.parent.parent / relative
+            try:
+                actual_hash = sha256_bytes(target.read_bytes())
+            except OSError:
+                return None, (error("CASE_UNREADABLE", f"case 文件无法读取：{case_id}。"), 4)
+            if not isinstance(expected_hash, str) or expected_hash != actual_hash:
+                return None, (error("CASE_HASH_MISMATCH", f"case 哈希不匹配：{case_id}。"), 5)
+            if runner_shape and case.get("spec_file") is not None:
+                spec_relative = case.get("spec_file")
+                if not isinstance(spec_relative, str) or Path(spec_relative).is_absolute() or ".." in Path(spec_relative).parts:
+                    return None, (error("MANIFEST_INVALID", f"spec 路径无效：{case_id}。"), 5)
+                try:
+                    spec_target = path.parent / spec_relative
+                    if not spec_target.is_file():
+                        spec_target = path.parent.parent / spec_relative
+                    spec_hash = sha256_bytes(spec_target.read_bytes())
+                except OSError:
+                    return None, (error("CASE_UNREADABLE", f"spec 文件无法读取：{case_id}。"), 4)
+                if case.get("spec_sha256") != spec_hash:
+                    return None, (error("CASE_HASH_MISMATCH", f"spec 哈希不匹配：{case_id}。"), 5)
+            seen.add(case_id)
+
+    policy = manifest.get("policy")
+    if not isinstance(policy, dict) or set(policy) != {
+        "max_iterations", "saturation_window", "minimum_improvement", "required_roles"
+    }:
+        return None, (error("MANIFEST_INVALID", "policy 契约不匹配。"), 5)
+    if (
+        not isinstance(policy.get("max_iterations"), int)
+        or isinstance(policy.get("max_iterations"), bool)
+        or policy["max_iterations"] < 1
+        or not isinstance(policy.get("saturation_window"), int)
+        or isinstance(policy.get("saturation_window"), bool)
+        or policy["saturation_window"] < 1
+        or not is_finite_number(policy.get("minimum_improvement"))
+        or policy["minimum_improvement"] < 0
+        or policy.get("required_roles") != ["author", "reproducer", "reviewer"]
+    ):
+        return None, (error("MANIFEST_INVALID", "policy 值无效。"), 5)
+    return manifest, None
+
+
+def manifest_case_input_hashes(manifest: dict[str, Any]) -> dict[str, dict[str, str]]:
+    regression = {
+        item["case_id"]: (
+            item["envelope_sha256"]
+            if "envelope_sha256" in item
+            else item["input_sha256"]
+        )
+        for item in manifest["partitions"]["regression"]
+    }
+    sealed_holdout = {
+        item["case_id"]: item["sealed_sha256"]
+        for item in manifest["partitions"]["sealed_holdout"]
+    }
+    return {"regression": regression, "sealed_holdout": sealed_holdout}
+
+
+def load_ledger(path: Path) -> tuple[list[dict[str, Any]] | None, tuple[dict[str, Any], int] | None]:
+    if not path.is_file():
+        return None, (error("LEDGER_NOT_FOUND", "evolution ledger 不存在。"), 4)
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+        entries = [parse_json(line) for line in lines]
+    except (OSError, ValueError, UnicodeDecodeError):
+        return None, (error("LEDGER_INVALID", "evolution ledger 无法读取。"), 4)
+    previous = ZERO_HASH
+    event_ids: set[str] = set()
+    for sequence, entry in enumerate(entries):
+        if not isinstance(entry, dict) or entry.get("sequence") != sequence or entry.get("previous_hash") != previous:
+            return None, (error("LEDGER_CHAIN_INVALID", "ledger 序号或 previous_hash 断裂。"), 5)
+        event_hash = entry.get("event_hash")
+        body = {key: value for key, value in entry.items() if key != "event_hash"}
+        if not isinstance(event_hash, str) or event_hash != sha256_text(canonical_json(body)):
+            return None, (error("LEDGER_CHAIN_INVALID", "ledger event_hash 校验失败。"), 5)
+        if not isinstance(entry.get("state_sha256"), str) or HEX64.fullmatch(entry["state_sha256"]) is None:
+            return None, (error("LEDGER_CHAIN_INVALID", "ledger state_sha256 无效。"), 5)
+        event_id = entry.get("event_id")
+        if not isinstance(event_id, str) or event_id in event_ids:
+            return None, (error("LEDGER_CHAIN_INVALID", "ledger event_id 重复或无效。"), 5)
+        event_ids.add(event_id)
+        previous = event_hash
+    return entries, None
+
+
+def append_event(
+    path: Path,
+    entries: list[dict[str, Any]],
+    event: dict[str, Any],
+    state: dict[str, Any],
+) -> dict[str, Any]:
+    if not is_nonempty_string(event.get("event_id")):
+        raise LedgerEventConflict("ledger event_id must be a nonempty string")
+    if existing_event(entries, event["event_id"]) is not None:
+        raise LedgerEventConflict("ledger event_id already exists")
+    body = {
+        "event_id": event["event_id"],
+        "event_type": event["event_type"],
+        "payload": copy.deepcopy(event["payload"]),
+        "payload_digest": sha256_text(canonical_json(event["payload"])),
+        "previous_hash": entries[-1]["event_hash"] if entries else ZERO_HASH,
+        "sequence": len(entries),
+        "state_sha256": derived_state_sha256(state),
+    }
+    entry = {**body, "event_hash": sha256_text(canonical_json(body))}
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(canonical_json(entry) + "\n")
+        handle.flush()
+        os.fsync(handle.fileno())
+    entries.append(entry)
+    return entry
+
+
+def existing_event(entries: list[dict[str, Any]], event_id: str) -> dict[str, Any] | None:
+    return next((entry for entry in entries if entry.get("event_id") == event_id), None)
+
+
+def validate_receipt(
+    receipt: Any,
+    state: dict[str, Any],
+    *,
+    case_id: str | None = None,
+    partition: str | None = None,
+    expected_input_sha256: str | None = None,
+) -> str | None:
+    required = {
+        "schema_version", "receipt_id", "suite_id", "suite_version", "suite_manifest_sha256",
+        "case_id", "partition", "variant", "outcome", "actor_id", "candidate_sha256",
+        "failure_codes", "raw_input_sha256", "raw_output_sha256", "environment",
+    }
+    if not isinstance(receipt, dict) or set(receipt) != required:
+        return "RECEIPT_INVALID"
+    if not is_nonempty_string(receipt.get("receipt_id")) or not is_nonempty_string(receipt.get("actor_id")):
+        return "RECEIPT_INVALID"
+    suite = state["suite"]
+    if (
+        receipt.get("schema_version") != SCHEMA_VERSION
+        or receipt.get("suite_id") != suite["suite_id"]
+        or receipt.get("suite_version") != suite["suite_version"]
+        or receipt.get("suite_manifest_sha256") != suite["manifest_sha256"]
+        or (case_id is not None and receipt.get("case_id") != case_id)
+        or (partition is not None and receipt.get("partition") != partition)
+    ):
+        return "RECEIPT_BINDING_MISMATCH"
+    if receipt.get("outcome") not in {"pass", "fail"} or receipt.get("variant") not in {"base", "candidate"}:
+        return "RECEIPT_INVALID"
+    for field in ("candidate_sha256", "raw_input_sha256", "raw_output_sha256"):
+        if not isinstance(receipt.get(field), str) or HEX64.fullmatch(receipt[field]) is None:
+            return "RECEIPT_INVALID"
+    if expected_input_sha256 is not None and receipt["raw_input_sha256"] != expected_input_sha256:
+        return "RECEIPT_INPUT_MISMATCH"
+    if not isinstance(receipt.get("environment"), dict) or not receipt["environment"]:
+        return "RECEIPT_INVALID"
+    failure_codes = receipt.get("failure_codes")
+    if receipt["outcome"] == "pass" and failure_codes != []:
+        return "RECEIPT_INVALID"
+    if receipt["outcome"] == "fail" and not is_nonempty_string_list(failure_codes):
+        return "RECEIPT_INVALID"
+    return None
+
+
+def public_state(state: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "assurance": copy.deepcopy(state["assurance"]),
+        "budget": copy.deepcopy(state["budget"]),
+        "cycles": copy.deepcopy(state["cycles"]),
+        "holdouts": copy.deepcopy(state["holdouts"]),
+        "phase": state["phase"],
+        "stop": copy.deepcopy(state["stop"]),
+        "suite": copy.deepcopy(state["suite"]),
+    }
+
+
+def initialize(manifest_path: Path, state_path: Path, ledger_path: Path) -> tuple[dict[str, Any], int]:
+    alias, path_error = paths_alias(state_path, ledger_path)
+    if path_error is not None:
+        return error(path_error, "无法确认 state 与 ledger 是两个不同目标。"), 5
+    if alias:
+        return error("STATE_LEDGER_PATH_ALIAS", "state 与 ledger 不得指向同一目标。"), 5
+    manifest, failed = validate_manifest(manifest_path)
+    if failed is not None:
+        return failed
+    assert manifest is not None
+    manifest_hash = sha256_bytes(manifest_path.read_bytes())
+    suite = {
+        "holdout_case_ids": [item["case_id"] for item in manifest["partitions"]["sealed_holdout"]],
+        "manifest_sha256": manifest_hash,
+        "regression_case_ids": [item["case_id"] for item in manifest["partitions"]["regression"]],
+        "suite_id": manifest["suite_id"],
+        "suite_version": manifest["suite_version"],
+    }
+    if state_path.exists() or ledger_path.exists():
+        if not state_path.is_file() or not ledger_path.is_file():
+            return error("EVOLUTION_CONFLICT", "state 与 ledger 必须同时存在。"), 5
+        state, _, workspace_failed = load_workspace(state_path, ledger_path)
+        if workspace_failed is not None:
+            return workspace_failed
+        if state is not None and state.get("suite") == suite:
+            return public_state(state), 0
+        return error("EVOLUTION_CONFLICT", "现有 evolution state 绑定了不同 suite。"), 5
+    if not state_path.parent.is_dir() or not ledger_path.parent.is_dir():
+        return error("PARENT_NOT_FOUND", "state 或 ledger 父目录不存在。"), 4
+
+    holdouts = [
+        {"case_id": item["case_id"], "sealed_sha256": item["sealed_sha256"], "status": "sealed"}
+        for item in manifest["partitions"]["sealed_holdout"]
+    ]
+    state = {
+        "assurance": {
+            "actor_identity": "self_attested",
+            "run_artifacts": "hash_declared",
+            "trusted_runner_required_for_external_claims": True,
+        },
+        "budget": {"iterations_used": 0, "max_iterations": manifest["policy"]["max_iterations"]},
+        "case_input_sha256": manifest_case_input_hashes(manifest),
+        "cycles": {},
+        "failures": {},
+        "holdouts": holdouts,
+        "improvements": [],
+        "ledger_head": ZERO_HASH,
+        "phase": "collecting_failures",
+        "policy": copy.deepcopy(manifest["policy"]),
+        "promotion_results": {},
+        "schema_version": SCHEMA_VERSION,
+        "stop": {"reason": None, "stopped": False},
+        "suite": suite,
+    }
+    ledger_path.write_text("", encoding="utf-8")
+    entries: list[dict[str, Any]] = []
+    initial_payload = {
+        "manifest_sha256": manifest_hash,
+        "suite_id": manifest["suite_id"],
+        "suite_version": manifest["suite_version"],
+    }
+    entry = append_event(
+        ledger_path,
+        entries,
+        {"event_id": "evolution:init", "event_type": "evolution_initialized", "payload": initial_payload},
+        state,
+    )
+    state["ledger_head"] = entry["event_hash"]
+    atomic_write(state_path, state)
+    return public_state(state), 0
+
+
+def load_workspace(state_path: Path, ledger_path: Path) -> tuple[dict[str, Any] | None, list[dict[str, Any]] | None, tuple[dict[str, Any], int] | None]:
+    state, failed = load_object(state_path, "STATE_INVALID")
+    if failed is not None:
+        return None, None, failed
+    entries, failed = load_ledger(ledger_path)
+    if failed is not None:
+        return None, None, failed
+    assert state is not None and entries is not None
+    actual_head = entries[-1]["event_hash"] if entries else ZERO_HASH
+    if state.get("ledger_head") != actual_head:
+        return None, None, (error("STATE_LEDGER_MISMATCH", "state 与 ledger head 不一致。"), 5)
+    checkpoint = entries[-1].get("state_sha256") if entries else None
+    if checkpoint != derived_state_sha256(state):
+        return None, None, (
+            error("STATE_DERIVATION_MISMATCH", "state 派生字段与 ledger checkpoint 不一致。"),
+            5,
+        )
+    return state, entries, None
+
+
+def record_event(state_path: Path, ledger_path: Path, payload: dict[str, Any]) -> tuple[dict[str, Any], int]:
+    state, entries, failed = load_workspace(state_path, ledger_path)
+    if failed is not None:
+        return failed
+    assert state is not None and entries is not None
+    required = {"event_id", "event_type", "actor", "case_id", "partition", "receipt"}
+    if payload.get("event_type") == "failure_observed":
+        required.add("failure_codes")
+        if payload.get("partition") == "candidate_failure":
+            required.add("regression_candidate")
+    if set(payload) != required:
+        return error("EVENT_INVALID", "record event 契约不匹配。"), 5
+    event_id_error = external_event_id_error(payload.get("event_id"))
+    if event_id_error is not None:
+        return error(event_id_error, "record event_id 无效或占用保留命名空间。"), 5
+    prior = existing_event(entries, payload["event_id"])
+    if prior is not None:
+        digest = sha256_text(canonical_json(payload))
+        if prior.get("payload_digest") == digest:
+            return {"deduplicated": True, "event_hash": prior["event_hash"]}, 0
+        return error("EVENT_ID_CONFLICT", "相同 event_id 对应了不同 payload。"), 5
+    if state["stop"]["stopped"]:
+        return error(
+            "EVOLUTION_STOPPED",
+            "演化 loop 已触发停止条件。",
+            stop_reason=state["stop"]["reason"],
+        ), 5
+
+    event_type = payload.get("event_type")
+    partition = payload.get("partition")
+    case_id = payload.get("case_id")
+    if event_type == "failure_observed":
+        regression_candidate: dict[str, Any] | None = None
+        expected_input_sha256: str
+        if partition == "regression":
+            if case_id not in state["suite"]["regression_case_ids"]:
+                return error("CASE_NOT_IN_PARTITION", "regression failure 必须绑定已登记 case。"), 5
+            expected_input_sha256 = state["case_input_sha256"]["regression"][case_id]
+        elif partition == "candidate_failure":
+            candidate = payload.get("regression_candidate")
+            if not isinstance(candidate, dict) or set(candidate) != {
+                "case_id", "input_sha256", "contract_sha256"
+            }:
+                return error("REGRESSION_CANDIDATE_INVALID", "新 failure 必须提供 hash-bound regression candidate。"), 5
+            if (
+                candidate.get("case_id") != case_id
+                or not isinstance(candidate.get("input_sha256"), str)
+                or HEX64.fullmatch(candidate["input_sha256"]) is None
+                or not isinstance(candidate.get("contract_sha256"), str)
+                or HEX64.fullmatch(candidate["contract_sha256"]) is None
+                or case_id in state["suite"]["regression_case_ids"]
+            ):
+                return error("REGRESSION_CANDIDATE_INVALID", "regression candidate 标识或哈希无效。"), 5
+            regression_candidate = copy.deepcopy(candidate)
+            expected_input_sha256 = candidate["input_sha256"]
+        else:
+            return error("CASE_NOT_IN_PARTITION", "failure partition 必须是 regression 或 candidate_failure。"), 5
+        receipt_error = validate_receipt(
+            payload.get("receipt"),
+            state,
+            case_id=case_id,
+            partition=partition,
+            expected_input_sha256=expected_input_sha256,
+        )
+        if receipt_error is not None or payload["receipt"].get("outcome") != "fail":
+            return error(receipt_error or "BASE_MUST_BE_RED", "failure receipt 无效或不是 RED。"), 5
+        if not is_nonempty_string_list(payload.get("failure_codes")):
+            return error("FAILURE_CODES_INVALID", "failure_codes 必须是非空字符串列表。"), 5
+        if payload["failure_codes"] != payload["receipt"]["failure_codes"]:
+            return error("FAILURE_CODES_MISMATCH", "event 与 RED receipt 的 failure_codes 不一致。"), 5
+        actor = payload.get("actor")
+        if (
+            not isinstance(actor, dict)
+            or set(actor) != {"id", "role"}
+            or actor.get("role") != "author"
+            or actor.get("id") != payload["receipt"]["actor_id"]
+        ):
+            return error("ACTOR_BINDING_MISMATCH", "failure 必须由 receipt 中同一 author 记录。"), 5
+        state["failures"][payload["event_id"]] = {
+            "case_id": case_id,
+            "failure_codes": copy.deepcopy(payload.get("failure_codes")),
+            "input_sha256": expected_input_sha256,
+            "observed_receipt_sha256": sha256_text(canonical_json(payload["receipt"])),
+            "partition": partition,
+            "regression_candidate": regression_candidate,
+        }
+    elif event_type == "holdout_result":
+        if partition != "sealed_holdout" or case_id not in state["suite"]["holdout_case_ids"]:
+            return error("CASE_NOT_IN_PARTITION", "holdout result 必须绑定 sealed holdout case。"), 5
+        receipt_error = validate_receipt(
+            payload.get("receipt"),
+            state,
+            case_id=case_id,
+            partition=partition,
+            expected_input_sha256=state["case_input_sha256"]["sealed_holdout"][case_id],
+        )
+        if receipt_error is not None:
+            return error(receipt_error, "holdout receipt 无效。"), 5
+        actor = payload.get("actor")
+        if (
+            not isinstance(actor, dict)
+            or set(actor) != {"id", "role"}
+            or actor.get("role") != "reproducer"
+            or actor.get("id") != payload["receipt"]["actor_id"]
+        ):
+            return error("ACTOR_BINDING_MISMATCH", "holdout 必须由 receipt 中同一 reproducer 记录。"), 5
+        holdout = next(item for item in state["holdouts"] if item["case_id"] == case_id)
+        if holdout.get("status") != "sealed":
+            return error("HOLDOUT_ALREADY_SPENT", "sealed holdout 只能消费一次。"), 5
+        holdout["status"] = "spent"
+        holdout["consumed_by_event_id"] = payload["event_id"]
+    else:
+        return error("EVENT_TYPE_INVALID", "record 只接受 failure_observed 或 holdout_result。"), 5
+
+    entry = append_event(
+        ledger_path,
+        entries,
+        {"event_id": payload["event_id"], "event_type": event_type, "payload": payload},
+        state,
+    )
+    state["ledger_head"] = entry["event_hash"]
+    atomic_write(state_path, state)
+    return {"deduplicated": False, "event_hash": entry["event_hash"]}, 0
+
+
+def close_cycle(state_path: Path, ledger_path: Path, payload: dict[str, Any]) -> tuple[dict[str, Any], int]:
+    state, entries, failed = load_workspace(state_path, ledger_path)
+    if failed is not None:
+        return failed
+    assert state is not None and entries is not None
+    required = {
+        "cycle_id", "failure_event_id", "candidate_sha256", "roles", "base_receipt",
+        "candidate_receipt", "reproduction_receipt", "review", "improvement",
+    }
+    if set(payload) != required or not isinstance(payload.get("cycle_id"), str) or not payload["cycle_id"].strip():
+        return error("CYCLE_INVALID", "close-cycle payload 契约不匹配。"), 5
+    event_id = f"cycle:{payload['cycle_id']}"
+    if payload["cycle_id"] in state["cycles"]:
+        prior = existing_event(entries, event_id)
+        if prior is not None and prior.get("payload_digest") == sha256_text(canonical_json(payload)):
+            return {"cycle": copy.deepcopy(state["cycles"][payload["cycle_id"]]), "phase": state["phase"]}, 0
+        return error("CYCLE_ID_CONFLICT", "相同 cycle_id 对应了不同 close-cycle payload。"), 5
+    if state["stop"]["stopped"]:
+        return error(
+            "EVOLUTION_STOPPED",
+            "演化 loop 已触发停止条件。",
+            stop_reason=state["stop"]["reason"],
+        ), 5
+    if existing_event(entries, event_id) is not None:
+        return error("EVENT_ID_CONFLICT", "close-cycle 派生 event_id 已被占用。"), 5
+    failure = state["failures"].get(payload.get("failure_event_id"))
+    if failure is None:
+        return error("FAILURE_EVENT_NOT_FOUND", "cycle 必须引用已记录 failure。"), 5
+    roles = payload.get("roles")
+    if not isinstance(roles, dict) or set(roles) != {"author", "reproducer", "reviewer"}:
+        return error("ROLE_SEPARATION_REQUIRED", "必须声明 author、reproducer、reviewer。"), 5
+    role_ids = list(roles.values())
+    if any(not isinstance(value, str) or not value.strip() for value in role_ids) or len(set(role_ids)) != 3:
+        return error("ROLE_SEPARATION_REQUIRED", "author、reproducer、reviewer 必须是三个不同的人。"), 5
+
+    case_id = failure["case_id"]
+    partition = failure["partition"]
+    receipts = {
+        "base": payload.get("base_receipt"),
+        "candidate": payload.get("candidate_receipt"),
+        "reproduction": payload.get("reproduction_receipt"),
+    }
+    expected_input_sha256 = failure["input_sha256"]
+    for receipt in receipts.values():
+        receipt_error = validate_receipt(
+            receipt,
+            state,
+            case_id=case_id,
+            partition=partition,
+            expected_input_sha256=expected_input_sha256,
+        )
+        if receipt_error is not None:
+            return error(receipt_error, "cycle receipt 无效。"), 5
+    if sha256_text(canonical_json(receipts["base"])) != failure.get("observed_receipt_sha256"):
+        return error("BASE_RECEIPT_MISMATCH", "cycle 必须复用 failure_observed 的原始 RED receipt。"), 5
+    candidate_sha = payload.get("candidate_sha256")
+    if not isinstance(candidate_sha, str) or HEX64.fullmatch(candidate_sha) is None:
+        return error("CANDIDATE_INVALID", "candidate_sha256 无效。"), 5
+    if (
+        receipts["base"].get("variant") != "base"
+        or receipts["base"].get("outcome") != "fail"
+        or receipts["candidate"].get("variant") != "candidate"
+        or receipts["reproduction"].get("variant") != "candidate"
+        or receipts["candidate"].get("candidate_sha256") != candidate_sha
+        or receipts["reproduction"].get("candidate_sha256") != candidate_sha
+        or receipts["base"].get("actor_id") != roles["author"]
+        or receipts["candidate"].get("actor_id") != roles["author"]
+        or receipts["reproduction"].get("actor_id") != roles["reproducer"]
+    ):
+        return error("RED_GREEN_BINDING_INVALID", "base、candidate、reproduction 证据未正确绑定。"), 5
+    review = payload.get("review")
+    if not isinstance(review, dict) or set(review) != {"actor_id", "approved"} or review.get("actor_id") != roles["reviewer"]:
+        return error("REVIEW_INVALID", "review 必须由独立 reviewer 提交。"), 5
+    candidate_passed = receipts["candidate"].get("outcome") == "pass"
+    reproduction_passed = receipts["reproduction"].get("outcome") == "pass"
+    if candidate_passed != reproduction_passed or review.get("approved") is not candidate_passed:
+        return error("INDEPENDENT_REPRODUCTION_REQUIRED", "候选、复现与 reviewer 结论不一致。"), 5
+    improvement = payload.get("improvement")
+    if not is_finite_number(improvement) or improvement < 0:
+        return error("IMPROVEMENT_INVALID", "improvement 必须是非负数。"), 5
+
+    evidence = copy.deepcopy(receipts)
+    cycle = {
+        "candidate_sha256": candidate_sha,
+        "evidence": evidence,
+        "evidence_digest": sha256_text(canonical_json({"evidence": evidence, "review": review})),
+        "failure_event_id": payload["failure_event_id"],
+        "improvement": improvement,
+        "roles": copy.deepcopy(roles),
+        "regression_candidate": copy.deepcopy(failure.get("regression_candidate")),
+        "status": "ready_for_promotion" if candidate_passed else "candidate_failed",
+    }
+    state["cycles"][payload["cycle_id"]] = cycle
+    state["improvements"].append(improvement)
+    state["phase"] = cycle["status"]
+
+    window = state["policy"]["saturation_window"]
+    threshold = state["policy"]["minimum_improvement"]
+    if len(state["improvements"]) >= window and all(
+        value < threshold for value in state["improvements"][-window:]
+    ):
+        state["stop"] = {"reason": "saturation_reached", "stopped": True}
+        state["phase"] = "stopped"
+
+    entry = append_event(
+        ledger_path,
+        entries,
+        {"event_id": event_id, "event_type": "cycle_closed", "payload": payload},
+        state,
+    )
+    state["ledger_head"] = entry["event_hash"]
+    atomic_write(state_path, state)
+    return {"cycle": copy.deepcopy(cycle), "phase": state["phase"]}, 0
+
+
+def promote(state_path: Path, ledger_path: Path, payload: dict[str, Any]) -> tuple[dict[str, Any], int]:
+    state, entries, failed = load_workspace(state_path, ledger_path)
+    if failed is not None:
+        return failed
+    assert state is not None and entries is not None
+    if set(payload) != {"event_id", "cycle_id", "actor"}:
+        return error("PROMOTION_INVALID", "promote payload 契约不匹配。"), 5
+    event_id_error = external_event_id_error(payload.get("event_id"))
+    if event_id_error is not None:
+        return error(event_id_error, "promotion event_id 无效或占用保留命名空间。"), 5
+    prior = existing_event(entries, payload["event_id"])
+    if prior is not None:
+        if prior.get("payload_digest") == sha256_text(canonical_json(payload)):
+            promotion_result = state["promotion_results"].get(payload["event_id"])
+            if isinstance(promotion_result, dict):
+                return copy.deepcopy(promotion_result), 0
+            return error("STATE_INVALID", "promotion 缺少幂等结果 checkpoint。"), 5
+    if state["stop"]["stopped"]:
+        return error(
+            "EVOLUTION_STOPPED",
+            "演化 loop 已触发停止条件。",
+            stop_reason=state["stop"]["reason"],
+        ), 5
+    if prior is not None:
+        return error("EVENT_ID_CONFLICT", "相同 event_id 对应了不同 promotion。"), 5
+    actor = payload.get("actor")
+    cycle = state["cycles"].get(payload.get("cycle_id"))
+    if not isinstance(actor, dict) or actor.get("role") != "reviewer" or cycle is None:
+        return error("PROMOTION_INVALID", "promotion 必须由已绑定 reviewer 发起。"), 5
+    if actor.get("id") != cycle["roles"]["reviewer"]:
+        return error("PROMOTION_REVIEWER_MISMATCH", "只有该 cycle 的独立 reviewer 可以 promotion。"), 5
+    if cycle.get("status") != "ready_for_promotion":
+        return error("CYCLE_NOT_GREEN", "只有 RED→GREEN 且独立复现通过的 cycle 才能晋级。"), 5
+
+    manifest_proposal = None
+    if cycle.get("regression_candidate") is not None:
+        cycle["status"] = "manifest_update_required"
+        manifest_proposal = {
+            "operation": "add_regression_case",
+            "value": copy.deepcopy(cycle["regression_candidate"]),
+        }
+    else:
+        cycle["status"] = "promoted"
+    state["budget"]["iterations_used"] += 1
+    state["phase"] = "promoted"
+    if state["budget"]["iterations_used"] >= state["budget"]["max_iterations"]:
+        state["stop"] = {"reason": "iteration_budget_exhausted", "stopped": True}
+        state["phase"] = "stopped"
+    promotion_result = {
+        "assurance": copy.deepcopy(state["assurance"]),
+        "budget": copy.deepcopy(state["budget"]),
+        "cycle": copy.deepcopy(cycle),
+        "manifest_proposal": copy.deepcopy(manifest_proposal),
+    }
+    state["promotion_results"][payload["event_id"]] = copy.deepcopy(promotion_result)
+    entry = append_event(
+        ledger_path,
+        entries,
+        {"event_id": payload["event_id"], "event_type": "candidate_promoted", "payload": payload},
+        state,
+    )
+    state["ledger_head"] = entry["event_hash"]
+    atomic_write(state_path, state)
+    return promotion_result, 0
+
+
+def parse_args(argv: list[str]) -> tuple[str | None, dict[str, Path] | None, tuple[dict[str, Any], int] | None]:
+    if not argv or argv[0] not in COMMANDS:
+        return None, None, (error("USAGE", "需要 init、record、close-cycle、promote 或 status。"), 2)
+    command = argv[0]
+    options: dict[str, Path] = {}
+    index = 1
+    while index < len(argv):
+        token = argv[index]
+        if token in {"--manifest", "--state", "--ledger"} and index + 1 < len(argv):
+            options[token[2:]] = Path(argv[index + 1])
+            index += 2
+        else:
+            return None, None, (error("USAGE", f"不支持参数：{token}。"), 2)
+    required = {"state", "ledger"} | ({"manifest"} if command == "init" else set())
+    if set(options) != required:
+        return None, None, (error("USAGE", f"{command} 参数不完整。"), 2)
+    return command, options, None
+
+
+def run_locked(command: str, options: dict[str, Path], payload: dict[str, Any] | None) -> tuple[dict[str, Any], int]:
+    lock_path = options["state"].with_name(f".{options['state'].name}.evolve.lock")
+    try:
+        with lock_path.open("a+", encoding="utf-8") as handle:
+            fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+            if command == "init":
+                return initialize(options["manifest"], options["state"], options["ledger"])
+            if command == "status":
+                state, _, failed = load_workspace(options["state"], options["ledger"])
+                if failed is not None:
+                    return failed
+                assert state is not None
+                return public_state(state), 0
+            assert payload is not None
+            operations = {
+                "record": record_event,
+                "close-cycle": close_cycle,
+                "promote": promote,
+            }
+            return operations[command](options["state"], options["ledger"], payload)
+    except FileNotFoundError:
+        return error("PARENT_NOT_FOUND", "state 父目录不存在。"), 4
+    except LedgerEventConflict:
+        return error("EVENT_ID_CONFLICT", "ledger event_id 已存在或无效。"), 5
+    except OSError:
+        return error("LOCK_FAILED", "无法取得 evolution 排他锁。"), 10
+
+
+def main(argv: list[str]) -> int:
+    command, options, failed = parse_args(argv)
+    if failed is not None:
+        return emit(*failed)
+    assert command is not None and options is not None
+    payload: dict[str, Any] | None = None
+    if command not in {"init", "status"}:
+        payload, failed = read_json_stdin()
+        if failed is not None:
+            return emit(*failed)
+    result, code = run_locked(command, options, payload)
+    return emit(result, code)
+
+
+if __name__ == "__main__":
+    try:
+        raise SystemExit(main(sys.argv[1:]))
+    except BrokenPipeError:
+        raise SystemExit(0)
+    except Exception:
+        raise SystemExit(emit(error("INTERNAL_ERROR", "evolution runtime 内部错误。"), 10))

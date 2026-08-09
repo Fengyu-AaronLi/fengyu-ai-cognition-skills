@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/auditing-ai-claims/summary.schema.json",
+  "title": "Cross-claim audit summary input",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["unknowns", "next_action"],
+  "properties": {
+    "unknowns": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "next_action": {"type": "string", "minLength": 1}
+  }
+}

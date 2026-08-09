@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/auditing-ai-claims/countercheck.schema.json",
+  "title": "Claim countercheck input",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "claim_id",
+    "falsifier",
+    "checked_source_ids",
+    "result",
+    "stop_reason"
+  ],
+  "properties": {
+    "claim_id": {"type": "string", "minLength": 1},
+    "falsifier": {"type": "string", "minLength": 1},
+    "checked_source_ids": {
+      "type": "array",
+      "maxItems": 256,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 64,
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+      }
+    },
+    "result": {
+      "enum": [
+        "no_conflict_found",
+        "conflict_found",
+        "scope_narrowed",
+        "inconclusive"
+      ]
+    },
+    "stop_reason": {"type": "string", "minLength": 1}
+  }
+}

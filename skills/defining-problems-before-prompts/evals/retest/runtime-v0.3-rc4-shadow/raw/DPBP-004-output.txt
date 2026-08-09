@@ -1,0 +1,7 @@
+DPBP-004 OUTPUT
+
+风谕知识操作系统 is not an answer machine that thinks for people. It brings scattered materials, decision rules, and retrospective records into a single traceable workflow, allowing users to see where information comes from, which conclusions are only inferences, and what needs to be verified next.
+
+观澜计划 collects failures from real-world use instead of showcasing only successful screenshots, while 星港实验室 turns those cases into small-scale, repeatable tests. We aim to shorten execution time, but speed is not our only goal. If results cannot be verified, or if automation comes at the expense of privacy, human judgment, and long-term maintainability, the system should stop.
+
+Truly valuable automation does not decide the direction for people. It reliably handles repetitive, tedious, verifiable work once the direction has been clearly defined. Every update must preserve the original input, the reasons for each change, and the conditions under which it fails, so that others can review the work later instead of seeing only a polished final answer.

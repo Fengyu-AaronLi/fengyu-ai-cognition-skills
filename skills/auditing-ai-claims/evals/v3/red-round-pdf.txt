@@ -1,0 +1,126 @@
+Command:
+python3 -m unittest -v test_pdf_adapter.py
+
+Working directory:
+<REPO_ROOT>/skills/auditing-ai-claims/tests
+
+Exit code: 1
+
+Raw output:
+test_missing_pdf_parser_preserves_raw_pdf_but_blocks_evidence_binding (test_pdf_adapter.PdfReceiptIntegrationTests.test_missing_pdf_parser_preserves_raw_pdf_but_blocks_evidence_binding) ... ERROR
+test_runtime_fetch_preserves_pdf_and_parsed_text_with_two_hashes (test_pdf_adapter.PdfReceiptIntegrationTests.test_runtime_fetch_preserves_pdf_and_parsed_text_with_two_hashes) ... ERROR
+test_adapter_discovers_local_pdftotext_and_records_exact_version (test_pdf_adapter.RestrictedPdfParserTests.test_adapter_discovers_local_pdftotext_and_records_exact_version) ... ERROR
+test_missing_pdftotext_fails_closed_without_fallback (test_pdf_adapter.RestrictedPdfParserTests.test_missing_pdftotext_fails_closed_without_fallback) ... ERROR
+test_pdftotext_failure_fails_closed_and_does_not_keep_partial_text (test_pdf_adapter.RestrictedPdfParserTests.test_pdftotext_failure_fails_closed_and_does_not_keep_partial_text) ... ERROR
+
+======================================================================
+ERROR: test_missing_pdf_parser_preserves_raw_pdf_but_blocks_evidence_binding (test_pdf_adapter.PdfReceiptIntegrationTests.test_missing_pdf_parser_preserves_raw_pdf_but_blocks_evidence_binding)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_pdf_adapter.py", line 214, in test_missing_pdf_parser_preserves_raw_pdf_but_blocks_evidence_binding
+    ), mock.patch.object(
+       ~~~~~~~~~~~~~~~~~^
+        runtime,
+        ^^^^^^^^
+    ...<6 lines>...
+        },
+        ^^
+    ):
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1510, in __enter__
+    original, local = self.get_original()
+                      ~~~~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1480, in get_original
+    raise AttributeError(
+        "%s does not have the attribute %r" % (target, name)
+    )
+AttributeError: <module 'claim_audit' from '<REPO_ROOT>/skills/auditing-ai-claims/scripts/claim_audit.py'> does not have the attribute 'parse_pdf_text'
+
+======================================================================
+ERROR: test_runtime_fetch_preserves_pdf_and_parsed_text_with_two_hashes (test_pdf_adapter.PdfReceiptIntegrationTests.test_runtime_fetch_preserves_pdf_and_parsed_text_with_two_hashes)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_pdf_adapter.py", line 176, in test_runtime_fetch_preserves_pdf_and_parsed_text_with_two_hashes
+    ), mock.patch.object(
+       ~~~~~~~~~~~~~~~~~^
+        runtime,
+        ^^^^^^^^
+    ...<6 lines>...
+        },
+        ^^
+    ):
+    ^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1510, in __enter__
+    original, local = self.get_original()
+                      ~~~~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py", line 1480, in get_original
+    raise AttributeError(
+        "%s does not have the attribute %r" % (target, name)
+    )
+AttributeError: <module 'claim_audit' from '<REPO_ROOT>/skills/auditing-ai-claims/scripts/claim_audit.py'> does not have the attribute 'parse_pdf_text'
+
+======================================================================
+ERROR: test_adapter_discovers_local_pdftotext_and_records_exact_version (test_pdf_adapter.RestrictedPdfParserTests.test_adapter_discovers_local_pdftotext_and_records_exact_version)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_pdf_adapter.py", line 99, in test_adapter_discovers_local_pdftotext_and_records_exact_version
+    result = runtime.parse_pdf_text(
+             ^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'claim_audit' has no attribute 'parse_pdf_text'
+
+======================================================================
+ERROR: test_missing_pdftotext_fails_closed_without_fallback (test_pdf_adapter.RestrictedPdfParserTests.test_missing_pdftotext_fails_closed_without_fallback)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_pdf_adapter.py", line 121, in test_missing_pdftotext_fails_closed_without_fallback
+    result = runtime.parse_pdf_text(
+             ^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'claim_audit' has no attribute 'parse_pdf_text'
+
+======================================================================
+ERROR: test_pdftotext_failure_fails_closed_and_does_not_keep_partial_text (test_pdf_adapter.RestrictedPdfParserTests.test_pdftotext_failure_fails_closed_and_does_not_keep_partial_text)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_pdf_adapter.py", line 155, in test_pdftotext_failure_fails_closed_and_does_not_keep_partial_text
+    result = runtime.parse_pdf_text(
+             ^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'claim_audit' has no attribute 'parse_pdf_text'
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.016s
+
+FAILED (errors=5)
+/private/var/folders/2s/cq27nh7x44zd399j4_j898qr0000gn/T/tmp31gl5_df/audit
+C1
+/private/var/folders/2s/cq27nh7x44zd399j4_j898qr0000gn/T/tmpxkalt4iy/audit
+
+Second red command:
+python3 -m unittest -v test_pdf_adapter.PdfReceiptIntegrationTests.test_missing_pdf_parser_preserves_raw_pdf_but_blocks_evidence_binding
+
+Exit code: 1
+
+Raw output:
+test_missing_pdf_parser_preserves_raw_pdf_but_blocks_evidence_binding (test_pdf_adapter.PdfReceiptIntegrationTests.test_missing_pdf_parser_preserves_raw_pdf_but_blocks_evidence_binding) ... FAIL
+
+======================================================================
+FAIL: test_missing_pdf_parser_preserves_raw_pdf_but_blocks_evidence_binding (test_pdf_adapter.PdfReceiptIntegrationTests.test_missing_pdf_parser_preserves_raw_pdf_but_blocks_evidence_binding)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_pdf_adapter.py", line 270, in test_missing_pdf_parser_preserves_raw_pdf_but_blocks_evidence_binding
+    self.assertIn(
+    ~~~~~~~~~~~~~^
+        "PDF_TEXT_UNAVAILABLE",
+        ^^^^^^^^^^^^^^^^^^^^^^^
+        {item["code"] for item in tampered_gate["errors"]},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+AssertionError: 'PDF_TEXT_UNAVAILABLE' not found in {'CANDIDATE_BINDING_REQUIRED', 'CLAIM_UNKNOWNS_REQUIRED', 'AUDIT_SUMMARY_REQUIRED', 'GLOBAL_UNKNOWNS_REQUIRED', 'CLAIM_ASSESSMENT_REQUIRED', 'CANDIDATE_INVENTORY_REQUIRED'}
+
+----------------------------------------------------------------------
+Ran 1 test in 0.013s
+
+FAILED (failures=1)
+/private/var/folders/2s/cq27nh7x44zd399j4_j898qr0000gn/T/tmpoatbozhx/audit
+C1
+receipts/PDF1.json

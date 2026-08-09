@@ -1,0 +1,12 @@
+Round C3 baseline, 2026-08-06 Australia/Sydney
+
+Command:
+PYTHONPATH=skills/auditing-ai-claims/tests python3 -m unittest CandidateBindingTests.test_start_auto_freezes_uncovered_input_units CandidateBindingTests.test_nonfactual_auto_gap_requires_explicit_exclusion_reason -v
+
+Observed result before implementation:
+Ran 2 tests in 0.275s
+FAILED (failures=2)
+
+The runtime froze only model-declared candidates, so a second untouched input sentence disappeared from the audit. It also had no `exclude-candidate` action for explicitly classifying an automatically discovered opinion, metaphor, feeling, instruction, or other nonfactual unit.
+
+This file records the red state before full-input review-unit coverage was added.

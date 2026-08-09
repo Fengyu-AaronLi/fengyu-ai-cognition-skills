@@ -1,0 +1,29 @@
+# 本地 CLI 完整轨迹可能包含机器路径和继承的全局项目上下文。
+# 保留在工作机作原始证据，但不进入未来公开发行包。
+evals/retest/traces/*.jsonl
+
+# 触发描述调试过程，仅保留在本地，不作为最终复测样本分发。
+evals/retest/raw/C04-routing-before-description-fix*.md
+
+# Python 运行缓存不属于发行内容。
+__pycache__/
+*.pyc
+
+# 真实来源烟雾测试包含抓取的公开网页正文，只保留在本机作为原始证据。
+# 发行包保留脱敏报告和哈希，不重新分发第三方页面正文。
+evals/v2/live-smoke-run/
+
+# 行为复测的运行目录可能包含抓取工件。发行包只保留 raw、trace 与脱敏评分。
+evals/v2/behavior/runs/
+
+# 2.2.0 新鲜会话 attempts、运行目录和 stderr 含本机路径、线程标识与继承上下文。
+evals/v2/behavior-220/attempts/
+evals/v2/behavior-220/runs/*
+!evals/v2/behavior-220/runs/README.md
+
+# 指定一手来源的完整运行目录含第三方页面正文，仅保留本地；分发脱敏哈希报告。
+evals/v2/live-source-220-run/
+evals/v2/live-source-220-final-run/
+
+# 干净安装验证目标是生成物，不进入候选包。
+.install-auditing-ai-claims-220-final/

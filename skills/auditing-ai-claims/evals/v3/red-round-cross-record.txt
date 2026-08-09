@@ -1,0 +1,29 @@
+Command:
+python3 -m unittest -v test_adversarial_gates_v3.InputCoverageAdversarialTests.test_gate_rejects_a_declared_candidate_with_multiple_spans test_adversarial_gates_v3.InputCoverageAdversarialTests.test_gate_rejects_directly_injected_exclusion_of_declared_candidate
+
+Observed before the gate fix on 2026-08-06:
+
+test_gate_rejects_a_declared_candidate_with_multiple_spans ... FAIL
+test_gate_rejects_directly_injected_exclusion_of_declared_candidate ... FAIL
+
+Failure 1:
+Expected DECLARED_CANDIDATE_SPAN_COUNT_INVALID, but validate_bundle returned no error.
+
+Failure 2:
+Expected EXCLUSION_ORIGIN_FORBIDDEN, but validate_bundle only returned CANDIDATE_DISPOSITION_CONFLICT.
+
+Interpretation:
+The command layer and JSON Schema expressed both rules, but the deterministic runtime gate did not independently replay them after direct ledger mutation.
+
+Second RED in the same loop:
+
+Command:
+python3 -m unittest -v test_adversarial_gates_v3.InputCoverageAdversarialTests.test_start_rejects_overlapping_declared_candidates_before_publish test_adversarial_gates_v3.InputCoverageAdversarialTests.test_gate_rejects_duplicate_candidate_ids_after_direct_mutation test_adversarial_gates_v3.InputCoverageAdversarialTests.test_gate_rejects_candidate_span_length_mismatch
+
+Observed before the builder fix:
+
+test_start_rejects_overlapping_declared_candidates_before_publish ... FAIL
+test_gate_rejects_duplicate_candidate_ids_after_direct_mutation ... ok
+test_gate_rejects_candidate_span_length_mismatch ... ok
+
+The start command published a workspace even though two declared candidates bound overlapping character intervals. The deterministic gate could reject the resulting ledger later, but initialization needed to fail before publication.

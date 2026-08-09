@@ -1,0 +1,128 @@
+name: "separating-facts-from-stories-continuous-improvement"
+controller:
+  executable: "skills/separating-facts-from-stories/scripts/improvement_loop.py"
+  gate_producer: "skills/separating-facts-from-stories/scripts/produce_release_gate.py"
+  schema_version: "1.1.0"
+  execution_mode: "execution_graph"
+  source_manifest: "workflows/separating-facts-release-sources.json"
+  stop_authority: "controller_prove_stop"
+  state_file: "loop-state.json"
+  transition_protocol: "prepare -> atomic state publish -> committed transaction archive"
+  authority_limit: "issues run-bound work orders, validates local phase attestations, records evidence, and executes the fixed preflight and stop recipes; no fixed run-next recipe exists for later graph nodes, and it does not edit product source, prove external reviewer independence, or accept arbitrary shell commands"
+  producer_recipe_version: "2.0.0"
+  source_manifest_schema_version: "1.0.0"
+  release_subject: "content-addressed retained release basis, not the subsequently changing live tree"
+  process_family_trust_boundary: "cooperative inherited exact environment token, not an OS sandbox"
+inputs:
+  - name: skill_dir
+    required: true
+    default: "skills/separating-facts-from-stories"
+  - name: stop_gate
+    required: true
+    default: "P0=0; reproducible P1=0; unit tests and self-test all pass; frozen eval 18/18 and artifacts 16/16; clean install, verify-install, rollback and restore all pass"
+  - name: eval_root
+    required: true
+    default: "skills/separating-facts-from-stories/evals/raw/with-skill-v44-run"
+  - name: clean_target_root
+    required: true
+    default: "fresh mktemp directory created only after eval audit passes"
+loop_policy:
+  back_edge: "loop_decision -> preflight_snapshot"
+  execution: "the back edge is advanced by improvement_loop.py; STOP is exclusive to prove-stop and its fixed producer recipe"
+  max_rounds: 6
+  continue_when: "any reproducible P0/P1 remains, any deterministic test fails, source drifts after freeze, eval is incomplete, or clean install/verify fails"
+  stop_when: "prove-stop executes the complete stop_gate on one content-addressed retained release basis, rehashed before every step; external advance can never authorize STOP"
+  source_change_rule: "red_green_fix requires one authorized source_epoch_plan.v2: S0 review source -> Sr RED source -> S1 implementation source; RED bytes are identical in Sr and S1, all changed bytes are retained, the file key set stays fixed, and any undeclared drift invalidates the phase. resume preserves exact S0/Sr/S1. An unplanned S2 that preserves historical receipt and artifact bytes clears the stale work order, opens exactly one new round, and moves any unclosed fix into superseded audit history before RED/GREEN repeats; changing historical evidence fails closed and requires a fresh run. New or deleted files and control-plane changes require a fresh controller run. Before release retention, any other release-evidence byte change invalidates the prepared eval root; after retention, STOP proves only the retained basis and never the changed live tree"
+  evidence_rule: "phase and command receipts are local attestations; graph host receipts record controller-observed fixed subprocesses; Codex host receipts bind local process/thread, prompt, runtime snapshot and output. None is an external signature or external identity proof; never convert an incomplete or stale run into a pass by renaming, copying, or summarizing it"
+  required_gate_checks:
+    - p0_zero
+    - reproducible_p1_zero
+    - unit_tests
+    - self_test
+    - frozen_eval_18_of_18
+    - artifacts_16_of_16
+    - clean_install
+    - verify_install
+    - rollback
+write_policy:
+  allowed_roots:
+    - "skills/separating-facts-from-stories"
+    - "workflows"
+    - ".ao-output"
+  protected:
+    - ".claude/"
+    - "CLAUDE.md"
+    - "10-自媒体/12-观点索引/VP-*"
+    - "10-自媒体/17-观点库HL/HL-*"
+    - "10-自媒体/13-选题库/TP-*"
+    - "10-自媒体/11-已发布文案/"
+    - "80-投资/"
+  denied_operations:
+    - delete
+    - push
+    - publish
+steps:
+  - id: preflight_snapshot
+    role: "testing/testing-evidence-collector"
+    task: "由 controller 的 run-next 启动固定隔离 Python worker，记录 git 状态、禁止修改区、loop schema、producer recipe、source-manifest schema、权威 source manifest、package/run release evidence 子集、安装 allowlist、冻结案例哈希、运行时版本与当前未闭合门禁。controller 保存 stdout、stderr、graph host receipt 并内部提交 phase receipt。测试入口必须解析到 {{skill_dir}}/tests，不能落入全局 site-packages。"
+    output: preflight_evidence
+  - id: adversarial_review
+    role: "engineering/engineering-code-reviewer"
+    depends_on: [preflight_snapshot]
+    task: "领取工作单后只调用固定 host_review_runner.py run-pair。公开入口不接受 prompt、model、reasoning、cwd、sandbox、argv、source 或输出路径覆盖，并固定使用 gpt-5.5/high/read-only 与仓库根目录。两个 fresh local Codex runs 各自保存不可复用的 host_execution_receipt.v1 与 raw artifact，source-identity.json 进入 receipt 和 review attestation 信任链；宿主 binder 重新核对权威 manifest 与逐文件哈希。模型只返回 review_payload.v2：每个 open P0/P1 必须包含 finding ID、severity、summary、deterministic reproducer、actual、expected、reproducible=true 与 status=open。loop 只能从两份 attestation 派生 ID、哈希和 finding event，不接受 phase producer 自报摘要。不接受只看测试文件得出的结论。host run 与 thread 的不同仍不证明现实中的外部独立性。\n{{preflight_evidence}}"
+    output: adversarial_findings
+  - id: red_green_fix
+    role: "engineering/engineering-senior-developer"
+    depends_on: [adversarial_review]
+    task: "针对全部 open finding 执行 source epoch v2。先 begin-step，再提交精确计划：S0 保留 review source；只修改已有 test_*.py 形成 Sr 并保存 S0/Sr blob；RED receipt 必须绑定 Sr 且失败；只修改声明过的非测试实现文件形成 S1并保存 Sr/S1 blob；同一 RED 在 S1 字节不变，GREEN receipt 必须绑定 S1且通过；最后 record-step。finding、路径、blob、source map 或 live S1 任一不符都不得提交。需要新测试文件或修改 manifest、workflow、controller、gate producer时从 fresh run 重启。不得靠扩大关键词表掩盖结构问题。\n{{adversarial_findings}}"
+    output: implementation_result
+  - id: deterministic_gate
+    role: "testing/testing-reality-checker"
+    depends_on: [red_green_fix]
+    task: "领取工作单后，在 Skill 的绝对 tests 目录运行全部 unittest，拒绝 skip、expected failure、遗漏测试和全局测试误收集；运行 casefile self-test、Markdown 包内链接检查和 workflow lifecycle，保存 deterministic_gate_report 本地 attestation。record-step 只校验 typed payload；prove-stop 会在留存 basis 上亲自重跑固定命令。任一失败立即返回 LOOP，不进入源码冻结。\n{{implementation_result}}"
+    output: deterministic_result
+  - id: independent_recheck
+    role: "testing/testing-reality-checker"
+    depends_on: [deterministic_gate]
+    task: "不采信开发者自报，也不读取旧审查结论。只调用固定 host_review_runner.py run-pair，在当前 active source 上产生两个新的 host_execution_receipt.v1、source-bound review attestations 与 review_payload.v2。loop 重新派生 reviewer/execution identity、receipt/raw/source-identity 哈希和完整 finding 集；phase 的 open finding 必须是 host finding 的确定性投影。每个既有 open finding 必须在本轮用 typed independent-recheck command receipt 明确 close；漏掉本轮新 finding、carried finding 或复用首次 review 证据都不得推进。最终 prove-stop 必须逐字使用本 independent_recheck 记录的同一对 attestation 路径与哈希，不能换成另一对空报告。该合同仍不等于外部独立性证明。\n{{deterministic_result}}"
+    output: recheck_result
+  - id: source_freeze
+    role: "testing/testing-evidence-collector"
+    depends_on: [independent_recheck]
+    task: "仅当可复现 P0/P1 为零时，计算权威 source manifest 全集的路径、SHA-256、manifest identity、版本和测试结果；同时记录 package/run release evidence 子集与安装 allowlist。留存前任何受绑定字节变化都使本轮冻结失效。\n{{recheck_result}}"
+    output: frozen_release_snapshot
+  - id: frozen_eval_prepare
+    role: "testing/testing-evidence-collector"
+    depends_on: [source_freeze]
+    task: "在全新的 {{eval_root}} 上运行 run_evals.py --prepare。确认目录先前不存在、18 个 input-only case、冻结 invalid fixture、evaluation-context、runtime snapshot 与 snapshot manifest 已生成，冻结 suite 哈希匹配，且没有沿用旧 raw 输出。snapshot 文件固定为 0444、目录固定为 0555，并在每案前后重验文件集、目录集、权限与哈希，防止真实 Python import 生成 bytecode 后污染冻结 source。\n{{frozen_release_snapshot}}"
+    output: prepared_eval
+  - id: isolated_eval
+    role: "testing/testing-reality-checker"
+    depends_on: [frozen_eval_prepare]
+    task: "逐案调用固定 host_eval_runner.py run，或调用不开放 prompt、argv、shell 覆盖的 run-suite。host 先将冻结 envelope 中每轮 exact input 逐字解包为只读 .runtime/input-N.txt，并预留唯一 workspace-N；模型只填写这些 workspace，不得另建 workspace、canonical artifacts、receipts 或 case-result.json。每案使用 fresh Codex exec、固定模型参数、固定 prompt 与 prepare 时的 runtime snapshot；宿主 prompt、events、stderr、last message 与 receipt 位于模型可写根之外。模型退出后，binder 重验 raw input 和完成状态，将内部 casefile 原子晋升到 canonical artifacts 并在 canonical 路径重跑 validator；passthrough 由 host 物化完整状态，invalid fixture 由 host 使用 snapshot 固定坏工件生成回执。terminal output 只接受完全一致或恰少一个终止换行。最后才从 receipt 派生执行身份、输入、context、snapshot、canonical response 和 case result。不得事后补写 baseline 或通过记录。\n{{prepared_eval}}"
+    output: isolated_eval_evidence
+  - id: eval_audit
+    role: "testing/testing-evidence-collector"
+    depends_on: [isolated_eval]
+    task: "重新运行 run_evals.py --root {{eval_root}} 独立重放。auditor 不采信 binder 结论，重新核对 exact raw input、固定 workspace 集、完成态、内部与 canonical 工件字节、passthrough 或 invalid receipt、terminal output 和 runtime snapshot。要求 18/18 case、16/16 artifact、逐案 host receipt 有效且 execution identity 不复用、零 missing、零 suite error、release evidence 与 prepare 快照完全相同。合法 .runtime 内部 casefile 不重复计入 artifact，任何额外 workspace 或 canonical artifact 仍拒绝。任一不满足都返回 LOOP。\n{{isolated_eval_evidence}}"
+    output: audited_eval
+  - id: clean_install
+    role: "testing/testing-reality-checker"
+    depends_on: [eval_audit]
+    task: "只有 eval 审计通过才进入 prove-stop。producer 先留存 source、eval 与两份 review，再从留存 source 和留存 eval 构建唯一 canonical install；全新的 {{clean_target_root}} 仅作为本轮 canonical install 的父目录，从安装副本执行完整 lifecycle 和 package_runtime.py --verify。记录目标、退出码、manifest、文件集和哈希；不得覆盖已有目录。\n{{audited_eval}}"
+    output: install_evidence
+  - id: rollback_validation
+    role: "testing/testing-reality-checker"
+    depends_on: [clean_install]
+    task: "在隔离安装目标执行真实文件级回滚与恢复：记录安装前活动状态哈希，把已安装 Skill 移出活动目录，在新的 Python 进程中只确认原文件路径不存在，再原样恢复并核对 manifest 哈希、完整 lifecycle 与 verify。此项不声称验证宿主发现机制。保存每条命令、退出码、回滚期间缺席证据和恢复后哈希；不删除任何文件。\n{{install_evidence}}"
+    output: rollback_evidence
+  - id: evidence_gate
+    role: "testing/testing-evidence-collector"
+    depends_on: [rollback_validation]
+    task: "调用 controller prove-stop 的固定 producer recipe 2.0.0，收集本轮红测、绿测、留存 source/eval/review 哈希、双 reviewer、模型执行身份、18/16 eval、canonical install、verify、回滚与恢复证据。九项门禁必须分别使用类型化证明回执，不能让一个通用布尔文件替多项结果背书。逐项判断是否达到停止门：{{stop_gate}}。不满足时列出精确错误码、证据路径和下一轮输入。\n{{rollback_evidence}}"
+    output: evidence_result
+  - id: loop_decision
+    role: "testing/testing-workflow-optimizer"
+    depends_on: [evidence_gate]
+    task: "审查本轮闭环的瓶颈和静默失败。若停止门未全部满足，返回 LOOP，把未关闭的 P0/P1、失效证据或缺失门禁转成下一轮 adversarial_review 输入；只有同一冻结快照全部满足才返回 STOP。文档更新若改变 release evidence，必须先回到源码冻结并重跑 eval。\n{{evidence_result}}"
+    output: loop_decision

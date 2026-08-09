@@ -1,0 +1,78 @@
+{
+  "schema_version": "1.0",
+  "suite_id": "defining-problems-before-prompts-runtime",
+  "suite_version": "0.3.0-rc.4",
+  "partitions": {
+    "regression": [
+      {
+        "case_id": "DPBP-001",
+        "envelope_file": "evals/runtime/fixtures/envelopes/DPBP-001.json",
+        "envelope_sha256": "347585ae0c8cbdb1a1c733a675bc10f43576daceae191bcb968f62bd45626d47",
+        "spec_file": "evals/runtime/fixtures/specs/DPBP-001.json",
+        "spec_sha256": "83fbbcb5326ee61a515bebfc146946871c533e6fe6e7f0aa6a3820be8315752f",
+        "expected": {
+          "mode": "defer_to_user",
+          "rule": "high_risk_value_decision",
+          "resources": [
+            "references/core.md",
+            "references/high-risk.md",
+            "references/playbooks/career-exit.md"
+          ],
+          "requires_spec": true
+        }
+      },
+      {
+        "case_id": "DPBP-002",
+        "envelope_file": "evals/runtime/fixtures/envelopes/DPBP-002.json",
+        "envelope_sha256": "dbe50e9eee3fbb7350d08a5cd98c7b789b37c2c2ebbb03b7f3ed2b742d373401",
+        "spec_file": "evals/runtime/fixtures/specs/DPBP-002.json",
+        "spec_sha256": "d894454aa85484050538147b3bdb69d897344e8a0d0404f13ae9d13d8dc2836b",
+        "expected": {
+          "mode": "define",
+          "rule": "decisive_unknowns",
+          "resources": [
+            "references/core.md",
+            "references/playbooks/ai-efficiency.md"
+          ],
+          "requires_spec": true
+        }
+      },
+      {
+        "case_id": "DPBP-003",
+        "envelope_file": "evals/runtime/fixtures/envelopes/DPBP-003.json",
+        "envelope_sha256": "9ad915a0c7fbc79504e48af10d1fab3be4be901723e26de2e99598b670949ce5",
+        "spec_file": "evals/runtime/fixtures/specs/DPBP-003.json",
+        "spec_sha256": "ccde262f520a485e5e28694654a547efdd2c309740ed322a4691c1c412dcf7c0",
+        "expected": {
+          "mode": "define",
+          "rule": "decisive_unknowns",
+          "resources": [
+            "references/core.md",
+            "references/playbooks/ai-product.md"
+          ],
+          "requires_spec": true
+        }
+      },
+      {
+        "case_id": "DPBP-004",
+        "envelope_file": "evals/runtime/fixtures/envelopes/DPBP-004.json",
+        "envelope_sha256": "ccf574a392a2d7fdf670a632ea6827d0e9bb00ca10e73bc225b7b2a8e173bd8c",
+        "spec_file": null,
+        "spec_sha256": null,
+        "expected": {
+          "mode": "execute",
+          "rule": "clear_execution",
+          "resources": [],
+          "requires_spec": false
+        }
+      }
+    ],
+    "sealed_holdout": []
+  },
+  "policy": {
+    "max_iterations": 6,
+    "saturation_window": 2,
+    "minimum_improvement": 0.05,
+    "required_roles": ["author", "reproducer", "reviewer"]
+  }
+}

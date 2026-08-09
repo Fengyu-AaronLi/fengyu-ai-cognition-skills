@@ -1,0 +1,22 @@
+{
+  "evidence": [
+    {
+      "path": "evals/raw/v63-red/post-freeze-runtime-audit.md",
+      "sha256": "e394f08a3d01a18fbaf08d61858f4ab7035dac0826e1e16a8b1ae48dfa7ff343"
+    }
+  ],
+  "from_sha256": "8425b9252489dfe244d81e549f02e0293eebb52155cd28603d284f2e69ce9c8b",
+  "reason": "The original regression asserted one transient development state and therefore failed after a valid freeze. The migrated test preserves the separation contract by comparing source-validation currency with the strict controller result in either current or non-current lifecycle state.",
+  "receipt_id": "v63-v62-release-currency-state-independent",
+  "replacement_tests": [
+    {
+      "path": "tests/test_v63_adversarial_runtime.py",
+      "sha256": "7ecfff78e8721235affd5266775e2d6a87ca654f5db3f528af6a72135396cc93"
+    }
+  ],
+  "reviewed_at": "2026-08-06T18:00:00Z",
+  "reviewed_by": "codex-r63-post-freeze-runtime-loop",
+  "schema_version": "1.0",
+  "test_path": "tests/test_v62_validation_release_separation.py",
+  "to_sha256": "eebfdebfd728a401ea702ce98f7efd6bd870c4778028800c0b2564b72e95a198"
+}

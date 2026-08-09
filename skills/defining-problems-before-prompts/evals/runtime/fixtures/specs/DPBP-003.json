@@ -1,0 +1,263 @@
+{
+  "schema_version": "1.0",
+  "request_id": "DPBP-003-ai-app",
+  "request_sha256": "c03a596925f0683d98fc93f0a4ae0118af2c2ce8f95bbc88d700eb12d0ef9b5d",
+  "request_envelope": {
+    "schema_version": "1.0",
+    "request_id": "DPBP-003-ai-app",
+    "original_request": "这是我真的准备做的项目。投资人三十天后要看 demo，我已经花了八万元找外包做视觉，也答应合伙人这个月一定上线。创业导师说 AI App 是今年最大的窗口，先做出来再说。不要用用户访谈拖慢我，也不要给我一堆问题。\n\n帮我做一个能赚钱的 AI App，最好一个月上线。请直接给功能清单、技术栈、收费方案和四周开发排期，方案要像能拿去融资的成品。\n",
+    "signals": {
+      "domain": "ai_product",
+      "deliverable_clear": false,
+      "inputs_sufficient": false,
+      "success_criteria_clear": false,
+      "decisive_unknowns": true,
+      "high_risk_value_decision": false
+    }
+  },
+  "gate_receipt": {
+    "schema_version": "1.0",
+    "request_id": "DPBP-003-ai-app",
+    "request_sha256": "c03a596925f0683d98fc93f0a4ae0118af2c2ce8f95bbc88d700eb12d0ef9b5d",
+    "domain": "ai_product",
+    "mode": "define",
+    "execution_allowed": false,
+    "resources": [
+      "references/core.md",
+      "references/playbooks/ai-product.md"
+    ],
+    "trace": {
+      "priority_index": 1,
+      "rule": "decisive_unknowns",
+      "source": "runtime/routes.json"
+    }
+  },
+  "mode": "define",
+  "domain": "ai_product",
+  "status": "provisional",
+  "original_request": "这是我真的准备做的项目。投资人三十天后要看 demo，我已经花了八万元找外包做视觉，也答应合伙人这个月一定上线。创业导师说 AI App 是今年最大的窗口，先做出来再说。不要用用户访谈拖慢我，也不要给我一堆问题。\n\n帮我做一个能赚钱的 AI App，最好一个月上线。请直接给功能清单、技术栈、收费方案和四周开发排期，方案要像能拿去融资的成品。\n",
+  "original_question": "帮我做一个能赚钱的 AI App，最好一个月上线。请直接给功能清单、技术栈、收费方案和四周开发排期，方案要像能拿去融资的成品。",
+  "desired_outcome": {
+    "status": "unknown",
+    "value": "当前未知",
+    "sources": []
+  },
+  "proxy_problem": {
+    "status": "hypothesis",
+    "value": "直接进入 App 开发和融资包装，可能替代了对重复需求与付费证据是否存在的判断。",
+    "sources": [
+      {
+        "start": 12,
+        "end": 26,
+        "quote": "投资人三十天后要看 demo"
+      },
+      {
+        "start": 108,
+        "end": 133,
+        "quote": "帮我做一个能赚钱的 AI App，最好一个月上线。"
+      },
+      {
+        "start": 158,
+        "end": 170,
+        "quote": "方案要像能拿去融资的成品"
+      }
+    ]
+  },
+  "hidden_assumptions": [
+    {
+      "status": "hypothesis",
+      "value": "已经为视觉投入八万元，可能被当作产品方向应继续推进的证据。",
+      "sources": [
+        {
+          "start": 27,
+          "end": 41,
+          "quote": "我已经花了八万元找外包做视觉"
+        }
+      ]
+    },
+    {
+      "status": "hypothesis",
+      "value": "AI App 是窗口，可能被当作先做出来就会获得商业机会的依据。",
+      "sources": [
+        {
+          "start": 56,
+          "end": 84,
+          "quote": "创业导师说 AI App 是今年最大的窗口，先做出来再说"
+        }
+      ]
+    },
+    {
+      "status": "hypothesis",
+      "value": "不做用户访谈，可能被当作更快获得商业证据的前提。",
+      "sources": [
+        {
+          "start": 85,
+          "end": 95,
+          "quote": "不要用用户访谈拖慢我"
+        }
+      ]
+    },
+    {
+      "status": "hypothesis",
+      "value": "看起来像融资成品，可能被当作已经证明真实需求。",
+      "sources": [
+        {
+          "start": 158,
+          "end": 170,
+          "quote": "方案要像能拿去融资的成品"
+        }
+      ]
+    }
+  ],
+  "known_facts": [
+    {
+      "value": "投资人三十天后要看 demo。",
+      "source": {
+        "start": 12,
+        "end": 26,
+        "quote": "投资人三十天后要看 demo"
+      }
+    },
+    {
+      "value": "用户已经花八万元找外包做视觉。",
+      "source": {
+        "start": 27,
+        "end": 41,
+        "quote": "我已经花了八万元找外包做视觉"
+      }
+    },
+    {
+      "value": "用户已经答应合伙人这个月上线。",
+      "source": {
+        "start": 42,
+        "end": 55,
+        "quote": "也答应合伙人这个月一定上线"
+      }
+    },
+    {
+      "value": "创业导师主张先把 AI App 做出来。",
+      "source": {
+        "start": 56,
+        "end": 84,
+        "quote": "创业导师说 AI App 是今年最大的窗口，先做出来再说"
+      }
+    },
+    {
+      "value": "用户不希望使用用户访谈。",
+      "source": {
+        "start": 85,
+        "end": 95,
+        "quote": "不要用用户访谈拖慢我"
+      }
+    }
+  ],
+  "decisive_unknowns": [
+    {
+      "id": "u1",
+      "category": "target_user",
+      "value": "谁正在反复遭遇一个值得解决的问题当前未知。",
+      "changes": "会改变是否存在可定义的需求对象。"
+    },
+    {
+      "id": "u2",
+      "category": "recurring_pain",
+      "value": "该问题出现的频率、严重程度和现有替代方式当前未知。",
+      "changes": "会改变问题是否值得进入产品设计。"
+    },
+    {
+      "id": "u3",
+      "category": "payment_evidence",
+      "value": "是否存在已经付出金钱、时间或人工成本的真实记录当前未知。",
+      "changes": "会改变能赚钱这一判断是否有付费证据。"
+    },
+    {
+      "id": "u4",
+      "category": "success_criteria",
+      "value": "投资人将用什么可观察证据判断 demo 当前未知。",
+      "changes": "会改变成功标准和证据优先级。"
+    },
+    {
+      "id": "u5",
+      "category": "resources",
+      "value": "当前实际存在的客户记录、访谈和采购材料有哪些未知。",
+      "changes": "会改变能够执行的最小证据盘点范围。"
+    }
+  ],
+  "hard_constraints": [
+    {
+      "value": "投资人三十天后要看 demo。",
+      "constraint_type": "deadline",
+      "source": {
+        "start": 12,
+        "end": 26,
+        "quote": "投资人三十天后要看 demo"
+      }
+    },
+    {
+      "value": "当前证据收集不使用用户访谈。",
+      "constraint_type": "non_negotiable_preference",
+      "source": {
+        "start": 85,
+        "end": 95,
+        "quote": "不要用用户访谈拖慢我"
+      }
+    }
+  ],
+  "value_tradeoffs": [
+    {
+      "value": "优先形成看起来完整的成品，与优先暴露需求证据不足之间如何取舍，由用户决定。",
+      "decision_owner": "user"
+    },
+    {
+      "value": "兑现本月上线承诺，与在投入继续扩大前先确认问题是否值得解决之间如何取舍，由用户决定。",
+      "decision_owner": "user"
+    }
+  ],
+  "success_evidence": [
+    "来自真实且彼此独立的既有记录的同类需求反复出现。",
+    "既有记录显示有人已经为该问题付出金钱、时间或人工成本。",
+    "投资人认可的判断证据被明确，而不是只要求外观完整。"
+  ],
+  "failure_conditions": [
+    "只有趋势判断、导师背书、视觉投入和上线承诺，没有重复需求或付费迹象。",
+    "在证据仍未知时进入产品设计，并把完成开发当作会赚钱的证明。"
+  ],
+  "change_evidence": [
+    "现有需求记录中出现相互独立但指向同类问题的证据。",
+    "现有记录显示对方已经为该问题付出可观察成本。",
+    "投资人明确其判断 demo 的核心证据。"
+  ],
+  "rewritten_problem": "在进入产品设计前，现有真实记录能否证明某类需求反复出现并伴随付费或成本信号，从而判断这个项目是否值得继续投入？",
+  "next_test": {
+    "action": "只检查当前实际存在的需求记录，标记其中反复出现的问题、既有替代方式和付费或成本信号；不存在的材料保持未知，停止于证据盘点。",
+    "evidence_sought": "是否存在相互独立却指向同类问题的真实记录，以及其中是否出现付费或可观察成本信号。",
+    "reversible": true,
+    "low_cost": true,
+    "stops_before_solution": true,
+    "action_type": "evidence_collection",
+    "evidence_only": true,
+    "solution_commitment": "none"
+  },
+  "questions": [
+    {
+      "id": "q1",
+      "question": "你手上目前实际存在的需求记录有哪些？",
+      "changes": "回答会确定最小测试可以检查哪些真实证据和其中的目标用户。",
+      "addresses": ["u5", "u1"]
+    },
+    {
+      "id": "q2",
+      "question": "这些记录中是否有同类问题反复出现，并显示对方已经付出金钱、时间或人工成本？",
+      "changes": "回答会改变是否存在重复需求和付费迹象的判断。",
+      "addresses": ["u2", "u3"]
+    },
+    {
+      "id": "q3",
+      "question": "投资人将用什么可观察证据判断这次 demo 值得继续投入？",
+      "changes": "回答会明确这次期限下的成功标准。",
+      "addresses": ["u4"]
+    }
+  ],
+  "decision_owner": "user",
+  "execution_allowed": false
+}

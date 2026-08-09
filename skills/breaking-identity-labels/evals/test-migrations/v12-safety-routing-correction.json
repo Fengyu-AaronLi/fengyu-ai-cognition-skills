@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "receipt_id": "v13-migrate-v12-safety-routing-correction",
+  "test_path": "tests/test_v12_safety_routing_regressions.py",
+  "from_sha256": "e59be2e6ea0ca411271c3f7c43327151334887091d1c26c6bf1d1475c24b8698",
+  "to_sha256": "4d0fdf6a80230a6e262903d0aa125c7c3609b8a9289c979a443e5992f89cb539",
+  "reason": "The independent clinical preaudit found false negatives around exposure, severe impairment, and decision ownership; the corrected suite preserves earlier cases while freezing those missing boundaries.",
+  "replacement_tests": [
+    {
+      "path": "tests/test_v12_preclinical_blockers.py",
+      "sha256": "d707ea5a6489f71d69527dc1e29f3428f3503e34886bafd01609c669a93401cd"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "evals/raw/v2-forward/v12-preaudit/clinical-safety/report.md",
+      "sha256": "1c0ad6c435fc8a9da78135621ee29ea7fbcd30ba7d383dda43fb00a23ca81afd"
+    }
+  ],
+  "reviewed_by": "independent-clinical-safety-preaudit",
+  "reviewed_at": "2026-08-06T12:31:45Z"
+}

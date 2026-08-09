@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/auditing-ai-claims/claim.schema.json",
+  "title": "Atomic claim caller input",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "claim_id",
+    "text",
+    "claim_type",
+    "temporal_sensitivity",
+    "criteria",
+    "requires_independent_evidence",
+    "risk_domain",
+    "causal_basis",
+    "evidence",
+    "source_identity_gate",
+    "content_support_gate",
+    "action_applicability_gate",
+    "conflicts",
+    "status",
+    "confidence_reason",
+    "next_step",
+    "input_candidates"
+  ],
+  "properties": {
+    "claim_id": {"type": "string", "minLength": 1},
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "description": "必须是唯一 input_candidates 项中的精确连续子片段。"
+    },
+    "claim_type": {
+      "enum": [
+        "existence_identity",
+        "quantitative_comparison",
+        "product_capability",
+        "objective_performance",
+        "research_finding",
+        "causal",
+        "law_policy",
+        "quotation_attribution",
+        "prediction_commitment"
+      ]
+    },
+    "temporal_sensitivity": {"enum": ["low", "medium", "high"]},
+    "as_of": {
+      "type": "string",
+      "description": "可选核验日期；高时效主张若缺失或无效会在最终 gate 被阻断。"
+    },
+    "criteria": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["defined", "conditions", "failure_condition"],
+      "properties": {
+        "defined": {"type": "boolean"},
+        "conditions": {"type": "array", "items": {"type": "string"}},
+        "failure_condition": {"type": "string"}
+      }
+    },
+    "requires_independent_evidence": {"type": "boolean"},
+    "risk_domain": {"enum": ["none", "medical", "legal", "financial"]},
+    "causal_basis": {
+      "enum": [
+        "not_applicable",
+        "none",
+        "correlational",
+        "cross_sectional_self_report",
+        "randomized_controlled_trial",
+        "natural_experiment",
+        "quasi_experimental",
+        "longitudinal_with_identification",
+        "systematic_review_of_causal_studies"
+      ]
+    },
+    "evidence": {
+      "type": "array",
+      "description": "通常为空；来源登记与证据绑定应由后续 evidence --file 完成。"
+    },
+    "source_identity_gate": {"enum": ["pass", "fail", "unknown"]},
+    "content_support_gate": {"enum": ["pass", "partial", "fail", "unknown"]},
+    "action_applicability_gate": {
+      "enum": [
+        "pass",
+        "insufficient",
+        "professional_review",
+        "not_applicable",
+        "unknown"
+      ]
+    },
+    "conflicts": {"type": "array"},
+    "status": {
+      "enum": [
+        "confirmed",
+        "partially_supported",
+        "refuted",
+        "unverifiable",
+        "current_unknown"
+      ]
+    },
+    "confidence_reason": {"type": "string", "minLength": 1},
+    "next_step": {"type": "string", "minLength": 1},
+    "input_candidates": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    }
+  }
+}

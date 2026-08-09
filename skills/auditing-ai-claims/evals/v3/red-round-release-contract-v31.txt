@@ -1,0 +1,176 @@
+test_all_safe_file_inputs_have_schema_template_and_install_entry (__main__.ReleaseContractV31RedTests.test_all_safe_file_inputs_have_schema_template_and_install_entry) ... FAIL
+test_claim_ledger_schema_matches_candidate_id_and_countercheck_records (__main__.ReleaseContractV31RedTests.test_claim_ledger_schema_matches_candidate_id_and_countercheck_records) ... FAIL
+test_installed_bundle_contains_every_v31_protocol_artifact (__main__.ReleaseContractV31RedTests.test_installed_bundle_contains_every_v31_protocol_artifact) ... FAIL
+test_openai_agent_metadata_is_accurate_and_does_not_claim_release (__main__.ReleaseContractV31RedTests.test_openai_agent_metadata_is_accurate_and_does_not_claim_release) ... ok
+test_readme_and_workflow_show_the_actual_v31_state_order (__main__.ReleaseContractV31RedTests.test_readme_and_workflow_show_the_actual_v31_state_order) ... 
+  test_readme_and_workflow_show_the_actual_v31_state_order (__main__.ReleaseContractV31RedTests.test_readme_and_workflow_show_the_actual_v31_state_order) (relative='README.md') ... FAIL
+  test_readme_and_workflow_show_the_actual_v31_state_order (__main__.ReleaseContractV31RedTests.test_readme_and_workflow_show_the_actual_v31_state_order) (relative='references/workflow-loop.md') ... FAIL
+test_runtime_contract_covers_transactions_deadline_and_safe_next (__main__.ReleaseContractV31RedTests.test_runtime_contract_covers_transactions_deadline_and_safe_next) ... FAIL
+test_runtime_owned_transaction_schema_is_installed_without_a_caller_template (__main__.ReleaseContractV31RedTests.test_runtime_owned_transaction_schema_is_installed_without_a_caller_template) ... FAIL
+test_runtime_policy_and_public_contract_are_versioned_as_v31 (__main__.ReleaseContractV31RedTests.test_runtime_policy_and_public_contract_are_versioned_as_v31) ... FAIL
+test_skill_entrypoint_requires_safe_file_loop_and_countercheck (__main__.ReleaseContractV31RedTests.test_skill_entrypoint_requires_safe_file_loop_and_countercheck) ... FAIL
+test_workflow_next_schema_matches_v31_runtime_payload (__main__.ReleaseContractV31RedTests.test_workflow_next_schema_matches_v31_runtime_payload) ... FAIL
+
+======================================================================
+FAIL: test_all_safe_file_inputs_have_schema_template_and_install_entry (__main__.ReleaseContractV31RedTests.test_all_safe_file_inputs_have_schema_template_and_install_entry)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_release_contract_v31_red.py", line 184, in test_all_safe_file_inputs_have_schema_template_and_install_entry
+    self.assertEqual(missing_files, [])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: ['schemas/candidates.schema.json', 'templa[201 chars]son'] != []
+
+First list contains 8 additional elements.
+First extra element 0:
+'schemas/candidates.schema.json'
+
++ []
+- ['schemas/candidates.schema.json',
+-  'templates/candidates.json',
+-  'schemas/claim.schema.json',
+-  'schemas/evidence.schema.json',
+-  'schemas/countercheck.schema.json',
+-  'templates/countercheck.json',
+-  'schemas/summary.schema.json',
+-  'templates/summary.json']
+
+======================================================================
+FAIL: test_claim_ledger_schema_matches_candidate_id_and_countercheck_records (__main__.ReleaseContractV31RedTests.test_claim_ledger_schema_matches_candidate_id_and_countercheck_records)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_release_contract_v31_red.py", line 105, in test_claim_ledger_schema_matches_candidate_id_and_countercheck_records
+    self.assertIn("candidate_id", exclusion["required"])
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'candidate_id' not found in ['candidate', 'classification', 'reason', 'excluded_at']
+
+======================================================================
+FAIL: test_installed_bundle_contains_every_v31_protocol_artifact (__main__.ReleaseContractV31RedTests.test_installed_bundle_contains_every_v31_protocol_artifact)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_release_contract_v31_red.py", line 239, in test_installed_bundle_contains_every_v31_protocol_artifact
+    self.assertEqual(missing, [])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+AssertionError: Lists differ: ['schemas/candidates.schema.json', 'schema[243 chars]son'] != []
+
+First list contains 9 additional elements.
+First extra element 0:
+'schemas/candidates.schema.json'
+
++ []
+- ['schemas/candidates.schema.json',
+-  'schemas/claim.schema.json',
+-  'schemas/countercheck.schema.json',
+-  'schemas/evidence.schema.json',
+-  'schemas/source-transaction.schema.json',
+-  'schemas/summary.schema.json',
+-  'templates/candidates.json',
+-  'templates/countercheck.json',
+-  'templates/summary.json']
+
+======================================================================
+FAIL: test_readme_and_workflow_show_the_actual_v31_state_order (__main__.ReleaseContractV31RedTests.test_readme_and_workflow_show_the_actual_v31_state_order) (relative='README.md')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_release_contract_v31_red.py", line 67, in test_readme_and_workflow_show_the_actual_v31_state_order
+    self.assertGreater(countercheck, assessment)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: -1 not greater than 1458
+
+======================================================================
+FAIL: test_readme_and_workflow_show_the_actual_v31_state_order (__main__.ReleaseContractV31RedTests.test_readme_and_workflow_show_the_actual_v31_state_order) (relative='references/workflow-loop.md')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_release_contract_v31_red.py", line 67, in test_readme_and_workflow_show_the_actual_v31_state_order
+    self.assertGreater(countercheck, assessment)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: -1 not greater than 193
+
+======================================================================
+FAIL: test_runtime_contract_covers_transactions_deadline_and_safe_next (__main__.ReleaseContractV31RedTests.test_runtime_contract_covers_transactions_deadline_and_safe_next)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_release_contract_v31_red.py", line 100, in test_runtime_contract_covers_transactions_deadline_and_safe_next
+    self.assertEqual(missing, [])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+AssertionError: Lists differ: ['.runtime-init.json', '.runtime-key', 'ru[240 chars]ile'] != []
+
+First list contains 15 additional elements.
+First extra element 0:
+'.runtime-init.json'
+
++ []
+- ['.runtime-init.json',
+-  '.runtime-key',
+-  'runtime-attestations.json',
+-  'source-transactions/',
+-  'prepared',
+-  'receipt_saved',
+-  'committed',
+-  '总时限',
+-  'claim_countercheck',
+-  'cli_subcommand',
+-  'required_inputs',
+-  'missing_evidence_purposes',
+-  '--candidates-file',
+-  '--candidate-id',
+-  'summarize --file']
+
+======================================================================
+FAIL: test_runtime_owned_transaction_schema_is_installed_without_a_caller_template (__main__.ReleaseContractV31RedTests.test_runtime_owned_transaction_schema_is_installed_without_a_caller_template)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_release_contract_v31_red.py", line 202, in test_runtime_owned_transaction_schema_is_installed_without_a_caller_template
+    self.assertTrue((SKILL_DIR / schema_path).is_file())
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: False is not true
+
+======================================================================
+FAIL: test_runtime_policy_and_public_contract_are_versioned_as_v31 (__main__.ReleaseContractV31RedTests.test_runtime_policy_and_public_contract_are_versioned_as_v31)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_release_contract_v31_red.py", line 40, in test_runtime_policy_and_public_contract_are_versioned_as_v31
+    self.assertEqual(runtime.RUNTIME_VERSION, "3.1.0")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: '3.0.0' != '3.1.0'
+- 3.0.0
+?   ^
++ 3.1.0
+?   ^
+
+
+======================================================================
+FAIL: test_skill_entrypoint_requires_safe_file_loop_and_countercheck (__main__.ReleaseContractV31RedTests.test_skill_entrypoint_requires_safe_file_loop_and_countercheck)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_release_contract_v31_red.py", line 57, in test_skill_entrypoint_requires_safe_file_loop_and_countercheck
+    self.assertEqual(missing, [])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+AssertionError: Lists differ: ['--candidates-file', '--candidate-id', 'c[103 chars]uts'] != []
+
+First list contains 8 additional elements.
+First extra element 0:
+'--candidates-file'
+
++ []
+- ['--candidates-file',
+-  '--candidate-id',
+-  'claim --file',
+-  'countercheck',
+-  'claim_countercheck',
+-  'summarize --file',
+-  'cli_subcommand',
+-  'required_inputs']
+
+======================================================================
+FAIL: test_workflow_next_schema_matches_v31_runtime_payload (__main__.ReleaseContractV31RedTests.test_workflow_next_schema_matches_v31_runtime_payload)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<REPO_ROOT>/skills/auditing-ai-claims/tests/test_release_contract_v31_red.py", line 138, in test_workflow_next_schema_matches_v31_runtime_payload
+    self.assertIn("claim_countercheck", stages)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'claim_countercheck' not found in {'ready_to_finish', 'gate_repair', 'claim_assessment', 'complete', 'not_triggered', 'audit_summary', 'claim_extraction'}
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.089s
+
+FAILED (failures=10)

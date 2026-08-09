@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0",
+  "receipt_id": "v74-v67-user-confirmation",
+  "test_path": "tests/test_v67_runtime_adversarial.py",
+  "from_sha256": "d2e752cc16954618822fa257c537d040ceae349ca114ceb00493b268113ac8a2",
+  "to_sha256": "bd407beabbc9d2ded935dfeee0bbcfd3962e204b635b6eb9a2e0005c8255e031",
+  "reason": "The missing-lock controls now provide valid file-backed confirmation so each negative path continues to isolate the missing-lock invariant instead of failing earlier at the new confirmation gate.",
+  "replacement_tests": [
+    {"path": "tests/test_v74_operator_product_contract.py", "sha256": "947ba00444bd7ac6bd65dacab2abb7159e14dccebbcc05e12d086628fac9aed9"}
+  ],
+  "evidence": [
+    {"path": "evals/raw/v74-red/operator-first-install-product-contract.md", "sha256": "6f5e25ef94702e6b240013f3d52c9be0eb340f74a54d34a3e21b8ebadfbd7445"}
+  ],
+  "reviewed_by": "codex-r74-confirmation-migration-b",
+  "reviewed_at": "2026-08-07T10:00:00+10:00"
+}

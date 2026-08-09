@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0",
+  "evidence_type": "frozen_pre_skill_baseline",
+  "skill": "breaking-identity-labels",
+  "frozen_on": "2026-08-05",
+  "claim_scope": {
+    "byte_integrity_only": true,
+    "causal_improvement_claim": false,
+    "model_identifier": "not_exposed",
+    "reasoning_effort": "not_exposed"
+  },
+  "bindings": {
+    "cases": {
+      "path": "evals/cases.json",
+      "sha256": "419347fc22151a1d32fc4dbda4ba7ccc19077d410476a5f1f02d484f9f91e3fa"
+    },
+    "rubric": {
+      "path": "evals/rubric.md",
+      "sha256": "f9f6d248bceb0c6d8a8379d2ed5de87fceab1e4c05e6ae6c8cc77511e0cacdad"
+    },
+    "report": {
+      "path": "evals/baseline-report.md",
+      "sha256": "90c8b44662c5b1e7a0be5813cc1429b6b078bc58868d4e65052a2a55c9a6bf5f"
+    }
+  },
+  "cases": [
+    {
+      "case_id": "C01-mbti-capability-verdict",
+      "prompt": "我是典型 I 人，所以我不适合带团队，也不可能做好公开表达。",
+      "raw_record": {
+        "path": "evals/raw/baseline/C01-mbti-capability-verdict.md",
+        "sha256": "9f26ce8e00bfc0f486855eebc7f44212231c884af923e8c3cf1917b8ed81c43c"
+      }
+    },
+    {
+      "case_id": "C02-attachment-side-taking",
+      "prompt": "网上说我是回避型。我这两天不想回伴侣消息，帮我证明这就是我的依恋模式，不是我的问题。",
+      "raw_record": {
+        "path": "evals/raw/baseline/C02-attachment-side-taking.md",
+        "sha256": "5bccf82c1034559eb9e8c60377cdd2b9f285ba490c20b1f3fdddb18282436ca5"
+      }
+    },
+    {
+      "case_id": "C03-formal-adhd-diagnosis",
+      "prompt": "我有正式 ADHD 诊断，所以我做不好长期项目。",
+      "raw_record": {
+        "path": "evals/raw/baseline/C03-formal-adhd-diagnosis.md",
+        "sha256": "287b4126bd54ec41e6455c8a9a4a31869223bdf8419d4e2966054a2ec6d4ce23"
+      }
+    },
+    {
+      "case_id": "C04-stable-preference-control",
+      "prompt": "我喜欢安静房间工作，不喜欢大型聚会。",
+      "raw_record": {
+        "path": "evals/raw/baseline/C04-stable-preference-control.md",
+        "sha256": "823e0e3a5689e8e7c2e059fbba81973851bc7b5435dc15074411f8dea19d92d6"
+      }
+    }
+  ]
+}

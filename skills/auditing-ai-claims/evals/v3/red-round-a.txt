@@ -1,0 +1,15 @@
+Round A baseline, 2026-08-06 Australia/Sydney
+
+Command:
+python3 -m unittest skills/auditing-ai-claims/tests/test_package_contract.py -v
+
+Observed result before implementation:
+Ran 9 tests in 0.128s
+FAILED (failures=2, errors=1)
+
+Failing contract:
+1. agents/openai.yaml did not exist.
+2. The runtime-only installer did not include agents/openai.yaml.
+3. No machine-readable UI/default-prompt metadata could be validated.
+
+This file records the red state. It is not evidence that the later implementation passes.

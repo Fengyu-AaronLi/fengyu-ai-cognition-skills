@@ -1,0 +1,22 @@
+{
+  "evidence": [
+    {
+      "path": "evals/raw/v72-red/demo-live-evidence-red.md",
+      "sha256": "96e9df0c0ee2ddef690c656e4670e904b2947220549f86a19e7275ee9e41a1dc"
+    }
+  ],
+  "from_sha256": "f7d68ea7f7c79b06d94700ce535cf2912ad576dd88fe03e046e1d682fb379871",
+  "reason": "The earlier verifier fixture used one ambiguous live-model label for both analysis generation and runtime replay. V72 preserves all replay and tamper assertions while requiring an explicit candidate, evidence mode, and source-analysis provenance for historical fixtures.",
+  "receipt_id": "v72-v64-evidence-provenance-mode",
+  "replacement_tests": [
+    {
+      "path": "tests/test_v72_demo_live_evidence.py",
+      "sha256": "b5562d7c066c47fd9465fa079804eb6da7adcd80701f677be3f968333b30225c"
+    }
+  ],
+  "reviewed_at": "2026-08-06T20:00:07Z",
+  "reviewed_by": "codex-r72-evidence-provenance",
+  "schema_version": "1.0",
+  "test_path": "tests/test_v64_live_e2e_behavior.py",
+  "to_sha256": "c514086d73a2e478afa878bedb7bfe07504abe2991e4cad22e785c1245cb3150"
+}

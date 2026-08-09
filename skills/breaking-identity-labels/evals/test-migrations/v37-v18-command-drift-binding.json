@@ -1,0 +1,22 @@
+{
+  "evidence": [
+    {
+      "path": "evals/raw/v37-red/release-completed-run-binding.md",
+      "sha256": "d306a42d8d260fa90f2691819e1812b9abc86369f62c3aded3f1d4533bdf2f54"
+    }
+  ],
+  "from_sha256": "6a21a8a899b5585df1a0ebcdd38536abf273a7e441383e2e85cc5b3210d7787e",
+  "reason": "Command drift is now checked against the execution receipt of the bound completed run, not only against a release-time governance tree.",
+  "receipt_id": "v37-v18-command-drift-binding",
+  "replacement_tests": [
+    {
+      "path": "tests/test_v37_release_completed_run_binding.py",
+      "sha256": "e0bdb633d16f6198617b4387761709b7b6435179320a1de8f370e8a6bbf81cec"
+    }
+  ],
+  "reviewed_at": "2026-08-06T12:00:00Z",
+  "reviewed_by": "independent-state-integrity-audit-v37",
+  "schema_version": "1.0",
+  "test_path": "tests/test_v18_workflow_command_binding.py",
+  "to_sha256": "711023d08d61b43f20ee641ec1dc520ede93888ea1888b9b3bdc14521295f9ab"
+}
